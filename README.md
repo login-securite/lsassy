@@ -44,5 +44,5 @@ python3 setup.py install
 
 # Acknowledgments
 
-* (SkelSec)[http://twitter.com/skelsec] for Pypykatz, but also for his patience and help
-* (mpgn)[https://twitter.com/mpgn_x64] for his help and ideas
+* [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
+* [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
