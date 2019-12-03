@@ -25,6 +25,8 @@ lsassy ADSEC.LOCAL/jsnow:Winter_is_coming_\!@dc01.adsec.local:/C$/Windows/Temp/l
 lsassy Administrateur:952c28bd2fd728898411b301475009b7@desktop01.adsec.local:/ADMIN$/lsass.dmp
 ```
 
+![Example image](/assets/example.png)
+
 # CrackMapExec module
 
 I wrote a CrackMapExec module that uses **lsassy** to extract credentials on compromised hosts
