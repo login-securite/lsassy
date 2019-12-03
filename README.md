@@ -1,5 +1,7 @@
 # lsassy
 
+[![PyPI version](https://badge.fury.io/py/lsassy.svg)](https://badge.fury.io/py/lsassy)
+
 Python library to remotely parse lsass dump.
 
 # Requirements
