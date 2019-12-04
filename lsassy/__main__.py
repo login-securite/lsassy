@@ -6,6 +6,7 @@
 #  https://beta.hackndo.com
 
 import pkg_resources
+import sys
 from pypykatz.pypykatz import pypykatz
 from pypykatz.lsadecryptor.cmdhelper import LSACMDHelper
 from lsassy.impacketconnection import ImpacketConnection
@@ -15,14 +16,22 @@ version = pkg_resources.require("lsassy")[0].version
 
 def run():
     import argparse
-    parser = argparse.ArgumentParser(description='Pure Python implementation of Mimikatz --and more--')
-    parser.add_argument('--json', action='store_true',help = 'Print credentials in JSON format')
-    parser.add_argument('-k', '--kerberos-dir', help = 'Save kerberos tickets to a directory.')
-    parser.add_argument('-g', '--grep', action='store_true', help = 'Print credentials in greppable format')
-    parser.add_argument('-o', '--outfile', help = 'Save results to file (you can specify --json for json file, or text format will be written)')
+    parser = argparse.ArgumentParser(description='lsassy v{} - Remote lsass dump reader'.format(version))
+    group_auth = parser.add_argument_group('Authentication')
+    group_auth.add_argument('--hashes', action='store', help='[LM:]NT hash')
+    group_out = parser.add_argument_group('Output')
+    group_out.add_argument('-j', '--json', action='store_true',help = 'Print credentials in JSON format')
+    group_out.add_argument('-k', '--kerberos-dir', help = 'Save kerberos tickets to a directory.')
+    group_out.add_argument('-g', '--grep', action='store_true', help = 'Print credentials in greppable format')
+    group_out.add_argument('-o', '--outfile', help = 'Save results to file')
     parser.add_argument('-d', '--debug', action='store_true', help = 'Debug output')
-    parser.add_argument('target', action='store', help='[domain/]username[:password]@<host>:/shareName/path/to/lsass/dump')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
+    parser.add_argument('target', action='store', help='[domain/]username[:password]@<host>:/share_name/path/to/lsass/dump')
+
+    if len(sys.argv)==1:
+        parser.print_help()
+        sys.exit(1)
+
     args = parser.parse_args()
     conn, share_name, file_path  = ImpacketConnection.from_args(args, args.debug)
     ifile = ImpacketFile()

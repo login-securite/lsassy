@@ -19,10 +19,10 @@ class ImpacketFile:
             "buffer": ""
         }
 
-    def open(self, connection, shareName, fpath):
+    def open(self, connection, share_name, fpath):
         self._conn = connection
         self._fpath = fpath
-        self._tid = self._conn.connectTree(shareName)
+        self._tid = self._conn.connectTree(share_name)
         self._fid = self._conn.openFile(self._tid, self._fpath)
         self._fileInfo = self._conn.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]

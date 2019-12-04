@@ -14,7 +14,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 ## Basic Usage
 
 ```
-lsassy [<domain>/]<user>[:<password>]@<target>:/shareName/path/to/lsass.dmp
+lsassy [<domain>/]<user>[:<password>]@<target>:/share_name/path/to/lsass.dmp [--hashes [LM:]NT]
 ```
 
 ## CrackMapExec module

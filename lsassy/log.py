@@ -3,6 +3,9 @@
 # Website:
 #  https://beta.hackndo.com
 
+import sys
+
+
 class Logger:
     def __init__(self, isdebug=False):
         self._isdebug = isdebug
@@ -22,7 +25,7 @@ class Logger:
 
     def error(self, msg):
         msg = "\n    ".join(msg.split("\n"))
-        print("\033[1;31m[X]\033[0m %s" % msg)
+        print("\033[1;31m[X]\033[0m %s" % msg, file=sys.stderr)
 
     def success(self, msg):
         msg = "\n    ".join(msg.split("\n"))
