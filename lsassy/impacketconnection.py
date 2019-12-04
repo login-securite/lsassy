@@ -50,7 +50,7 @@ class ImpacketConnection:
         self._log.debug("Authenticating against {}".format(ip))
         try:
             conn.login(username, password, domain=domain_name, lmhash=lmhash, nthash=nthash, ntlmFallback=True)
-            self._log.success("Authenticated")
+            self._log.debug("Authenticated")
         except SessionError as e:
             e_type, e_msg = e.getErrorString()
             self._log.error("{}: {}".format(e_type, e_msg))
