@@ -31,7 +31,7 @@ lsassy Administrateur:952c28bd2fd728898411b301475009b7@desktop01.adsec.local:/AD
 
 I wrote a CrackMapExec module that uses **lsassy** to extract credentials on compromised hosts
 
-CrackMapExec module : [Access gist](https://gist.github.com/Hackndo/4326c724ef1e9b71b12f8d104973a799)
+CrackMapExec module is in `cme` folder : [CME Module](/cme/lsassy.py)
 
 # Installing
 

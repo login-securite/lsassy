@@ -17,7 +17,7 @@ setup(
     description="Python library to parse remote lsass dumps",
     long_description=README,
     long_description_content_type="text/markdown",
-    packages=find_packages(),
+    packages=find_packages(exclude=["assets", "cme"]),
     include_package_data=True,
     url="https://github.com/hackanddo/lsassy",
     zip_safe = True,
