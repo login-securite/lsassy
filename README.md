@@ -5,6 +5,8 @@
 Python library to remotely parse lsass dump and extract credentials.
 This library uses [impacket](https://github.com/SecureAuthCorp/impacket) projects to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
 
+![CME Module example](/assets/cme_lsassy.gif)
+
 ## Requirements
 
 * Python >= 3.6
@@ -35,7 +37,9 @@ lsassy Administrateur:952c28bd2fd728898411b301475009b7@desktop01.adsec.local:/AD
 
 ### CME Module
 
-![Example image](/assets/cme_example.png)
+```
+crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound```
+```
 
 ## Installing
 
