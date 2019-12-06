@@ -55,6 +55,29 @@ python3.7 -m pip install lsassy
 python3.7 setup.py install
 ```
 
+### ChangeLog
+
+```
+v0.2.0
+------
+* Add BloodHound option to CME module (-o BLOODHOUND=True)
+    - Set compromised targets as "owned" in BloodHound
+    - Check if compromised users have at least one path to domain admin
+* Custom parsing (json, grep, pretty [default])
+* New --hashes option to lsassy
+
+
+v0.1.1
+------
+* Include CME module in repository
+* Add credentials to CME database
+
+
+v0.1.0
+------
+First release
+```
+
 ## Acknowledgments
 
 * [Impacket](https://github.com/SecureAuthCorp/impacket)

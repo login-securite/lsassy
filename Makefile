@@ -17,7 +17,7 @@ testpublish: clean
 rebuild: clean
 	python3.7 setup.py install
 
-build:
+build: clean
 	python3.7 setup.py install
 
 install: build

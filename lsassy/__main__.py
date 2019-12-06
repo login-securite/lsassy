@@ -11,6 +11,8 @@ from pypykatz.pypykatz import pypykatz
 from pypykatz.lsadecryptor.cmdhelper import LSACMDHelper
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
+from lsassy.parser import Parser
+import json
 
 version = pkg_resources.require("lsassy")[0].version
 
@@ -24,6 +26,7 @@ def run():
     group_out.add_argument('-k', '--kerberos-dir', help = 'Save kerberos tickets to a directory.')
     group_out.add_argument('-g', '--grep', action='store_true', help = 'Print credentials in greppable format')
     group_out.add_argument('-o', '--outfile', help = 'Save results to file')
+    parser.add_argument('-r', '--raw', action='store_true', help = 'Raw results without filtering')
     parser.add_argument('-d', '--debug', action='store_true', help = 'Debug output')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
     parser.add_argument('target', action='store', help='[domain/]username[:password]@<host>:/share_name/path/to/lsass/dump')
@@ -37,7 +40,9 @@ def run():
     ifile = ImpacketFile()
     ifile.open(conn, share_name, file_path)
     dumpfile = pypykatz.parse_minidump_external(ifile)
-    LSACMDHelper().process_results({"dumfile": dumpfile}, [], args)
+    parser = Parser(dumpfile)
+    parser.output(args)
+    
 
 if __name__ == '__main__':
     run()
