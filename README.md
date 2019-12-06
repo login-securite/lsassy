@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://badge.fury.io/py/lsassy.svg)](https://badge.fury.io/py/lsassy)
+[![PyPI version](https://badge.fury.io/py/lsassy.png)](https://badge.fury.io/py/lsassy)
 
 Python library to remotely parse lsass dump and extract credentials.
 This library uses [impacket](https://github.com/SecureAuthCorp/impacket) projects to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
