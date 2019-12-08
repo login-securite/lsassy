@@ -31,6 +31,7 @@ class Parser():
                     if raw:
                         self.credentials.append([ssp, domain, username, password, LMHash, NThash])
                     elif (not all(v is None or v == '' for v in [password, LMHash, NThash])
+                            and username is not None
                             and not username.endswith('$')
                             and not username == ''):
                         self.credentials.append((ssp, domain, username, password, LMHash, NThash))
