@@ -9,10 +9,6 @@ class Parser():
         self.credentials = []
     
     def _parse(self, raw=False):
-        """
-        This code was shamelessly taken from project Spraykatz by @lydericlefebvre
-        https://github.com/aas-n/spraykatz/blob/master/core/ParseDump.py
-        """
         ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds', 'tspkg_creds']
         for luid in self.pypydump.logon_sessions:
             
