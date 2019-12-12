@@ -160,7 +160,7 @@ class CMEModule:
 
         if code != 0:
             # Debug output
-            context.log.error('Error while execute lsassy, try with --verbose to see details')
+            context.log.error('Error while executing lsassy, try using CrackMapExec with --verbose to get more details')
             context.log.debug('Detailed error : {}'.format(err))
         else:
             context.log.debug('----- lsassy output -----')
