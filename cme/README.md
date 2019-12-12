@@ -73,4 +73,13 @@ Options can be set using
 cme smb dc01.adsec.local -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o PROCDUMP_PATH='/home/pixis/Tools/' PROCDUMP_EXE_NAME='procdump.exe'
 ```
 
+## Issue
+
+If you find an issue with this tool (that's very plausible !), please
+
+* Check that you're using the latest version
+* Send as much details as possible.
+    - For standalone **lsassy**, please use the `-d` debug flag
+    - For CME module, please use CrackMapExec `--verbose` flag
+
 Have fun
