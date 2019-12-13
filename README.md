@@ -9,12 +9,12 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
-| [Requirements](#requirement)                 | Requirements to install lsassy from source              |
+| [Requirements](#requirements)                | Requirements to install lsassy from source              |
 | [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Examples](#examples)                        | Command line examples for standalone and CME module     |
-| [Installation](#installing)                  | Installation commands from pip or from source           |
-| [Issues](#issue)                             | Read this before creating an issue                      |
+| [Installation](#installation)                | Installation commands from pip or from source           |
+| [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
 
 ## Requirements
@@ -51,7 +51,7 @@ lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrateur@desktop01.adsec.
 crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound```
 ```
 
-## Installing
+## Installation
 
 ### From pip
 
@@ -88,7 +88,7 @@ v0.1.0
 First release
 ```
 
-## Issue
+## Issues
 
 If you find an issue with this tool (that's very plausible !), please
 
