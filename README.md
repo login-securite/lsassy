@@ -2,10 +2,20 @@
 
 [![PyPI version](https://badge.fury.io/py/lsassy.png)](https://badge.fury.io/py/lsassy)
 
+![CME Module example](/assets/cme_lsassy.gif)
+
 Python library to remotely parse lsass dump and extract credentials.
 This library uses [impacket](https://github.com/SecureAuthCorp/impacket) projects to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
 
-![CME Module example](/assets/cme_lsassy.gif)
+| Chapters                                     | Description                                             |
+|----------------------------------------------|---------------------------------------------------------|
+| [Requirements](#requirement)                 | Requirements to install lsassy from source              |
+| [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
+| [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
+| [Examples](#examples)                        | Command line examples for standalone and CME module     |
+| [Installation](#installing)                  | Installation commands from pip or from source           |
+| [Issues](#issue)                             | Read this before creating an issue                      |
+| [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
 
 ## Requirements
 
