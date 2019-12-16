@@ -3,6 +3,7 @@
 # Website:
 #  https://beta.hackndo.com
 
+
 class ImpacketFile:
     def __init__(self):
         self._conn = None

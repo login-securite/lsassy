@@ -5,7 +5,7 @@
 
 import time, re, sys
 from impacket.smbconnection import SMBConnection, SessionError
-from impacket.smb3structs import FILE_READ_DATA, SMB2_DIALECT_21, SMB2_DIALECT_30
+from impacket.smb3structs import FILE_READ_DATA
 from socket import getaddrinfo, gaierror
 from lsassy.log import Logger
 
@@ -62,7 +62,7 @@ class ImpacketConnection:
         return self
 
     def connectTree(self, share_name):
-        return self.conn._SMBConnection.connectTree(share_name)
+        return self.conn.connectTree(share_name)
 
     def openFile(self, tid, fpath):
         while True:
