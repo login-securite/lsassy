@@ -32,12 +32,27 @@ class Parser():
                             and not username == ''):
                         self.credentials.append((ssp, domain, username, password, LMHash, NThash))
 
+    def _decode(self, data):
+        """
+        Ugly trick because of mixed content coming back from pypykatz
+        Can be either string, bytes, None
+        """
+        try:
+            return data.decode('utf-8', 'backslashreplace')
+        except:
+            return data
+
     def output(self, args):
         self._parse(args.raw)
         if args.json:
             json_output = {}
             for cred in self.credentials:
                 ssp, domain, username, password, lhmash, nthash = cred
+
+                domain = self._decode(domain)
+                username = self._decode(username)
+                password = self._decode(password)
+
                 if domain not in json_output:
                     json_output[domain] = {}
                 if username not in json_output[domain]:
@@ -53,21 +68,25 @@ class Parser():
         elif args.grep:
             credentials = set()
             for cred in self.credentials:
-                credentials.add(':'.join([c if c is not None else '' for c in cred]))
+                credentials.add(':'.join([self._decode(c) if c is not None else '' for c in cred]))
             for cred in credentials:
                 print(cred)
         else:
             if len(self.credentials) == 0:
                 self.log.error('No credentials found')
                 return 0
-            max_size = max(len(c[0]) + len(c[1]) for c in self.credentials)
+
+            max_size = max(len(c[1]) + len(c[2]) for c in self.credentials)
             credentials = []
             for cred in self.credentials:
                 ssp, domain, username, password, lhmash, nthash = cred
+                domain = self._decode(domain)
+                username = self._decode(username)
+                password = self._decode(password)
                 if password is None:
                     password = ':'.join(h for h in [lhmash, nthash] if h is not None)
                 if [domain, username, password] not in credentials:
                     credentials.append([domain, username, password])
                     self.log.success("{}\\{}{}{}".format(
-                        domain, username, " " * (max_size - len(domain) - len(username)), Logger.highlight(password))
+                        domain, username, " " * (max_size - len(domain) - len(username) + 2), Logger.highlight(password))
                     )

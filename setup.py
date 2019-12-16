@@ -11,7 +11,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="lsassy",
-    version="0.2.2",
+    version="0.2.3",
     author="Pixis",
     author_email="hackndo@gmail.com",
     description="Python library to parse remote lsass dumps",

