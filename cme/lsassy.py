@@ -30,6 +30,7 @@ class CMEModule:
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
             NEO4JUSER           Username for Neo4j database (default: 'neo4j')
             NEO4JPASS           Password for Neo4j database (default: 'neo4j')
+            WITHOUT_EDGES       List of black listed edges (example: 'SQLAdmin,CanRDP', default: '')
         '''
 
         self.tmp_dir = "\\Windows\\Temp\\"
@@ -58,6 +59,7 @@ class CMEModule:
         self.neo4j_Port = "7687"
         self.neo4j_user = "neo4j"
         self.neo4j_pass = "neo4j"
+        self.without_edges = ""
 
         if module_options and 'BLOODHOUND' in module_options:
             self.bloodhound = module_options['BLOODHOUND']
@@ -69,6 +71,8 @@ class CMEModule:
             self.neo4j_user = module_options['NEO4JUSER']
         if module_options and 'NEO4JPASS' in module_options:
             self.neo4j_pass = module_options['NEO4JPASS']
+        if module_options and 'WITHOUT_EDGES' in module_options:
+            self.without_edges = module_options['WITHOUT_EDGES']
 
     def on_admin_login(self, context, connection):
         if self.bloodhound != False:
@@ -257,12 +261,41 @@ class CMEModule:
             context.log.error("Unexpected error : {}".format(e))
             return False
 
+        edges = [
+            "MemberOf",
+            "HasSession",
+            "AdminTo",
+            "AllExtendedRights",
+            "AddMember",
+            "ForceChangePassword",
+            "GenericAll",
+            "GenericWrite",
+            "Owns",
+            "WriteDacl",
+            "WriteOwner",
+            "CanRDP",
+            "ExecuteDCOM",
+            "AllowedToDelegate",
+            "ReadLAPSPassword",
+            "Contains",
+            "GpLink",
+            "AddAllowedToAct",
+            "AllowedToAct",
+            "SQLAdmin"
+        ]
+        # Remove blacklisted edges
+        without_edges = [e.lower() for e in self.without_edges.split(",")]
+        effective_edges = [edge for edge in edges if edge.lower() not in without_edges]
+
         with driver.session() as session:
             with session.begin_transaction() as tx:
-                result = tx.run("""
-                    MATCH (n:User {{name:\"{}\"}}),(m:Group),p=shortestPath((n)-[r*1..]->(m))
+                query = """
+                    MATCH (n:User {{name:\"{}\"}}),(m:Group),p=shortestPath((n)-[r:{}*1..]->(m))
                     WHERE m.objectsid ENDS WITH "-512" 
                     RETURN COUNT(p) AS pathNb
-                    """.format(username))
+                    """.format(username, '|'.join(effective_edges))
+
+                context.log.debug("Query : {}".format(query))
+                result = tx.run(query)
         driver.close()
         return result.value()[0] > 0

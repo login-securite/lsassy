@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=0.2.3&x2=0)](https://pypi.org/project/lsassy/)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=0.2.4&x2=0)](https://pypi.org/project/lsassy/)
 
 ![CME Module example](/assets/cme_lsassy.gif)
 
@@ -75,10 +75,6 @@ v0.2.0
     - Check if compromised users have at least one path to domain admin
 * Custom parsing (json, grep, pretty [default])
 * New --hashes option to lsassy
-
-
-v0.1.1
-------
 * Include CME module in repository
 * Add credentials to CME database
 
