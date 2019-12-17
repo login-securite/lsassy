@@ -41,7 +41,7 @@ python setup.py install
 cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy
 ```
 
-You can set BloodHound integration using `-o BLOODHOUND=True` flag. This flag enables differents checks :
+You can set BloodHound integration using `-o BLOODHOUND=True` flag. This flag enables different checks :
 * Set "owned" on BloodHound computer nodes that are compromised
 * Detect compromised users that have a **path to domain admin**
 
@@ -55,15 +55,17 @@ You can check available options using
 cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy --options
 [*] lsassy module options:
 
-            TMP_DIR             Path where process dump should be saved on target system (default: C:\Windows\Temp\)
+            TMP_DIR             Path where process dump should be saved on target system (default: C:\\Windows\\Temp\\)
             SHARE               Share to upload procdump and dump lsass (default: C$)
             PROCDUMP_PATH       Path where procdump.exe is on your system (default: /tmp/)
             PROCDUMP_EXE_NAME   Name of the procdump executable (default: procdump.exe)
+            REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: tmp.dmp)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
             NEO4JUSER           Username for Neo4j database (default: 'neo4j')
             NEO4JPASS           Password for Neo4j database (default: 'neo4j')
+            WITHOUT_EDGES       List of black listed edges (example: 'SQLAdmin,CanRDP', default: '')
 
 ```
 
