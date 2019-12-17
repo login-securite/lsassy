@@ -16,11 +16,11 @@ class ImpacketConnection:
 
     @staticmethod
     def from_args(arg, debug=False):
-        pattern = re.compile(r"^(?:(?P<domain_name>[a-zA-Z0-9._-]+)/)?(?P<username>[^:/]+)(?::(?P<password>.*))?@(?P<hostname>[a-zA-Z0-9.-]+):/(?P<share_name>[^/]+)(?P<filePath>/(?:[^/]*/)*[^/]+)$")
+        pattern = re.compile(r"^(?:(?P<domain_name>[a-zA-Z0-9._-]+)/)?(?P<username>[^:/]+)(?::(?P<password>.*))?@(?P<hostname>[a-zA-Z0-9.-]+)$")
         matches = pattern.search(arg.target)
         if matches is None:
-            raise Exception("{} is not valid. Expected format : [domain/]username[:password]@host:/share_name/path/to/file".format(arg.target))
-        domain_name, username, password, hostname, share_name, filePath = matches.groups()
+            raise Exception("{} is not valid. Expected format : [domain/]username[:password]@host".format(arg.target))
+        domain_name, username, password, hostname = matches.groups()
         if matches.group("domain_name") is None:
             domain_name = "."
         if matches.group("password") is None and arg.hashes is None:
@@ -36,8 +36,7 @@ class ImpacketConnection:
         else:
             lmhash = ''
             nthash = ''
-        return ImpacketConnection(debug=debug).login(hostname, domain_name, username, password, lmhash, nthash), share_name, filePath
-
+        return ImpacketConnection(debug=debug).login(hostname, domain_name, username, password, lmhash, nthash)
 
     def login(self, ip, domain_name, username, password, lmhash, nthash):
         try:
