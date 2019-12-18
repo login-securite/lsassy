@@ -26,6 +26,7 @@ git clone https://github.com/Hackndo/lsassy.git
 ```
 
 * Copy `lsassy.py` in `[CrackMapExec Path]/cme/modules`
+* Patch CrackMapExec file `cme > modules > smb > wmiexec.py` in `execute_handler` function: Replace `self.execute_fileless(data)` with `self.execute_remote(data)`. We need procdump output to be totally retrieved. This won't break anything in CME.
 * Reinstall CrackMapExec using python2.7 `python setup.py install`
 
 ```bash
