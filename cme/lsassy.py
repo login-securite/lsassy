@@ -144,7 +144,7 @@ class CMEModule:
             domain_name, username, password, host, self.share, os.path.join(self.tmp_dir, self.remote_lsass_dump)
         ).replace("\\", "/")
 
-        command = r"lsassy -j --hashes {}:{} {}".format(lmhash, nthash, py_arg, self.procdump_path + self.remote_lsass_dump)
+        command = r"lsassy -j --hashes {}:{} '{}'".format(lmhash, nthash, py_arg, self.procdump_path + self.remote_lsass_dump)
 
         # Parsing lsass dump remotely
         context.log.info('Parsing dump file with lsassy')
