@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=0.2.5&x2=0)](https://pypi.org/project/lsassy/)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=0.2.5&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)
 
 ![CME Module example](/assets/cme_lsassy.gif)
 
