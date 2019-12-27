@@ -1,5 +1,7 @@
 # lsassy CrackMapExec Module
 
+![CrackMapExec >= 4.0.1](https://img.shields.io/badge/CrackMapExec-%3E=4.0.1-red)
+
 This CME module uses **lsassy** to remotely extract lsass password, and optionnaly interacts with Bloodhound to **set compromised hosts as owned** and check if compromised users have a **path to domain admin**.
 
 ![CME Module example](/assets/cme_lsassy.gif)
