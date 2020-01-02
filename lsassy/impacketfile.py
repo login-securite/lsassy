@@ -3,16 +3,21 @@
 # Website:
 #  https://beta.hackndo.com
 
+import re
+
 
 class ImpacketFile:
-    def __init__(self):
+    def __init__(self, log):
+        self._log = log
         self._conn = None
         self._fpath = None
         self._currentOffset = 0
         self._total_read = 0
         self._tid = None
         self._fid = None
-        
+        self._fileInfo = None
+        self._endOfFile = None
+
         self._buffer_min_size = 1024 * 8
         self._buffer_data = {
             "offset": 0,
@@ -20,14 +25,14 @@ class ImpacketFile:
             "buffer": ""
         }
 
-    def open(self, connection, share_name, fpath):
+    def open(self, connection, path):
+        share_name, fpath = self._parse_path(path)
         self._conn = connection
         self._fpath = fpath
         self._tid = self._conn.connectTree(share_name)
         self._fid = self._conn.openFile(self._tid, self._fpath)
         self._fileInfo = self._conn.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]
-
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._conn.close()
@@ -62,7 +67,7 @@ class ImpacketFile:
         return value[:size]
 
     def close(self):
-        self._conn.close()
+        self._conn.closeFile(self._tid, self._fid)
 
     def seek(self, offset, whence=0):
         if whence == 0:
@@ -76,3 +81,11 @@ class ImpacketFile:
 
     def tell(self):
         return self._currentOffset
+
+    @staticmethod
+    def _parse_path(fpath):
+        pattern = re.compile(r"^(?P<share_name>[^/]+)(?P<filePath>/(?:[^/]*/)*[^/]+)$")
+        matches = pattern.search(fpath)
+        if matches is None:
+            raise Exception("{} is not valid. Expected format : shareName/path/to/dump (c$/Windows/Temp/lsass.dmp)".format(fpath))
+        return matches.groups()

