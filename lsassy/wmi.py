@@ -1,7 +1,4 @@
-import random
 import socket
-import string
-import time
 from impacket.dcerpc.v5.dcom import wmi
 from impacket.dcerpc.v5.dcomrt import DCOMConnection
 from impacket.dcerpc.v5.dtypes import NULL
@@ -47,25 +44,7 @@ class WMI:
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.conn.hostname, e))
 
     def execute(self, command):
-        share = "C$"
-        output = "\\Windows\\Temp\\" + ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase) for i in range(8))
-        command = 'cmd.exe /Q /c ' + command + ' 1> ' + '\\\\127.0.0.1\\%s' % share + output + ' 2>&1'
+        command = 'cmd.exe /Q /c ' + command
         self.log.debug("Command : %s" % command)
         self.win32Process.Create(command, "C:\\", None)
-        while True:
-            try:
-                self.conn.getFile(share, output, self._buffer_callback)
-                break
-            except Exception as e:
-                if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e):
-                    time.sleep(2)
-                    continue
-                raise e
-        self.log.debug("--- Output ---")
-        self.log.debug(self.buffer)
-        self.log.debug("--------------")
-        self.conn.deleteFile(share, output)
-        return_buffer = self.buffer
-        self.buffer = ""
         self.dcom.disconnect()
-        return return_buffer

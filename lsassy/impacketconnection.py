@@ -10,8 +10,8 @@ from socket import getaddrinfo, gaierror
 from lsassy.log import Logger
 
 class ImpacketConnection:
-    def __init__(self, conn=None, debug=False, quiet=False):
-        self._log = Logger(debug, quiet)
+    def __init__(self, conn=None, log=None):
+        self._log = log if log is not None else Logger()
         self.hostname = ""
         self.username = ""
         self.domain_name = ""
@@ -21,7 +21,7 @@ class ImpacketConnection:
         self.conn = conn
 
     @staticmethod
-    def from_args(arg, debug=False, quiet=False):
+    def from_args(arg, log):
         pattern = re.compile(r"^(?:(?P<domain_name>[a-zA-Z0-9._-]+)/)?(?P<username>[^:/]+)(?::(?P<password>.*))?@(?P<hostname>[a-zA-Z0-9.-]+)$")
         matches = pattern.search(arg.target)
         if matches is None:
@@ -42,7 +42,7 @@ class ImpacketConnection:
         else:
             lmhash = ''
             nthash = ''
-        return ImpacketConnection(debug=debug, quiet=quiet).login(hostname, domain_name, username, password, lmhash, nthash)
+        return ImpacketConnection(log=log).login(hostname, domain_name, username, password, lmhash, nthash)
 
     def login(self, ip, domain_name, username, password, lmhash, nthash):
         try:

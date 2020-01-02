@@ -7,7 +7,8 @@ import re
 
 
 class ImpacketFile:
-    def __init__(self):
+    def __init__(self, log):
+        self._log = log
         self._conn = None
         self._fpath = None
         self._currentOffset = 0

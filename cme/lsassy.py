@@ -140,7 +140,7 @@ class CMEModule:
             domain_name, username, password, host
         )
 
-        command = r"lsassy -j -q --hashes {}:{} -p '{}{}' '{}'".format(
+        command = r"lsassy -j -q --hashes {}:{} --dumppath '{}{}' '{}'".format(
             lmhash,
             nthash,
             self.share,
