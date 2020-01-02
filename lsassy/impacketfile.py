@@ -66,7 +66,7 @@ class ImpacketFile:
         return value[:size]
 
     def close(self):
-        self._conn.close()
+        self._conn.closeFile(self._tid, self._fid)
 
     def seek(self, offset, whence=0):
         if whence == 0:
@@ -86,5 +86,5 @@ class ImpacketFile:
         pattern = re.compile(r"^(?P<share_name>[^/]+)(?P<filePath>/(?:[^/]*/)*[^/]+)$")
         matches = pattern.search(fpath)
         if matches is None:
-            raise Exception("{} is not valid. Expected format : shareName/path/to/dump (c$/Windows/Temp/lsass.dmp)".format(fpathra))
+            raise Exception("{} is not valid. Expected format : shareName/path/to/dump (c$/Windows/Temp/lsass.dmp)".format(fpath))
         return matches.groups()

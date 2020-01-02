@@ -10,12 +10,18 @@ from socket import getaddrinfo, gaierror
 from lsassy.log import Logger
 
 class ImpacketConnection:
-    def __init__(self, conn=None, debug=False):
-        self._log = Logger(debug)
+    def __init__(self, conn=None, debug=False, quiet=False):
+        self._log = Logger(debug, quiet)
+        self.hostname = ""
+        self.username = ""
+        self.domain_name = ""
+        self.password = ""
+        self.lmhash = ""
+        self.nthash = ""
         self.conn = conn
 
     @staticmethod
-    def from_args(arg, debug=False):
+    def from_args(arg, debug=False, quiet=False):
         pattern = re.compile(r"^(?:(?P<domain_name>[a-zA-Z0-9._-]+)/)?(?P<username>[^:/]+)(?::(?P<password>.*))?@(?P<hostname>[a-zA-Z0-9.-]+)$")
         matches = pattern.search(arg.target)
         if matches is None:
@@ -36,7 +42,7 @@ class ImpacketConnection:
         else:
             lmhash = ''
             nthash = ''
-        return ImpacketConnection(debug=debug).login(hostname, domain_name, username, password, lmhash, nthash)
+        return ImpacketConnection(debug=debug, quiet=quiet).login(hostname, domain_name, username, password, lmhash, nthash)
 
     def login(self, ip, domain_name, username, password, lmhash, nthash):
         try:
@@ -44,12 +50,20 @@ class ImpacketConnection:
         except gaierror:
             raise Exception("No DNS found to resolve %s.\n"
                             "Please make sure that your DNS settings can resolve %s" % (ip, ip))
+
+        self.hostname = ip
+        self.domain_name = domain_name
+        self.username = username
+        self.password = password
+        self.lmhash = lmhash
+        self.nthash = nthash
+
         conn = SMBConnection(ip, ip)
         username = username.split("@")[0]
         self._log.debug("Authenticating against {}".format(ip))
         try:
             conn.login(username, password, domain=domain_name, lmhash=lmhash, nthash=nthash, ntlmFallback=True)
-            self._log.debug("Authenticated")
+            self._log.success("Authenticated")
         except SessionError as e:
             e_type, e_msg = e.getErrorString()
             self._log.error("{}: {}".format(e_type, e_msg))
@@ -122,6 +136,9 @@ class ImpacketConnection:
 
     def readFile(self, tid, fid, offset, size):
         return self.conn.readFile(tid, fid, offset, size, singleCall=False)
+
+    def closeFile(self, tid, fid):
+        return self.conn.closeFile(tid, fid)
 
     def close(self):
         self.conn.close()
