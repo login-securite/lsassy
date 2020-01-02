@@ -11,7 +11,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 |----------------------------------------------|---------------------------------------------------------|
 | [Requirements](#requirements)                | Requirements to install lsassy from source              |
 | [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
-| [Advanced Usage](#advanced-usage)            | Advanced usage (Dumping methods, execution methods, ...)|
+| [Advanced Usage](#advanced)            | Advanced usage (Dumping methods, execution methods, ...)|
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Examples](#examples)                        | Command line examples for standalone and CME module     |
 | [Installation](#installation)                | Installation commands from pip or from source           |
