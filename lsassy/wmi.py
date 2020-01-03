@@ -1,3 +1,6 @@
+# Based on Impacket wmiexec implementation by @agsolino
+# https://github.com/SecureAuthCorp/impacket/blob/429f97a894d35473d478cbacff5919739ae409b4/examples/wmiexec.py
+
 import socket
 from impacket.dcerpc.v5.dcom import wmi
 from impacket.dcerpc.v5.dcomrt import DCOMConnection
