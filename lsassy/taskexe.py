@@ -1,3 +1,6 @@
+# Based on Impacket atexec implementation by @agsolino
+# https://github.com/SecureAuthCorp/impacket/blob/429f97a894d35473d478cbacff5919739ae409b4/examples/atexec.py
+
 from impacket.dcerpc.v5 import tsch, transport
 from impacket.dcerpc.v5.dtypes import NULL
 import time
