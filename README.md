@@ -8,7 +8,7 @@ Python library to remotely extract credentials.
 
 Blog post : https://en.hackndo.com/remote-lsass-dump-passwords/
 
-This library uses [impacket](https://github.com/SecureAuthCorp/impacket) projects to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
+This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
 
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
