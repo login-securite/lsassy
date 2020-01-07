@@ -39,9 +39,7 @@ This tool can dump lsass in different ways.
 
 ### comsvcs.dll method (Default)
 
-This method **only uses built-in Windows files** to extract remote credentials. It uses **minidump**
-function from **comsvcs.dll** to dump **lsass** process. As this can only be done as **SYSTEM**, it creates a remote
-task as **SYSTEM**, runs it and then deletes it.
+This method **only uses built-in Windows files** to extract remote credentials. It uses **minidump** function from **comsvcs.dll** to dump **lsass** process. As this can only be done when context has **SeDebugPrivilege**, and a privileged cmd.exe doesn't have this privilege, it creates a remote task as **SYSTEM**, runs it and then deletes it.
 
 ```
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
