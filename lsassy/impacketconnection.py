@@ -80,6 +80,7 @@ class ImpacketConnection:
     def openFile(self, tid, fpath):
         while True:
             try:
+                self._log.debug("File {} opening".format(fpath))
                 fid = self.conn.openFile(tid, fpath, desiredAccess=FILE_READ_DATA)
                 self._log.debug("File {} opened".format(fpath))
                 return fid
