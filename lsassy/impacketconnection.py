@@ -85,7 +85,7 @@ class ImpacketConnection:
                 self._log.debug("File {} opened".format(fpath))
                 return fid
             except Exception as e:
-                if str(e).find('STATUS_SHARING_VIOLATION') >= 0:
+                if str(e).find('STATUS_SHARING_VIOLATION') >= 0 or str(e).find('STATUS_OBJECT_NAME_NOT_FOUND') >= 0:
                     # Output not finished, let's wait
                     time.sleep(2)
                 else:
