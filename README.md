@@ -20,6 +20,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 | [Installation](#installation)                | Installation commands from pip or from source           |
 | [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
+| [Contributors](#contributors)                | People contributing to this tool                        |
 
 ## Requirements
 
@@ -148,3 +149,8 @@ If you find an issue with this tool (that's very plausible !), please
 * [Impacket](https://github.com/SecureAuthCorp/impacket)
 * [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
+
+## Contributors
+
+* [ITPPA](https://github.com/ITPPA/)
+* [viaccoz](https://github.com/viaccoz)
