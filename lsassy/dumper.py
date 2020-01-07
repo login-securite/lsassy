@@ -81,9 +81,10 @@ class Dumper:
                     exec_completed = True
                     break
                 except Exception as e:
-                    pass
-            self._log.error("Could not dump lsass")
-            exit(1)
+                    self._log.debug("Error : {}".format(str(e)))
+            if not exec_completed:
+                self._log.error("Could not dump lsass")
+                exit(1)
 
     def clean(self):
         if self.dump_method is None:
