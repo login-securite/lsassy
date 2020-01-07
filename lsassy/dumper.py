@@ -31,7 +31,7 @@ class Dumper:
             self._log.error("Incorrect dump method. Currently supported : procdump, dll")
             exit(1)
 
-        self._log.success("Process lsass.exe was successfully dumped")
+        self._log.success("Process lsass.exe is being dumped")
         return (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/")
 
     def dlldump(self):
@@ -91,7 +91,7 @@ class Dumper:
             exit(1)
 
         try:
-            # self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
+            self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.success('Deleted lsass dump')
         except Exception as e:
             self._log.error('Error deleting lsass dump : {}'.format(e))
