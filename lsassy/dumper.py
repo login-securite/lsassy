@@ -91,7 +91,7 @@ class Dumper:
             exit(1)
 
         try:
-            # self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
+            self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.success('Deleted lsass dump')
         except Exception as e:
             self._log.error('Error deleting lsass dump : {}'.format(e))
