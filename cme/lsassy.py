@@ -154,7 +154,10 @@ class CMEModule:
         context.log.highlight(output)
 
     def set_as_owned(self, context, connection):
-        from neo4j.v1 import GraphDatabase
+        try:
+            from neo4j.v1 import GraphDatabase
+        except:
+            from neo4j import GraphDatabase
         from neo4j.exceptions import AuthError, ServiceUnavailable
         host_fqdn = (connection.hostname + "." + connection.domain).upper()
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)
@@ -184,7 +187,10 @@ class CMEModule:
         driver.close()
 
     def bloodhound_analysis(self, context, connection, username):
-        from neo4j.v1 import GraphDatabase
+        try:
+            from neo4j.v1 import GraphDatabase
+        except:
+            from neo4j import GraphDatabase
         from neo4j.exceptions import AuthError, ServiceUnavailable
         username = (username + "@" + connection.domain).upper().replace("\\", "\\\\")
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)
