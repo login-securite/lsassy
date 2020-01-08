@@ -83,7 +83,7 @@ lsassy [--hashes [LM:]NT] --dumppath /share/path/to/dump.dmp [<domain>/]<user>[:
 
 I wrote a CrackMapExec module that uses **lsassy** to extract credentials on compromised hosts
 
-CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo/lsassy/cme/)
+CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo/lsassy/tree/master/cme)
 
 ## Examples
 
