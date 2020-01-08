@@ -47,7 +47,5 @@ class WMI:
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.conn.hostname, e))
 
     def execute(self, command):
-        command = 'cmd.exe /Q /c ' + command
-        self.log.debug("Command : %s" % command)
         self.win32Process.Create(command, "C:\\", None)
         self.dcom.disconnect()

