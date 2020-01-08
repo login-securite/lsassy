@@ -41,7 +41,7 @@ lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
 This tool can dump lsass in different ways.
 
 Dumping methods (`-m` or `--method`)
-* **0**: Try all methods to dump procdump, stop on success (Requires -p if dll fails)
+* **0**: Try all methods (dll then procdump) to dump lsass, stop on success (Requires -p if dll method fails)
 * **1**: comsvcs.dll method, stop on success (default)
 * **2**: Procdump method, stop on success (Requires -p)
 * **3**: comsvcs.dll + Powershell method, stop on success
