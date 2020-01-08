@@ -2,7 +2,7 @@
 
 [![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.0&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
-![CME Module example](/assets/example.png)
+![CME Module example](https://github.com/Hackndo/lsassy/assets/example.png)
 
 Python library to remotely extract credentials.
 
@@ -83,7 +83,7 @@ lsassy [--hashes [LM:]NT] --dumppath /share/path/to/dump.dmp [<domain>/]<user>[:
 
 I wrote a CrackMapExec module that uses **lsassy** to extract credentials on compromised hosts
 
-CrackMapExec module is in `cme` folder : [CME Module](/cme/)
+CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo/lsassy/cme/)
 
 ## Examples
 
@@ -126,6 +126,14 @@ python3.7 setup.py install
 ### ChangeLog
 
 ```
+v1.1.0
+------
+* Better execution process : --method flag has been added and described in help text
+* Uses random dump name
+* Chose between cmd, powershell, dll and/or procdump methods
+* CME module is now using light lsassy WMIExec et TASKExec implementation
+* Bug fixes
+
 v1.0.0
 ------
 * Built-in lsass dump
