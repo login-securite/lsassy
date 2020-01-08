@@ -172,7 +172,8 @@ class CMEModule:
             context.log.error("Neo4J does not seem to be available on {}. See --options".format(uri))
             sys.exit()
         except Exception as e:
-            context.log.error("Unexpected error : {}".format(e))
+            context.log.error("Unexpected error with Neo4J")
+            context.log.debug("Error : ".format(str(e)))
             sys.exit()
 
         with driver.session() as session:
@@ -205,7 +206,8 @@ class CMEModule:
             context.log.error("Neo4J does not seem to be available on {}. See --options".format(uri))
             return False
         except Exception as e:
-            context.log.error("Unexpected error : {}".format(e))
+            context.log.error("Unexpected error with Neo4J")
+            context.log.debug("Error : ".format(str(e)))
             return False
 
         edges = [

