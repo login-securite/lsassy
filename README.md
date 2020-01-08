@@ -35,23 +35,40 @@ lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
 
 ## Advanced
 
+### Dumping methods
+
 This tool can dump lsass in different ways.
 
-### comsvcs.dll method (Default)
+Dumping methods (`-m` or `--method`)
+* **0**: Try all methods to dump procdump, stop on success (Requires -p if dll fails)
+* **1**: comsvcs.dll method, stop on success (default)
+* **2**: Procdump method, stop on success (Requires -p)
+* **3**: comsvcs.dll + Powershell method, stop on success
+* **4**: comsvcs.dll + cmd.exe method
 
-This method **only uses built-in Windows files** to extract remote credentials. It uses **minidump** function from **comsvcs.dll** to dump **lsass** process. As this can only be done when context has **SeDebugPrivilege**, and a privileged cmd.exe doesn't have this privilege, it creates a remote task as **SYSTEM**, runs it and then deletes it.
+#### comsvcs.dll method
 
-```
-lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
-```
+This method **only uses built-in Windows files** to extract remote credentials. It uses **minidump** function from **comsvcs.dll** to dump **lsass** process.
 
-### Procdump method
+This method can only be used when context has **SeDebugPrivilege**. This privilege is either in Powershell local admin context, or cmd.exe SYSTEM context.
+
+Two execution methods can be used.
+1. **WMIExec** with cmd.exe (no SeDebugPrivilege), or powershell (SeDebugPrivilege)
+2. **ScheduledTasks** with SYSTEM context (SeDebugPrivilege)
+
+#### Procdump method
 
 This method uploads **procdump.exe** from SysInternals to dump **lsass** process. It will first try to execute
 procdump using WMI, and if it fails it will create a remote task, execute it and delete it.
 
-```
-lsassy [--hashes [LM:]NT] -p /path/to/procdump.exe [<domain>/]<user>[:<password>]@<target>
+#### Examples
+
+```bash
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 0 -p /path/to/procdump.exe
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 1
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 2 -p /path/to/procdump.exe
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 3
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 4
 ```
 
 ### Remote parsing only
