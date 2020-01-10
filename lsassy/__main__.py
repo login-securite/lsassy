@@ -73,7 +73,7 @@ def run():
 
     if len(sys.argv) == 1:
         parser.print_help()
-        return 0
+        return 1
 
     args = parser.parse_args()
 
@@ -87,7 +87,7 @@ def run():
         ifile = dumper.dump()
         if not ifile:
             logger.error("Process lsass.exe could not be dumped")
-            return 1
+            return 2
         logger.success("Process lsass.exe has been dumped")
     else:
         ifile = ImpacketFile(conn, logger)
@@ -96,7 +96,7 @@ def run():
         except Exception as e:
             logger.error("lsass dump file does not exist. Use --debug flag and open an issue")
             logger.debug("Error : {}".format(str(e)))
-            return 2
+            return 3
     dumpfile = pypykatz.parse_minidump_external(ifile)
     ifile.close()
     parser = Parser(dumpfile, logger)
@@ -105,6 +105,7 @@ def run():
     if dumper is not None:
         dumper.clean()
     conn.close()
+    return 0
 
 
 if __name__ == '__main__':
