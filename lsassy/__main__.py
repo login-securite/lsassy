@@ -54,7 +54,7 @@ def run():
     4: comsvcs.dll + cmd.exe method''')
     group_dump.add_argument('--dumpname', action='store', help='Name given to lsass dump (Default: Random)')
     group_dump.add_argument('-p', '--procdump', action='store', help='Procdump path')
-    group_dump.add_argument('--timeout', default="10", action='store', help='Timeout before considering procdump was not dumped successfully')
+    group_dump.add_argument('--timeout', default="10", action='store', help='Timeout before considering lsass was not dumped successfully')
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('--hashes', action='store', help='[LM:]NT hash')
