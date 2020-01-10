@@ -94,7 +94,7 @@ def run():
         try:
             ifile.open(args.dumppath)
         except Exception as e:
-            logger.error("lsass dump file does not exist. Use --debug flag and open an issue")
+            logger.error("lsass dump file does not exist. Use --debug flag for more details")
             logger.debug("Error : {}".format(str(e)))
             return 3
     dumpfile = pypykatz.parse_minidump_external(ifile)

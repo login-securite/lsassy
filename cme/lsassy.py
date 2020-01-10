@@ -22,7 +22,7 @@ class CMEModule:
         """
             METHOD              Method to use to dump procdump with lsassy. See lsassy -h for more details
             REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: Random)
-            PROCDUMP_PATH       Path to procdump on attacker host. If this is not set, "rundll32" method is used
+            PROCDUMP_PATH       Path to procdump on attacker host (Required for method 2)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
