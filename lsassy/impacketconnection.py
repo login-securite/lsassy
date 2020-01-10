@@ -88,9 +88,9 @@ class ImpacketConnection:
             except Exception as e:
                 if str(e).find('STATUS_SHARING_VIOLATION') >= 0 or str(e).find('STATUS_OBJECT_NAME_NOT_FOUND') >= 0:
                     # Output not finished, let's wait
-                    if time.time() - start > timeout:
+                    if time.time() - start > int(timeout):
                         raise(Exception(e))
-                    time.sleep(2)
+                    time.sleep(1)
                 else:
                     raise Exception(e)
 

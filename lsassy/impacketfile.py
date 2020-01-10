@@ -7,9 +7,9 @@ import re
 
 
 class ImpacketFile:
-    def __init__(self, log):
+    def __init__(self, connection, log):
         self._log = log
-        self._conn = None
+        self._conn = connection
         self._fpath = None
         self._currentOffset = 0
         self._total_read = 0
@@ -25,14 +25,14 @@ class ImpacketFile:
             "buffer": ""
         }
 
-    def open(self, connection, path):
+    def open(self, path, timeout=60):
         share_name, fpath = self._parse_path(path)
-        self._conn = connection
         self._fpath = fpath
         self._tid = self._conn.connectTree(share_name)
-        self._fid = self._conn.openFile(self._tid, self._fpath)
+        self._fid = self._conn.openFile(self._tid, self._fpath, timeout=timeout)
         self._fileInfo = self._conn.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._conn.close()
@@ -81,6 +81,9 @@ class ImpacketFile:
 
     def tell(self):
         return self._currentOffset
+
+    def size(self):
+        return self._endOfFile
 
     @staticmethod
     def _parse_path(fpath):
