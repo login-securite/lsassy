@@ -86,16 +86,16 @@ class CMEModule:
             domain_name, username, password, host
         )
 
-        command = r"lsassy -j --timeout 1 --hashes {}:{} '{}'".format(
+        command = r"lsassy -j --hashes {}:{} '{}'".format(
             lmhash,
             nthash,
             py_arg
         )
 
-        if not context.verbose:
-            command += " -q "
-        else:
+        if context.verbose:
             command += " -d "
+        else:
+            command += " -q "
 
         if self.method:
             command += " -m {}".format(self.method)
@@ -107,7 +107,7 @@ class CMEModule:
             command += " --procdump {}".format(self.procdump_path)
 
         # Parsing lsass dump remotely
-        context.log.info('Parsing dump file with lsassy')
+        context.log.info('Parsing lsass with lsassy')
         context.log.debug('Lsassy command : {}'.format(command))
         code, out, err = self.run(command)
 
@@ -123,7 +123,7 @@ class CMEModule:
             for line in err.split("\n"):
                 context.log.debug('{}'.format(line))
             context.log.debug('-----   end error  -----')
-        else:
+        elif not context.verbose:
             self.process_credentials(context, connection, out)
 
     @staticmethod
