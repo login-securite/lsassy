@@ -1,23 +1,23 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.2&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.3&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 ![CME Module example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
 
-Python library to remotely extract credentials.
+Python library to remotely extract credentials. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
 
-Blog post : https://en.hackndo.com/remote-lsass-dump-passwords/
+You can check the [wiki](https://github.com/Hackndo/lsassy/wiki)
 
 This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
 
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
 | [Requirements](#requirements)                | Requirements to install lsassy from source              |
+| [Installation](#installation)                | Installation commands from pip or from source           |
 | [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
 | [Advanced Usage](#advanced)                  | Advanced usage (Dumping methods, execution methods, ...)|
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Examples](#examples)                        | Command line examples for standalone and CME module     |
-| [Installation](#installation)                | Installation commands from pip or from source           |
 | [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
 | [Contributors](#contributors)                | People contributing to this tool                        |
@@ -27,6 +27,20 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 * Python >= 3.6
 * [pypykatz](https://github.com/skelsec/pypykatz) >= 0.3.0
 * [impacket](https://github.com/SecureAuthCorp/impacket)
+
+## Installation
+
+### From pip
+
+```
+python3.7 -m pip install lsassy
+```
+
+### From sources
+
+```
+python3.7 setup.py install
+```
 
 ## Basic Usage
 
@@ -41,7 +55,7 @@ lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target>
 This tool can dump lsass in different ways.
 
 Dumping methods (`-m` or `--method`)
-* **0**: Try all methods to dump procdump, stop on success (Requires -p if dll fails)
+* **0**: Try all methods (dll then procdump) to dump lsass, stop on success (Requires -p if dll method fails)
 * **1**: comsvcs.dll method, stop on success (default)
 * **2**: Procdump method, stop on success (Requires -p)
 * **3**: comsvcs.dll + Powershell method, stop on success
@@ -108,20 +122,6 @@ lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrator@desktop01.adsec.l
 
 ```
 crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound
-```
-
-## Installation
-
-### From pip
-
-```
-python3.7 -m pip install lsassy
-```
-
-### From sources
-
-```
-python3.7 setup.py install
 ```
 
 ### ChangeLog

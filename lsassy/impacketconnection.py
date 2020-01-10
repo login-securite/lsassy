@@ -77,9 +77,16 @@ class ImpacketConnection:
     def connectTree(self, share_name):
         return self.conn.connectTree(share_name)
 
-    def openFile(self, tid, fpath, timeout=60):
+    def openFile(self, tid, fpath, timeout=10):
         self._log.debug("Opening file {}".format(fpath))
         start = time.time()
+
+        try:
+            timeout = float(timeout)
+        except ValueError as e:
+            self._log.debug("Timeout value \"{}\" is not valid. Timeout was set to 10".format(str(timeout)))
+            timeout = 10
+
         while True:
             try:
                 fid = self.conn.openFile(tid, fpath, desiredAccess=FILE_READ_DATA)
@@ -90,7 +97,7 @@ class ImpacketConnection:
                     # Output not finished, let's wait
                     if time.time() - start > timeout:
                         raise(Exception(e))
-                    time.sleep(2)
+                    time.sleep(1)
                 else:
                     raise Exception(e)
 
