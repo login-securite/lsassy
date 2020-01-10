@@ -16,22 +16,14 @@ This CME module uses **lsassy** to remotely extract lsass password, and optional
 
 ## Installation
 
-* Clone git repo
-
-From SSH: (Need Github account with ssh key)
-```bash
-git clone git@github.com:Hackndo/lsassy.git
-```
-From Https: (Without Github account)
-```bash
-git clone https://github.com/Hackndo/lsassy.git
-```
-
+* Install **lsassy**
+* Download [lsassy CrackMapExec module](https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy.py)
 * Copy `lsassy.py` in `[CrackMapExec Path]/cme/modules`
 * Reinstall CrackMapExec using python2.7 `python setup.py install`
 
 ```bash
-cd lsassy/cme
+python3 -m pip install lsassy
+wget https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy.py
 cp lsassy.py /opt/CrackMapExec/cme/modules/
 cd /opt/CrackMapExec
 python setup.py install
