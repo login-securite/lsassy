@@ -97,6 +97,7 @@ class Dumper:
                         (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/"),
                         timeout=self._timeout
                     )
+
                     if ifile.size() < 100 and ifile.read(6).decode('utf-8') == "FAILED":
                         self._log.error("lsass is protected")
                         ifile.close()
@@ -104,8 +105,14 @@ class Dumper:
                     ifile.seek(0)
                     return ifile
                 except Exception as e:
-                    self._log.error("No dump file found. Target could be slow (Try to increase --timeout)")
+                    self._log.warn("No dump file found with \"{}\" using \"{}\" exec method.".format(dump_method, exec_shell))
                     self._log.debug("Error : {}".format(str(e)))
+
+        """
+        If no dump file was found, it means that procdump didn't crash, so it may take more time than expected.
+        """
+        self._log.warn("Target could be slow. Try to increase --timeout value")
+        return False
 
     def dll_dump(self, exec_methods=("wmi", "task"), exec_shell="cmd"):
         if exec_shell == "cmd":

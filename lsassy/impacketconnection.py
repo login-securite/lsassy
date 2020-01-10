@@ -77,9 +77,16 @@ class ImpacketConnection:
     def connectTree(self, share_name):
         return self.conn.connectTree(share_name)
 
-    def openFile(self, tid, fpath, timeout=60):
+    def openFile(self, tid, fpath, timeout=10):
         self._log.debug("Opening file {}".format(fpath))
         start = time.time()
+
+        try:
+            timeout = float(timeout)
+        except ValueError as e:
+            self._log.debug("Timeout value \"{}\" is not valid. Timeout was set to 10".format(str(timeout)))
+            timeout = 10
+
         while True:
             try:
                 fid = self.conn.openFile(tid, fpath, desiredAccess=FILE_READ_DATA)
@@ -88,7 +95,7 @@ class ImpacketConnection:
             except Exception as e:
                 if str(e).find('STATUS_SHARING_VIOLATION') >= 0 or str(e).find('STATUS_OBJECT_NAME_NOT_FOUND') >= 0:
                     # Output not finished, let's wait
-                    if time.time() - start > int(timeout):
+                    if time.time() - start > timeout:
                         raise(Exception(e))
                     time.sleep(1)
                 else:
