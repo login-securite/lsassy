@@ -158,7 +158,12 @@ class Dumper:
         # Upload procdump
         self._log.debug('Copy {} to {}'.format(self._procdump_path, self._tmp_dir))
         with open(self._procdump_path, 'rb') as procdump:
-            self._conn.putFile(self._share, self._tmp_dir + self._procdump, procdump.read)
+            try:
+                self._conn.putFile(self._share, self._tmp_dir + self._procdump, procdump.read)
+            except Exception as e:
+                self._log.error("Couldn't upload procdump.")
+                self._log.debug("Error : {}".format(e))
+                return False
         self.procdump = True
 
         # Dump lsass using PID
