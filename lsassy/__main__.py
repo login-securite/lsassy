@@ -65,7 +65,7 @@ def run():
     group_extract = parser.add_argument_group('remote parsing only')
     group_extract.add_argument('--dumppath', action='store', help='lsass dump path (Format : c$/Temp/lsass.dmp)')
 
-    parser.add_argument('-r', '--raw', action='store_true', help='No basic result filtering')
+    parser.add_argument('-r', '--raw', action='store_true', help='No basic result filtering (Display host credentials and duplicates)')
     parser.add_argument('-d', '--debug', action='store_true', help='Debug output')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
