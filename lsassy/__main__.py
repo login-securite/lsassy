@@ -79,7 +79,12 @@ def run():
 
     logger = Logger(args.debug, args.quiet)
 
-    conn = ImpacketConnection.from_args(args, logger)
+    try:
+        conn = ImpacketConnection.from_args(args, logger)
+    except Exception as e:
+        logger.error("Connexion refused")
+        logger.debug("Error : {}".format(e))
+        return 2
 
     dumper = None
     if not args.dumppath:
@@ -87,7 +92,7 @@ def run():
         ifile = dumper.dump()
         if not ifile:
             logger.error("Process lsass.exe could not be dumped")
-            return 2
+            return 3
         logger.success("Process lsass.exe has been dumped")
     else:
         ifile = ImpacketFile(conn, logger)
@@ -96,7 +101,7 @@ def run():
         except Exception as e:
             logger.error("lsass dump file does not exist. Use --debug flag for more details")
             logger.debug("Error : {}".format(str(e)))
-            return 3
+            return 4
     dumpfile = pypykatz.parse_minidump_external(ifile)
     ifile.close()
     parser = Parser(dumpfile, logger)
