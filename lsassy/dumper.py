@@ -193,7 +193,8 @@ class Dumper:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.success('Deleted lsass dump')
         except Exception as e:
-            self._log.error('Error deleting lsass dump')
+            if "STATUS_OBJECT_NAME_NOT_FOUND" not in str(e):
+                self._log.error('Error deleting lsass dump')
             self._log.debug("Error : {}".format(str(e)))
 
         if self.procdump:

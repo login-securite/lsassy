@@ -21,31 +21,43 @@ class WMI:
         self.buffer += str(data)
 
     def _getwin32process(self):
-        self.log.debug("Trying to authenticate using {}\\{}:{}".format(
+        self.log.debug("Trying to authenticate using : {}\\{}:{}".format(
             self.conn.domain_name,
             self.conn.username,
             self.conn.password)
         )
-        self.dcom = DCOMConnection(
-            self.conn.hostname,
-            self.conn.username,
-            self.conn.password,
-            self.conn.domain_name,
-            self.conn.lmhash,
-            self.conn.nthash,
-            None,
-            oxidResolver=True,
-            doKerberos=False
-        )
+
         try:
+            self.dcom = DCOMConnection(
+                self.conn.hostname,
+                self.conn.username,
+                self.conn.password,
+                self.conn.domain_name,
+                self.conn.lmhash,
+                self.conn.nthash,
+                None,
+                oxidResolver=True,
+                doKerberos=False
+            )
             iInterface = self.dcom.CoCreateInstanceEx(wmi.CLSID_WbemLevel1Login, wmi.IID_IWbemLevel1Login)
             iWbemLevel1Login = wmi.IWbemLevel1Login(iInterface)
             iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
             iWbemLevel1Login.RemRelease()
             self.win32Process, _ = iWbemServices.GetObject('Win32_Process')
+        except KeyboardInterrupt as e:
+            self.dcom.disconnect()
+            raise KeyboardInterrupt(e)
         except Exception as e:
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.conn.hostname, e))
 
     def execute(self, command):
-        self.win32Process.Create(command, "C:\\", None)
-        self.dcom.disconnect()
+        try:
+            self.win32Process.Create(command, "C:\\", None)
+            self.dcom.disconnect()
+        except KeyboardInterrupt as e:
+            self.log.debug("WMI Execution stopped because of keyboard interruption")
+            self.dcom.disconnect()
+            raise KeyboardInterrupt(e)
+        except Exception as e:
+            self.log.debug("Error : {}".format(e))
+            self.dcom.disconnect()
