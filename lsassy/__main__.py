@@ -82,9 +82,13 @@ def run():
     try:
         conn = ImpacketConnection.from_args(args, logger)
     except Exception as e:
-        logger.error("Connexion refused")
+        logger.error("Connexion error")
         logger.debug("Error : {}".format(e))
         return 2
+
+    if not conn.isadmin():
+        logger.error("Administrative rights on remote host are required")
+        return 3
 
     dumper = None
     if not args.dumppath:

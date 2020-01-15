@@ -9,6 +9,7 @@ from impacket.smb3structs import FILE_READ_DATA
 from socket import getaddrinfo, gaierror
 from lsassy.log import Logger
 
+
 class ImpacketConnection:
     def __init__(self, conn=None, log=None):
         self._log = log if log is not None else Logger()
@@ -150,6 +151,13 @@ class ImpacketConnection:
 
     def closeFile(self, tid, fid):
         return self.conn.closeFile(tid, fid)
+
+    def isadmin(self):
+        try:
+            self.connectTree("C$")
+            return True
+        except Exception as e:
+            return False
 
     def close(self):
         self.conn.close()

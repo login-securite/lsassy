@@ -138,7 +138,7 @@ class Dumper:
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.error("Exec method {} failed.".format(exec_method))
+                    self._log.error("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug('Error : {}'.format(e))
             return False
 
@@ -184,7 +184,7 @@ class Dumper:
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.error("Exec method {} failed.".format(exec_method))
+                    self._log.error("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
             return False
 
