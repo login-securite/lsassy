@@ -1,10 +1,16 @@
+# Author:
+#  Romain Bentz (pixis - @hackanddo)
+# Website:
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
+
 import os
 import random
 import string
 
 from lsassy.impacketfile import ImpacketFile
-from lsassy.wmi import WMI
 from lsassy.taskexe import TASK_EXEC
+from lsassy.wmi import WMI
 
 
 class Dumper:
@@ -138,7 +144,7 @@ class Dumper:
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.error("Exec method {} failed.".format(exec_method))
+                    self._log.error("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug('Error : {}'.format(e))
             return False
 
@@ -184,7 +190,7 @@ class Dumper:
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.error("Exec method {} failed.".format(exec_method))
+                    self._log.error("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
             return False
 
@@ -193,7 +199,8 @@ class Dumper:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
             self._log.success('Deleted lsass dump')
         except Exception as e:
-            self._log.error('Error deleting lsass dump')
+            if "STATUS_OBJECT_NAME_NOT_FOUND" not in str(e):
+                self._log.error('Error deleting lsass dump')
             self._log.debug("Error : {}".format(str(e)))
 
         if self.procdump:

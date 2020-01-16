@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.4&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.5&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 ![CME Module example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
 
@@ -17,7 +17,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 | [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
 | [Advanced Usage](#advanced)                  | Advanced usage (Dumping methods, execution methods, ...)|
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
-| [Examples](#examples-1)                        | Command line examples for standalone and CME module     |
+| [Examples](#examples-1)                      | Command line examples for standalone and CME module     |
 | [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
 | [Contributors](#contributors)                | People contributing to this tool                        |

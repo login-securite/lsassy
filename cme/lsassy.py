@@ -1,14 +1,12 @@
 # Author:
 #  Romain Bentz (pixis - @hackanddo)
 # Website:
-#  https://beta.hackndo.com
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
 
-import os
-import sys
-import re
-import time
-import subprocess
 import json
+import subprocess
+import sys
 
 
 class CMEModule:

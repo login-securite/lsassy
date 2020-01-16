@@ -1,9 +1,11 @@
 # Author:
 #  Romain Bentz (pixis - @hackanddo)
 # Website:
-#  https://beta.hackndo.com
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
 
 import pathlib
+
 from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
@@ -11,7 +13,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="lsassy",
-    version="1.1.4",
+    version="1.1.5",
     author="Pixis",
     author_email="hackndo@gmail.com",
     description="Python library to parse remote lsass dumps",
