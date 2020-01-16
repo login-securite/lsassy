@@ -1,3 +1,9 @@
+# Author:
+#  Romain Bentz (pixis - @hackanddo)
+# Website:
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
+
 # Based on Impacket atexec implementation by @agsolino
 # https://github.com/SecureAuthCorp/impacket/blob/429f97a894d35473d478cbacff5919739ae409b4/examples/atexec.py
 

@@ -1,3 +1,9 @@
+# Author:
+#  Romain Bentz (pixis - @hackanddo)
+# Website:
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
+
 import json
 
 from lsassy.log import Logger
