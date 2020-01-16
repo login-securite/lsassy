@@ -3,10 +3,14 @@
 # Website:
 #  https://beta.hackndo.com
 
-import time, re, sys
-from impacket.smbconnection import SMBConnection, SessionError
-from impacket.smb3structs import FILE_READ_DATA
+import re
+import sys
+import time
 from socket import getaddrinfo, gaierror
+
+from impacket.smb3structs import FILE_READ_DATA
+from impacket.smbconnection import SMBConnection, SessionError
+
 from lsassy.log import Logger
 
 

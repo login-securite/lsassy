@@ -5,15 +5,16 @@
 # Website:
 #  https://beta.hackndo.com
 
-import pkg_resources
 import sys
-import signal
+
+import pkg_resources
 from pypykatz.pypykatz import pypykatz
+
+from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
-from lsassy.parser import Parser
-from lsassy.dumper import Dumper
 from lsassy.log import Logger
+from lsassy.parser import Parser
 
 version = pkg_resources.require("lsassy")[0].version
 

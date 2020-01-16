@@ -1,8 +1,9 @@
 import json
+
 from lsassy.log import Logger
 
 
-class Parser():
+class Parser:
     def __init__(self, pypydump, log):
         self._pypydump = pypydump
         self._log = log

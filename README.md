@@ -17,7 +17,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 | [Basic Usage](#basic-usage)                  | Command line template for standalone version            |
 | [Advanced Usage](#advanced)                  | Advanced usage (Dumping methods, execution methods, ...)|
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
-| [Examples](#examples-1)                        | Command line examples for standalone and CME module     |
+| [Examples](#examples-1)                      | Command line examples for standalone and CME module     |
 | [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
 | [Contributors](#contributors)                | People contributing to this tool                        |

@@ -3,8 +3,8 @@ import random
 import string
 
 from lsassy.impacketfile import ImpacketFile
-from lsassy.wmi import WMI
 from lsassy.taskexe import TASK_EXEC
+from lsassy.wmi import WMI
 
 
 class Dumper:
