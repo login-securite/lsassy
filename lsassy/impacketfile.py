@@ -5,7 +5,8 @@
 #  https://en.hackndo.com [EN]
 
 import re
-
+from lsassy.utils import *
+from lsassy.defines import *
 
 class ImpacketFile:
     def __init__(self, connection, log):
@@ -29,8 +30,15 @@ class ImpacketFile:
     def open(self, path, timeout=60):
         share_name, fpath = self._parse_path(path)
         self._fpath = fpath
-        self._tid = self._conn.connectTree(share_name)
-        self._fid = self._conn.openFile(self._tid, self._fpath, timeout=timeout)
+        try:
+            self._tid = self._conn.connectTree(share_name)
+        except Exception as e:
+            return RetCode(ERROR_SHARE, e)
+        try:
+            self._fid = self._conn.openFile(self._tid, self._fpath, timeout=timeout)
+        except Exception as e:
+            return RetCode(ERROR_FILE, e)
+
         self._fileInfo = self._conn.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]
         return self

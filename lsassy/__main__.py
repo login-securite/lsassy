@@ -15,6 +15,8 @@ from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
 from lsassy.log import Logger
 from lsassy.parser import Parser
+from lsassy.utils import *
+from lsassy.defines import *
 
 version = pkg_resources.require("lsassy")[0].version
 
@@ -75,48 +77,48 @@ def run():
 
     if len(sys.argv) == 1:
         parser.print_help()
-        return 1
+        sys.exit(RetCode(ERROR_MISSING_ARGUMENTS).error_code)
 
     args = parser.parse_args()
-
     logger = Logger(args.debug, args.quiet)
 
-    try:
-        conn = ImpacketConnection.from_args(args, logger)
-    except Exception as e:
-        logger.error("Connexion error")
-        logger.debug("Error : {}".format(e))
-        return 2
+    conn = ImpacketConnection.from_args(args, logger)
 
-    if not conn.isadmin():
-        logger.error("Administrative rights on remote host are required")
-        return 3
+    if isinstance(conn, RetCode):
+        return_code = conn
+        lsassy_exit(logger, return_code)
+
+    return_code = conn.isadmin()
+    if not return_code.success():
+        conn.close()
+        lsassy_exit(logger, return_code)
 
     dumper = None
     ifile = None
+
     try:
         if not args.dumppath:
             dumper = Dumper(conn, args, logger)
             ifile = dumper.dump()
-            if not ifile:
-                logger.error("Process lsass.exe could not be dumped")
-                return 4
-            logger.success("Process lsass.exe has been dumped")
+            if isinstance(ifile, RetCode):
+                return_code = ifile
+            else:
+                logger.success("Process lsass.exe has been dumped")
         else:
-            ifile = ImpacketFile(conn, logger)
-            try:
-                ifile.open(args.dumppath)
-            except Exception as e:
-                logger.error("lsass dump file does not exist. Use --debug flag for more details")
-                logger.debug("Error : {}".format(str(e)))
-                return 5
-        dumpfile = pypykatz.parse_minidump_external(ifile)
-        ifile.close()
-        parser = Parser(dumpfile, logger)
-        parser.output(args)
+            ifile = ImpacketFile(conn, logger).open(args.dumppath)
+            if not isinstance(ifile, ImpacketFile):
+                return_code = ifile
+
+        if return_code.success():
+            dumpfile = pypykatz.parse_minidump_external(ifile)
+            ifile.close()
+            parser = Parser(dumpfile, logger)
+            parser.output(args)
     except KeyboardInterrupt as e:
         print("\nQuitting gracefully...")
+        return_code = RetCode(ERROR_USER_INTERRUPTION)
     except Exception as e:
+        return_code = RetCode(ERROR_UNDEFINED, e)
         pass
     finally:
         try:
@@ -126,7 +128,7 @@ def run():
         if dumper is not None:
             dumper.clean()
         conn.close()
-        sys.exit(0)
+        lsassy_exit(logger, return_code)
 
 
 if __name__ == '__main__':
