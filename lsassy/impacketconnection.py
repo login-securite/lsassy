@@ -13,6 +13,7 @@ from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
 
 from lsassy.log import Logger
+from lsassy.defines import *
 
 
 class ImpacketConnection:
@@ -31,7 +32,8 @@ class ImpacketConnection:
         pattern = re.compile(r"^(?:(?P<domain_name>[a-zA-Z0-9._-]+)/)?(?P<username>[^:/]+)(?::(?P<password>.*))?@(?P<hostname>[a-zA-Z0-9.-]+)$")
         matches = pattern.search(arg.target)
         if matches is None:
-            raise Exception("{} is not valid. Expected format : [domain/]username[:password]@host".format(arg.target))
+            log.warn("{} is not valid. Expected format : [domain/]username[:password]@host".format(arg.target))
+            return RetCode(ERROR_INVALID_FORMAT)
         domain_name, username, password, hostname = matches.groups()
         if matches.group("domain_name") is None:
             domain_name = "."
@@ -53,9 +55,8 @@ class ImpacketConnection:
     def login(self, ip, domain_name, username, password, lmhash, nthash):
         try:
             ip = list({addr[-1][0] for addr in getaddrinfo(ip, 0, 0, 0, 0)})[0]
-        except gaierror:
-            raise Exception("No DNS found to resolve %s.\n"
-                            "Please make sure that your DNS settings can resolve %s" % (ip, ip))
+        except gaierror as e:
+            return RetCode(ERROR_DNS_ERROR, e)
 
         self.hostname = ip
         self.domain_name = domain_name
@@ -64,19 +65,21 @@ class ImpacketConnection:
         self.lmhash = lmhash
         self.nthash = nthash
 
-        conn = SMBConnection(ip, ip)
+        try:
+            conn = SMBConnection(ip, ip)
+        except Exception as e:
+            return RetCode(ERROR_CONNEXION_ERROR, e)
+
         username = username.split("@")[0]
         self._log.debug("Authenticating against {}".format(ip))
         try:
             conn.login(username, password, domain=domain_name, lmhash=lmhash, nthash=nthash, ntlmFallback=True)
             self._log.success("Authenticated")
         except SessionError as e:
-            e_type, e_msg = e.getErrorString()
-            self._log.error("{}: {}".format(e_type, e_msg))
             self._log.debug("Provided credentials : {}\\{}:{}".format(domain_name, username, password))
-            sys.exit(1)
+            return RetCode(ERROR_LOGIN_FAILURE, e)
         except Exception as e:
-            raise Exception("Unknown error : {}".format(e))
+            return RetCode(ERROR_UNDEFINED, e)
         self.conn = conn
         return self
 
@@ -159,9 +162,9 @@ class ImpacketConnection:
     def isadmin(self):
         try:
             self.connectTree("C$")
-            return True
+            return RetCode(ERROR_SUCCESS)
         except Exception as e:
-            return False
+            return RetCode(ERROR_ACCESS_DENIED, e)
 
     def close(self):
         self.conn.close()
