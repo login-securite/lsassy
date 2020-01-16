@@ -80,12 +80,12 @@ class ImpacketConnection:
 
     def openFile(self, tid, fpath, timeout=10):
         self._log.debug("Opening file {}".format(fpath))
-        start = time.time()
 
+        start = time.time()
         try:
             timeout = float(timeout)
         except ValueError as e:
-            self._log.debug("Timeout value \"{}\" is not valid. Timeout was set to 10".format(str(timeout)))
+            self._log.debug("Timeout value \"{}\" is not valid. Timeout set to 10".format(str(timeout)))
             timeout = 10
 
         while True:
@@ -113,7 +113,6 @@ class ImpacketConnection:
                     time.sleep(2)
                 else:
                     raise Exception(e)
-        
 
     def getFile(self, share_name, path_name, callback):
         while True:
