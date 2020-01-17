@@ -60,7 +60,7 @@ Dumping methods (`-m` or `--method`)
 * **2**: Procdump method, stop on success (Requires -p)
 * **3**: comsvcs.dll + Powershell method, stop on success
 * **4**: comsvcs.dll + cmd.exe method
-* **5**: Dumpert method, stop on success (Requires -u)
+* **5**: (unsafe) Dumpert method, stop on success (Requires -u)
 
 #### comsvcs.dll method
 
