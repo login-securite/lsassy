@@ -59,7 +59,7 @@ def run():
     2: Procdump method, stop on success (Requires -p)
     3: comsvcs.dll + Powershell method, stop on success
     4: comsvcs.dll + cmd.exe method
-    5: dumpert method, stop on success (Requires -u)''')
+    5: (unsafe) dumpert method, stop on success (Requires -u)''')
     group_dump.add_argument('--dumpname', action='store', help='Name given to lsass dump (Default: Random)')
     group_dump.add_argument('-p', '--procdump', action='store', help='Procdump path')
     group_dump.add_argument('-u', '--dumpert', action='store', help='dumpert path')
