@@ -5,8 +5,9 @@
 #  https://en.hackndo.com [EN]
 
 import re
-from lsassy.utils import *
+
 from lsassy.defines import *
+
 
 class ImpacketFile:
     def __init__(self, connection, log):
