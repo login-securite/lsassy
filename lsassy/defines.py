@@ -24,6 +24,10 @@ ERROR_PROCDUMP_NOT_PROVIDED = (15, "Procdump was not provided")
 ERROR_PROCDUMP_NOT_UPLOADED = (16, "Procdump could not be uploaded")
 ERROR_DLL_NO_EXECUTE        = (17, "Could not execute commands on remote host via DLL")
 ERROR_WMI_NO_EXECUTE        = (18, "Could not execute commands on remote host via WMI")
+ERROR_DUMPERT_NOT_FOUND     = (19, "dumpert path is not valid")
+ERROR_DUMPERT_NOT_PROVIDED  = (20, "dumpert was not provided")
+ERROR_DUMPERT_NOT_UPLOADED  = (21, "dumpert could not be uploaded")
+
 ERROR_UNDEFINED             = (99, "Unknown error")
 
 

