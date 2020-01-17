@@ -11,7 +11,7 @@ import sys
 
 class CMEModule:
     name = 'lsassy'
-    description = "Dump lsass via procdump or dumpert and parse the result remotely with lsassy"
+    description = "Dump lsass and parse the result remotely with lsassy"
     supported_protocols = ['smb']
     opsec_safe = True
     multiple_hosts = True
