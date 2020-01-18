@@ -54,7 +54,7 @@ def run():
 
     group_dump = parser.add_argument_group('dump')
     group_dump.add_argument('-m', '--method', action='store', default="1", help='''Dumping method
-    0: Try all methods (dll then procdump then dumpert) to dump lsass, stop on success (Requires -p or -u if dll method fails)
+    0: Try all methods (dll then procdump then dumpert) to dump lsass, stop on success (Requires -p if dll method fails, -u if procdump method fails)
     1: comsvcs.dll method, stop on success (default)
     2: Procdump method, stop on success (Requires -p)
     3: comsvcs.dll + Powershell method, stop on success
