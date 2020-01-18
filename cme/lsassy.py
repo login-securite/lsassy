@@ -46,7 +46,6 @@ class CMEModule:
 
         if 'DUMPERT_PATH' in module_options:
             self.dumpert_path = module_options['DUMPERT_PATH']
-            self.method = 5
 
         self.bloodhound = False
         self.neo4j_URI = "127.0.0.1"
