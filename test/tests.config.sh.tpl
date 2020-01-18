@@ -1,3 +1,5 @@
+# COPY THIS FILE TO ./test.config.sh BEFORE USING tests_dev.sh
+
 # User with admin rights on IP_OK
 DOMAIN_ADMIN="domain/Administrator:P4ssw0rd"
 

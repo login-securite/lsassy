@@ -1,5 +1,15 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+if [ ! -f "$DIR/tests.config.sh" ]
+then
+  echo -n "Error: "
+  echo "$DIR/tests.config.sh does not exist"
+  echo "Please rename tests.config.sh.tpl to tests.config.sh and change its content to match your environment"
+  exit
+fi
+
 source ./tests.config.sh
 
 echo -n "[TEST] Connexion error : "
