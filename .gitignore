@@ -28,3 +28,5 @@ MANIFEST
 .idea
 
 # Tests
+
+test/tests.config.sh
