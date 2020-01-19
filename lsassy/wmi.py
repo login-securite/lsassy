@@ -15,8 +15,8 @@ from impacket.dcerpc.v5.dtypes import NULL
 
 
 class WMI:
-    def __init__(self, connexion, logger):
-        self.conn = connexion
+    def __init__(self, connection, logger):
+        self.conn = connection
         self.conn.hostname = list({addr[-1][0] for addr in socket.getaddrinfo(self.conn.hostname, 0, 0, 0, 0)})[0]
         self.log = logger
         self.win32Process = None

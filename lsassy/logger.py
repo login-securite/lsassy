@@ -12,6 +12,12 @@ class Logger:
         self._is_debug = is_debug
         self._is_quiet = is_quiet
 
+    def set_debug(self, debug):
+        self._is_debug = debug
+
+    def set_quiet(self, quiet):
+        self._is_quiet = quiet
+
     def info(self, msg):
         if not self._is_quiet:
             msg = "\n    ".join(msg.split("\n"))

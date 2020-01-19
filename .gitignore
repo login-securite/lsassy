@@ -29,4 +29,4 @@ MANIFEST
 
 # Tests
 
-test/test_config.py
+lsassy_test/lsassy_test_config.py

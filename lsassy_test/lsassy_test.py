@@ -7,13 +7,13 @@
 
 import unittest
 
-from test_config import *
 
 from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
-from lsassy.log import Logger
+from lsassy.logger import Logger
 from lsassy.defines import *
+from lsassy_test_config import *
 
 
 class Argument:
@@ -73,7 +73,7 @@ class test_impacketconnection(unittest.TestCase):
         args = Argument("user:pass@255.255.255.255")
         self.conn = ImpacketConnection.from_args(args, self.log)
         self.assertIsInstance(self.conn, RetCode)
-        self.assertEqual(ERROR_CONNEXION_ERROR[0], self.conn.error_code)
+        self.assertEqual(ERROR_CONNECTION_ERROR[0], self.conn.error_code)
         self.tearDown()
 
     def test_login_login_error(self):
@@ -250,8 +250,10 @@ class test_dumper(unittest.TestCase):
 
     def test_dump_success(self):
         args = Argument("{}/{}:{}@{}".format(domain, da_login, da_password, ip_address), method=4, timeout=5)
-        dump = Dumper(self.conn, args, self.log).dump()
-        self.assertIsInstance(dump, ImpacketFile)
+        dump = Dumper(self.conn, args, self.log)
+        ret = dump.dump()
+        self.assertIsInstance(ret, RetCode)
+        self.assertEqual(ERROR_SUCCESS[0], ret.error_code)
         if isinstance(dump, ImpacketFile):
             dump.close()
 
@@ -275,4 +277,6 @@ class test_dumper_protected(unittest.TestCase):
         self.assertEqual(ERROR_LSASS_PROTECTED[0], dump.error_code)
 
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()
+

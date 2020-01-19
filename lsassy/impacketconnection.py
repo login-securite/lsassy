@@ -12,76 +12,54 @@ from socket import getaddrinfo, gaierror
 from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
 
-from lsassy.log import Logger
+from lsassy.logger import Logger
 from lsassy.defines import *
 
 
 class ImpacketConnection:
-    def __init__(self, conn=None, log=None):
-        self._log = log if log is not None else Logger()
-        self.hostname = ""
-        self.username = ""
-        self.domain_name = ""
-        self.password = ""
-        self.lmhash = ""
-        self.nthash = ""
-        self.conn = conn
-
-    @staticmethod
-    def from_args(arg, log):
-        pattern = re.compile(r"^(?:(?P<domain_name>[a-zA-Z0-9._-]+)/)?(?P<username>[^:/]+)(?::(?P<password>.*))?@(?P<hostname>[a-zA-Z0-9.-]+)$")
-        matches = pattern.search(arg.target)
-        if matches is None:
-            log.warn("{} is not valid. Expected format : [domain/]username[:password]@host".format(arg.target))
-            return RetCode(ERROR_INVALID_FORMAT)
-        domain_name, username, password, hostname = matches.groups()
-        if matches.group("domain_name") is None:
-            domain_name = "."
-        if matches.group("password") is None and arg.hashes is None:
-            import getpass
-            password = getpass.getpass(prompt='Password: ')
-
-        if arg.hashes is not None:
-            if ':' in arg.hashes:
-                lmhash, nthash = arg.hashes.split(':')
-            else:
-                lmhash = 'aad3b435b51404eeaad3b435b51404ee'
-                nthash = arg.hashes
-        else:
-            lmhash = ''
-            nthash = ''
-        return ImpacketConnection(log=log).login(hostname, domain_name, username, password, lmhash, nthash)
-
-    def login(self, ip, domain_name, username, password, lmhash, nthash):
-        try:
-            ip = list({addr[-1][0] for addr in getaddrinfo(ip, 0, 0, 0, 0)})[0]
-        except gaierror as e:
-            return RetCode(ERROR_DNS_ERROR, e)
-
-        self.hostname = ip
+    def __init__(self, hostname, domain_name, username, password, hashes):
+        self._log = Logger()
+        self.hostname = hostname
         self.domain_name = domain_name
         self.username = username
         self.password = password
-        self.lmhash = lmhash
-        self.nthash = nthash
+        self.lmhash, self.nthash = "", ""
+        if not password and hashes:
+            if ":" in hashes:
+                self.lmhash, self.nthash = hashes.split(":")
+            else:
+                self.lmhash, self.nthash = 'aad3b435b51404eeaad3b435b51404ee', hashes
+
+        self.conn = None
+
+    def get_logger(self):
+        return self._log
+
+    def set_logger(self, logger):
+        self._log = logger
+
+    def login(self):
+        try:
+            ip = list({addr[-1][0] for addr in getaddrinfo(self.hostname, 0, 0, 0, 0)})[0]
+        except gaierror as e:
+            return RetCode(ERROR_DNS_ERROR, e)
 
         try:
             conn = SMBConnection(ip, ip)
         except Exception as e:
-            return RetCode(ERROR_CONNEXION_ERROR, e)
+            return RetCode(ERROR_CONNECTION_ERROR, e)
 
-        username = username.split("@")[0]
+        username = self.username.split("@")[0]
         self._log.debug("Authenticating against {}".format(ip))
         try:
-            conn.login(username, password, domain=domain_name, lmhash=lmhash, nthash=nthash, ntlmFallback=True)
-            self._log.success("Authenticated")
+            conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
         except SessionError as e:
-            self._log.debug("Provided credentials : {}\\{}:{}".format(domain_name, username, password))
+            self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
             return RetCode(ERROR_LOGIN_FAILURE, e)
         except Exception as e:
             return RetCode(ERROR_UNDEFINED, e)
         self.conn = conn
-        return self
+        return RetCode(ERROR_SUCCESS)
 
     def connectTree(self, share_name):
         return self.conn.connectTree(share_name)
@@ -168,3 +146,10 @@ class ImpacketConnection:
 
     def close(self):
         self.conn.close()
+
+    def clean(self):
+        try:
+            self.close()
+            return RetCode(ERROR_SUCCESS)
+        except Exception as e:
+            return RetCode(ERROR_CONNECTION_CLEANING, e)

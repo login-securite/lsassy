@@ -7,7 +7,7 @@ ERROR_SUCCESS               = (0, "")
 ERROR_NO_CREDENTIAL_FOUND   = (0, "Procdump could not be uploaded")
 
 ERROR_MISSING_ARGUMENTS     = (1, "")
-ERROR_CONNEXION_ERROR       = (2, "Connexion error")
+ERROR_CONNECTION_ERROR      = (2, "Connection error")
 ERROR_ACCESS_DENIED         = (3, "Access denied. Administrative rights on remote host are required")
 ERROR_METHOD_NOT_SUPPORTED  = (4, "Method not supported")
 ERROR_LSASS_PROTECTED       = (5, "Lsass is protected")
@@ -29,8 +29,15 @@ ERROR_DUMPERT_NO_EXECUTE    = (20, "Could not execute commands on remote host vi
 ERROR_DUMPERT_NOT_FOUND     = (21, "dumpert path is not valid")
 ERROR_DUMPERT_NOT_PROVIDED  = (22, "dumpert was not provided")
 ERROR_DUMPERT_NOT_UPLOADED  = (23, "dumpert could not be uploaded")
+ERROR_OUTPUT_FORMAT_INVALID = (24, "Output format is not valid")
 
-ERROR_UNDEFINED             = (99, "Unknown error")
+# Cleaning errors
+ERROR_DUMP_CLEANING         = (100, "Error while cleaning lsass dump")
+ERROR_PROCDUMP_CLEANING     = (101, "Error while cleaning procdump")
+ERROR_DUMPERT_CLEANING      = (102, "Error while cleaning dumpert")
+ERROR_CONNECTION_CLEANING   = (103, "Error while cleaning connection")
+
+ERROR_UNDEFINED             = (-1, "Unknown error")
 
 
 class RetCode:

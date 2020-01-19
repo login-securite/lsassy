@@ -39,7 +39,7 @@ setup(
     ),
     entry_points={
         'console_scripts': [
-            'lsassy = lsassy.__main__:run',
+            'lsassy = lsassy.core:run',
         ],
     }
 )
