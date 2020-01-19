@@ -18,19 +18,19 @@ from lsassy.utils import *
 class Dumper:
 
     class Options:
-        tmp_dir = "\\Windows\\Temp\\"
-        share = "C$"
-        dumpname = None
-        procdump = "procdump.exe"
-        dumpert = "dumpert.exe"
-        procdump_path = None
-        dumpert_path = None
-        method = 1
-        timeout = 10
+        def __init__(self):
+            self.tmp_dir = "\\Windows\\Temp\\"
+            self.share = "C$"
+            self.dumpname = None
+            self.procdump = "procdump.exe"
+            self.dumpert = "dumpert.exe"
+            self.procdump_path = None
+            self.dumpert_path = None
+            self.method = 1
+            self.timeout = 10
 
-    def __init__(self, connection, options=Options):
+    def __init__(self, connection, options=Options()):
         self._log = connection.get_logger()
-
         self._tmp_dir = options.tmp_dir
         self._share = options.share
         self._procdump = options.procdump

@@ -12,9 +12,10 @@ from lsassy.defines import *
 
 class Parser:
     class Options:
-        raw = False
+        def __init__(self):
+            self.raw = False
 
-    def __init__(self, dumpfile, options=Options):
+    def __init__(self, dumpfile, options=Options()):
         self._log = dumpfile.get_connection().get_logger()
         self._dumpfile = dumpfile
         self._raw = options.raw

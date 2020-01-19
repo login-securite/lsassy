@@ -11,9 +11,10 @@ from lsassy.defines import *
 
 class Writer:
     class Options:
-        format = "pretty"
+        def __init__(self):
+            self.format = "pretty"
 
-    def __init__(self, credentials, logger, options=Options):
+    def __init__(self, credentials, logger, options=Options()):
         self._log = logger
         self._credentials = credentials
         self._format = options.format

@@ -7,13 +7,12 @@
 
 import unittest
 
-
+from lsassy.defines import *
 from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
 from lsassy.logger import Logger
-from lsassy.defines import *
-from lsassy_test_config import *
+from .lsassy_test_config import *
 
 
 class test_impacketconnection(unittest.TestCase):
@@ -142,14 +141,12 @@ class test_dumper(unittest.TestCase):
     Procdump Method
     """
     def test_procdump_missing_parameter(self):
-        dump_option = Dumper.Options
-        dump_option.procdump_path = None
-        ret = Dumper(self.conn, dump_option).procdump_dump(("wmi",))
+        ret = Dumper(self.conn).procdump_dump(("wmi",))
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_PROCDUMP_NOT_PROVIDED[1], ret.error_msg)
 
     def test_procdump_invalid_parameter(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.procdump_path = "/invalid/path"
         ret = Dumper(self.conn, dump_option).procdump_dump(())
         self.assertIsInstance(ret, RetCode)
@@ -157,7 +154,7 @@ class test_dumper(unittest.TestCase):
 
     @unittest.skipUnless(procdump_path, "Procdump path wasn't provided")
     def test_procdump_upload_error(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.procdump_path = procdump_path
         dump_option.share = "INVALID_SHARE"
         ret = Dumper(self.conn, dump_option).procdump_dump(())
@@ -166,9 +163,8 @@ class test_dumper(unittest.TestCase):
 
     @unittest.skipUnless(procdump_path, "Procdump path wasn't provided")
     def test_procdump_execute_error(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.procdump_path = procdump_path
-        dump_option.share = "C$"
         dump = Dumper(self.conn, dump_option)
         ret = dump.procdump_dump(())
         self.assertIsInstance(ret, RetCode)
@@ -179,14 +175,12 @@ class test_dumper(unittest.TestCase):
     Dumpert Method
     """
     def test_dumpert_missing_parameter(self):
-        dump_option = Dumper.Options
-        dump_option.dumpert_path = None
-        ret = Dumper(self.conn, dump_option).dumpert_dump(("wmi",))
+        ret = Dumper(self.conn).dumpert_dump(("wmi",))
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_DUMPERT_NOT_PROVIDED[1], ret.error_msg)
 
     def test_dumpert_invalid_parameter(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.dumpert_path = "/invalid/path"
         ret = Dumper(self.conn, dump_option).dumpert_dump(())
         self.assertIsInstance(ret, RetCode)
@@ -194,7 +188,7 @@ class test_dumper(unittest.TestCase):
 
     @unittest.skipUnless(dumpert_path, "Dumper path wasn't provided")
     def test_dumpert_upload_error(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.dumpert_path = dumpert_path
         dump_option.share = "INVALID_SHARE"
         ret = Dumper(self.conn, dump_option).dumpert_dump(())
@@ -203,7 +197,7 @@ class test_dumper(unittest.TestCase):
 
     @unittest.skipUnless(dumpert_path, "Dumper path wasn't provided")
     def test_dumpert_execute_error(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.dumpert_path = dumpert_path
         dumper = Dumper(self.conn, dump_option)
         ret = dumper.dumpert_dump(())
@@ -215,17 +209,14 @@ class test_dumper(unittest.TestCase):
     Dump generic
     """
     def test_dump_method_unknown(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.method = 99
         ret = Dumper(self.conn, dump_option).dump()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_METHOD_NOT_SUPPORTED[1], ret.error_msg)
 
     def test_dump_success(self):
-        dump_option = Dumper.Options
-        dump_option.timeout = 5
-        dump_option.method = 1
-        dumper = Dumper(self.conn, dump_option)
+        dumper = Dumper(self.conn)
         ret = dumper.dump()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
@@ -245,9 +236,8 @@ class test_dumper_protected(unittest.TestCase):
         self.conn.clean()
 
     def test_dump_protected(self):
-        dump_option = Dumper.Options
+        dump_option = Dumper.Options()
         dump_option.method = 2
-        dump_option.share = "C$"
         dump_option.procdump_path = procdump_path
         dumper = Dumper(self.conn, dump_option)
         ret = dumper.dump()

@@ -21,3 +21,6 @@ build: clean
 	python3.7 setup.py install
 
 install: build
+
+test:
+	python3.7 setup.py test

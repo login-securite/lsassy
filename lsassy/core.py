@@ -89,9 +89,9 @@ class Lsassy:
 
 class Core:
     def __init__(self):
-        self.dump_options = Dumper.Options
-        self.parse_options = Parser.Options
-        self.write_options = Writer.Options
+        self.dump_options = Dumper.Options()
+        self.parse_options = Parser.Options()
+        self.write_options = Writer.Options()
 
         self.lsassy = None
 

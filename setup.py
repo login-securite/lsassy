@@ -41,5 +41,6 @@ setup(
         'console_scripts': [
             'lsassy = lsassy.core:run',
         ],
-    }
+    },
+    test_suite='lsassy_test.lsassy_test'
 )
