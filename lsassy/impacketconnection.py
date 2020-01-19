@@ -18,7 +18,7 @@ from lsassy.defines import *
 
 class ImpacketConnection:
     def __init__(self, hostname, domain_name, username, password, hashes):
-        self._log = Logger()
+        self._log = Logger(hostname)
         self.hostname = hostname
         self.domain_name = domain_name
         self.username = username

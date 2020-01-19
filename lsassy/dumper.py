@@ -276,10 +276,10 @@ class Dumper:
         return RetCode(ERROR_DUMPERT_NO_EXECUTE)
 
     def clean(self):
-        try :
+        try:
             self._ifile.close()
         except Exception as e:
-            lsassy_warn(self._log, RetCode(ERROR_UNDEFINED, e))
+            pass
 
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
