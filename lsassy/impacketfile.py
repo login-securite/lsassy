@@ -29,7 +29,11 @@ class ImpacketFile:
         }
 
     def open(self, path, timeout=60):
-        share_name, fpath = self._parse_path(path)
+        try:
+            share_name, fpath = self._parse_path(path)
+        except Exception as e:
+            return RetCode(ERROR_PATH_FILE, e)
+
         self._fpath = fpath
         try:
             self._tid = self._conn.connectTree(share_name)

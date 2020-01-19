@@ -29,4 +29,4 @@ MANIFEST
 
 # Tests
 
-test/tests.config.sh
+test/test_config.py
