@@ -32,7 +32,7 @@ class Lsassy:
         self._log.success("Authenticated")
         return RetCode(ERROR_SUCCESS)
 
-    def dump_lsass(self, options=Dumper.Options):
+    def dump_lsass(self, options=Dumper.Options()):
         is_admin = self._conn.isadmin()
         if not is_admin.success():
             self._conn.close()
@@ -47,7 +47,7 @@ class Lsassy:
         self._log.success("Process lsass.exe has been dumped")
         return RetCode(ERROR_SUCCESS)
 
-    def parse_lsass(self, options=Dumper.Options):
+    def parse_lsass(self, options=Dumper.Options()):
         self._parser = Parser(self._dumpfile, options)
         parse_result = self._parser.parse()
         if not parse_result.success():
@@ -57,7 +57,7 @@ class Lsassy:
         self._log.success("Process lsass.exe has been parsed")
         return RetCode(ERROR_SUCCESS)
 
-    def write_credentials(self, options=Writer.Options):
+    def write_credentials(self, options=Writer.Options()):
         self._writer = Writer(self._credentials, self._log, options)
         write_result = self._writer.write()
         if not write_result.success():
