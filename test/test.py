@@ -7,7 +7,7 @@
 
 import unittest
 
-from test.test_config import *
+from test_config import *
 
 from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
