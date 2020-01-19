@@ -35,8 +35,8 @@ class Dumper:
         self._share = options.share
         self._procdump = options.procdump
         self._dumpert = options.dumpert
-        self._procdump_path = options.procdump
-        self._dumpert_path = options.dumpert
+        self._procdump_path = options.procdump_path
+        self._dumpert_path = options.dumpert_path
         self._method = str(options.method)
         self._timeout = options.timeout
 
@@ -49,11 +49,6 @@ class Dumper:
 
         self._conn = connection
         self._ifile = None
-
-        if options.procdump_path is not None:
-            self._procdump_path = options.procdump
-        if options.dumpert_path is not None:
-            self._dumpert_path = options.dumpert
 
         self._exec_methods = {"wmi": WMI, "task": TASK_EXEC}
         self._use_procdump = False
@@ -132,13 +127,11 @@ class Dumper:
                 dumped = self.dumpert_dump(exec_methods)
             else:
                 continue
-
             if dumped.success():
                 """
                 If procdump failed, a dumpfile was created, and its content is "FAILED"
                 Best guess is that lsass is protected in some way (PPL, AV, ...)
                 """
-
                 ret = ifile.open(
                     (self._share + self._tmp_dir + self._remote_lsass_dump).replace("\\", "/"),
                     timeout=self._timeout
@@ -178,19 +171,16 @@ class Dumper:
         for command in commands:
             self._log.debug("{}".format(command))
 
-        exec_completed = False
-
-        while not exec_completed:
-            for exec_method in exec_methods:
-                try:
-                    self._log.debug("Trying exec method : \"{}\"".format(exec_method))
-                    self._exec_methods[exec_method](self._conn, self._log).execute(commands)
-                    self._log.debug("Exec method \"{}\" success !".format(exec_method))
-                    return RetCode(ERROR_SUCCESS)
-                except Exception as e:
-                    self._log.debug("Exec method \"{}\" failed.".format(exec_method))
-                    self._log.debug('Error : {}'.format(e))
-            return RetCode(ERROR_DLL_NO_EXECUTE)
+        for exec_method in exec_methods:
+            try:
+                self._log.debug("Trying exec method : \"{}\"".format(exec_method))
+                self._exec_methods[exec_method](self._conn, self._log).execute(commands)
+                self._log.debug("Exec method \"{}\" success !".format(exec_method))
+                return RetCode(ERROR_SUCCESS)
+            except Exception as e:
+                self._log.warn("Exec method \"{}\" failed.".format(exec_method))
+                self._log.debug('Error : {}'.format(e))
+        return RetCode(ERROR_DLL_NO_EXECUTE)
 
     def procdump_dump(self, exec_methods=("wmi", "task")):
         """
@@ -229,18 +219,16 @@ class Dumper:
         for command in commands:
             self._log.debug("{}".format(command))
 
-        exec_completed = False
-        while not exec_completed:
-            for exec_method in exec_methods:
-                try:
-                    self._log.debug("Trying exec method : " + exec_method)
-                    self._exec_methods[exec_method](self._conn, self._log).execute(commands)
-                    self._log.debug("Exec method \"{}\" success !".format(exec_method))
-                    return RetCode(ERROR_SUCCESS)
-                except Exception as e:
-                    self._log.warn("Exec method \"{}\" failed.".format(exec_method))
-                    self._log.debug("Error : {}".format(str(e)))
-            return RetCode(ERROR_PROCDUMP_NO_EXECUTE)
+        for exec_method in exec_methods:
+            try:
+                self._log.debug("Trying exec method : " + exec_method)
+                self._exec_methods[exec_method](self._conn, self._log).execute(commands)
+                self._log.debug("Exec method \"{}\" success !".format(exec_method))
+                return RetCode(ERROR_SUCCESS)
+            except Exception as e:
+                self._log.warn("Exec method \"{}\" failed.".format(exec_method))
+                self._log.debug("Error : {}".format(str(e)))
+        return RetCode(ERROR_PROCDUMP_NO_EXECUTE)
 
     def dumpert_dump(self, exec_methods=("wmi", "task")):
         """
@@ -276,20 +264,23 @@ class Dumper:
         for command in commands:
             self._log.debug("{}".format(command))
 
-        exec_completed = False
-        while not exec_completed:
-            for exec_method in exec_methods:
-                try:
-                    self._log.debug("Trying exec method : " + exec_method)
-                    self._exec_methods[exec_method](self._conn, self._log).execute(commands)
-                    self._log.debug("Exec method \"{}\" success !".format(exec_method))
-                    return RetCode(ERROR_SUCCESS)
-                except Exception as e:
-                    self._log.warn("Exec method \"{}\" failed.".format(exec_method))
-                    self._log.debug("Error : {}".format(str(e)))
-            return RetCode(ERROR_DUMPERT_NO_EXECUTE)
+        for exec_method in exec_methods:
+            try:
+                self._log.debug("Trying exec method : " + exec_method)
+                self._exec_methods[exec_method](self._conn, self._log).execute(commands)
+                self._log.debug("Exec method \"{}\" success !".format(exec_method))
+                return RetCode(ERROR_SUCCESS)
+            except Exception as e:
+                self._log.warn("Exec method \"{}\" failed.".format(exec_method))
+                self._log.debug("Error : {}".format(str(e)))
+        return RetCode(ERROR_DUMPERT_NO_EXECUTE)
 
     def clean(self):
+        try :
+            self._ifile.close()
+        except Exception as e:
+            lsassy_warn(self._log, RetCode(ERROR_UNDEFINED, e))
+
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
         except Exception as e:

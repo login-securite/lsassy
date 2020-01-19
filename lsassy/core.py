@@ -83,6 +83,9 @@ class Lsassy:
 
         self._log.success("Cleaning complete")
 
+    def get_logger(self):
+        return self._log
+
 
 class Core:
     def __init__(self):
@@ -109,6 +112,19 @@ class Core:
             self.write_options.format = "pretty"
 
     def run(self):
+        return_code = ERROR_UNDEFINED
+        try:
+            return_code = self._run()
+        except KeyboardInterrupt as e:
+            print("\nQuitting gracefully...")
+            return_code = RetCode(ERROR_USER_INTERRUPTION)
+        except Exception as e:
+            return_code = RetCode(ERROR_UNDEFINED, e)
+        finally:
+            self.clean()
+            lsassy_exit(self.lsassy.get_logger(), return_code)
+
+    def _run(self):
         args = get_args()
         self.set_options_from_args(args)
 
@@ -137,35 +153,8 @@ class Core:
 
 
 def run():
-    core = Core()
-    try:
-        core.run()
-    except KeyboardInterrupt as e:
-        print("\nQuitting gracefully...")
-        return_code = RetCode(ERROR_USER_INTERRUPTION)
-    except Exception as e:
-        return_code = RetCode(ERROR_UNDEFINED, e)
-        pass
-    finally:
-        core.clean()
+    Core().run()
+
 
 if __name__ == '__main__':
     run()
-
-"""
-    except KeyboardInterrupt as e:
-        print("\nQuitting gracefully...")
-        return_code = RetCode(ERROR_USER_INTERRUPTION)
-    except Exception as e:
-        return_code = RetCode(ERROR_UNDEFINED, e)
-        pass
-    finally:
-        try:
-            ifile.close()
-        except Exception as e:
-            pass
-        if dumper is not None:
-            dumper.clean()
-        conn.close()
-        lsassy_exit(logger, return_code)
-"""
