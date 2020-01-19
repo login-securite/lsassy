@@ -4,13 +4,13 @@
 #  https://beta.hackndo.com
 
 """
-# RENAME THIS FILE TO lsassy_test_config.py
+# RENAME THIS FILE TO tests_config.py
 """
 
 # IP address where LSASS can be dumped
 ip_address = "192.168.1.101"
 
-# IP address where LSASS is protected (empty to skip lsassy_test)
+# IP address where LSASS is protected (empty to skip test)
 ip_address_protected = "192.168.1.112"
 
 # Domain Name
@@ -20,10 +20,10 @@ domain = "lion.king"
 da_login = "simba"
 da_password = "Imtheking!"
 
-# User without admin rights on ip_address (empty to skip lsassy_test)
+# User without admin rights on ip_address (empty to skip test)
 usr_login = "skar"
 usr_password = "YouDontWannaMessWithMe"
 
-# Local tools for dumping methods (empty to skip lsassy_test)
+# Local tools for dumping methods (empty to skip test)
 procdump_path = "/home/pixis/Tools/Windows/Sysinternals/procdump.exe"
 dumpert_path = "/home/pixis/Tools/Windows/Dumpert/Outflank-Dumpert.exe"

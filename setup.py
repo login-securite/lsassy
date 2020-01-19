@@ -42,5 +42,5 @@ setup(
             'lsassy = lsassy.core:run',
         ],
     },
-    test_suite='lsassy_test.lsassy_test'
+    test_suite='tests.tests'
 )

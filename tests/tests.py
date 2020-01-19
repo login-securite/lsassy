@@ -12,7 +12,7 @@ from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
 from lsassy.impacketfile import ImpacketFile
 from lsassy.logger import Logger
-from .lsassy_test_config import *
+from .tests_config import *
 
 
 class test_impacketconnection(unittest.TestCase):

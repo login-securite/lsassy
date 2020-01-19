@@ -4,8 +4,8 @@
 # Website:
 #  https://beta.hackndo.com
 
-from lsassy.dumper import Dumper
 from lsassy.impacketconnection import ImpacketConnection
+from lsassy.dumper import Dumper
 from lsassy.parser import Parser
 from lsassy.logger import Logger
 from lsassy.writer import Writer
