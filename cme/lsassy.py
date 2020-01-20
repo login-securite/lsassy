@@ -118,7 +118,10 @@ class CMEModule:
 
         if code != 0:
             # Debug output
-            context.log.error('Error while executing lsassy, try using CrackMapExec with --verbose to get more details')
+            if code == 5:
+                context.log.error('Lsass is protected')
+            else:
+                context.log.error('Error while executing lsassy, try using CrackMapExec with --verbose to get more details')
             context.log.debug('----- lsassy error [{}] -----'.format(code))
             for line in err.split("\n"):
                 context.log.debug('{}'.format(line))
