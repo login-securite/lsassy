@@ -18,14 +18,14 @@ lock = RLock()
 
 class Lsassy:
     def __init__(self,
-                 hostname, username, domain_name="", password="", lmhash="", nthash="",
+                 hostname, username, domain="", password="", lmhash="", nthash="",
                  log_options=Logger.Options(),
                  dump_options=Dumper.Options(),
                  parse_options=Parser.Options(),
                  write_options=Writer.Options()
                  ):
 
-        self.conn_options = ImpacketConnection.Options(hostname, domain_name, username, password, lmhash, nthash)
+        self.conn_options = ImpacketConnection.Options(hostname, domain, username, password, lmhash, nthash)
         self.log_options = log_options
         self.dump_options = dump_options
         self.parse_options = parse_options
