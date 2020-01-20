@@ -30,6 +30,7 @@ ERROR_DUMPERT_NOT_FOUND     = (21, "dumpert path is not valid")
 ERROR_DUMPERT_NOT_PROVIDED  = (22, "dumpert was not provided")
 ERROR_DUMPERT_NOT_UPLOADED  = (23, "dumpert could not be uploaded")
 ERROR_OUTPUT_FORMAT_INVALID = (24, "Output format is not valid")
+ERROR_OUTPUT_DIR_NOT_EXIST  = (25, "Output directory does not exist")
 
 # Cleaning errors
 ERROR_DUMP_CLEANING         = (100, "Error while cleaning lsass dump")

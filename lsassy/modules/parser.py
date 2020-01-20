@@ -13,8 +13,8 @@ from lsassy.utils.defines import *
 
 class Parser:
     class Options:
-        def __init__(self):
-            self.raw = False
+        def __init__(self, raw=False):
+            self.raw = raw
 
     def __init__(self, dumpfile, options=Options()):
         self._log = dumpfile.get_connection().get_logger()

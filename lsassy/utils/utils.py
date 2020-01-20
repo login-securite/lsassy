@@ -5,6 +5,7 @@
 
 import os
 import sys
+import argparse
 
 import pkg_resources
 from netaddr import IPAddress, IPRange, IPNetwork, AddrFormatError
@@ -15,8 +16,6 @@ version = pkg_resources.require("lsassy")[0].version
 
 
 def get_args():
-    import argparse
-
     examples = '''examples:
     
     ** RunDLL Dump Method **
@@ -46,7 +45,7 @@ def get_args():
     )
 
     group_dump = parser.add_argument_group('dump')
-    group_dump.add_argument('-m', '--method', action='store', default="1", help='''Dumping method
+    group_dump.add_argument('-m', '--method', action='store', default=1, type=int, help='''Dumping method
     0: Try all methods (dll then procdump then dumpert) to dump lsass, stop on success (Requires -p if dll method fails, -u if procdump method fails)
     1: comsvcs.dll method, stop on success (default)
     2: Procdump method, stop on success (Requires -p)
@@ -56,7 +55,7 @@ def get_args():
     group_dump.add_argument('--dumpname', action='store', help='Name given to lsass dump (Default: Random)')
     group_dump.add_argument('--procdump', action='store', help='Procdump path')
     group_dump.add_argument('--dumpert', action='store', help='dumpert path')
-    group_dump.add_argument('--timeout', default="10", action='store',
+    group_dump.add_argument('--timeout', default=3, type=int, action='store',
                             help='Timeout before considering lsass was not dumped successfully')
 
     group_auth = parser.add_argument_group('authentication')
@@ -66,14 +65,12 @@ def get_args():
     group_auth.add_argument('-H', '--hashes', action='store', help='[LM:]NT hash')
 
     group_out = parser.add_argument_group('output')
-    group_out.add_argument('-j', '--json', action='store_true', help='Print credentials in JSON format')
-    group_out.add_argument('-g', '--grep', action='store_true', help='Print credentials in greppable format')
-    group_extract = parser.add_argument_group('remote parsing only')
-    group_extract.add_argument('--dumppath', action='store', help='lsass dump path (Format : c$/Temp/lsass.dmp)')
+    group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
+    group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "none"], action='store', default="pretty", help='Print credentials in JSON format')
 
     parser.add_argument('-r', '--raw', action='store_true',
                         help='No basic result filtering (Display host credentials and duplicates)')
-    parser.add_argument('--debug', action='store_true', help='Debug output')
+    parser.add_argument('-v', '--verbose', action='count', default=0, help='Verbosity level (0-2)')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
     parser.add_argument('target', nargs='*', type=str, action='store', help='The target IP(s), range(s), CIDR(s), hostname(s), FQDN(s), file(s) containing a list of targets')
@@ -90,7 +87,6 @@ def lsassy_exit(logger, error):
         logger.error(error.error_msg)
     if error.error_exception:
         logger.debug("Error : {}".format(error.error_exception))
-    sys.exit(error.error_code)
 
 
 def lsassy_warn(logger, error):

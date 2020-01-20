@@ -15,20 +15,24 @@ from lsassy.modules.logger import Logger
 
 
 class ImpacketConnection:
-    def __init__(self, hostname, domain_name, username, password, hashes):
-        self._log = Logger(hostname)
-        self.hostname = hostname
-        self.domain_name = domain_name
-        self.username = username
-        self.password = password
-        self.lmhash, self.nthash = "", ""
-        if not password and hashes:
-            if ":" in hashes:
-                self.lmhash, self.nthash = hashes.split(":")
-            else:
-                self.lmhash, self.nthash = 'aad3b435b51404eeaad3b435b51404ee', hashes
+    class Options:
+        def __init__(self, hostname="", domain_name="", username="", password="", lmhash="", nthash=""):
+            self.hostname = hostname
+            self.domain_name = domain_name
+            self.username = username
+            self.password = password
+            self.lmhash = lmhash
+            self.nthash = nthash
 
-        self.conn = None
+    def __init__(self, options: Options):
+        self.hostname = options.hostname
+        self.domain_name = options.domain_name
+        self.username = options.username
+        self.password = options.password
+        self.lmhash = options.lmhash
+        self.nthash = options.nthash
+        self._log = Logger(self.hostname)
+        self._conn = None
 
     def get_logger(self):
         return self._log
@@ -43,14 +47,14 @@ class ImpacketConnection:
             return RetCode(ERROR_DNS_ERROR, e)
 
         try:
-            self.conn = SMBConnection(ip, ip)
+            self._conn = SMBConnection(ip, ip)
         except Exception as e:
             return RetCode(ERROR_CONNECTION_ERROR, e)
 
         username = self.username.split("@")[0]
         self._log.debug("Authenticating against {}".format(ip))
         try:
-            self.conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
+            self._conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
         except SessionError as e:
             self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
             return RetCode(ERROR_LOGIN_FAILURE, e)
@@ -59,21 +63,16 @@ class ImpacketConnection:
         return RetCode(ERROR_SUCCESS)
 
     def connectTree(self, share_name):
-        return self.conn.connectTree(share_name)
+        return self._conn.connectTree(share_name)
 
-    def openFile(self, tid, fpath, timeout=10):
+    def openFile(self, tid, fpath, timeout: int = 3):
         self._log.debug("Opening file {}".format(fpath))
 
         start = time.time()
-        try:
-            timeout = float(timeout)
-        except ValueError as e:
-            self._log.debug("Timeout value \"{}\" is not valid. Timeout set to 10".format(str(timeout)))
-            timeout = 10
 
         while True:
             try:
-                fid = self.conn.openFile(tid, fpath, desiredAccess=FILE_READ_DATA)
+                fid = self._conn.openFile(tid, fpath, desiredAccess=FILE_READ_DATA)
                 self._log.debug("File {} opened".format(fpath))
                 return fid
             except Exception as e:
@@ -88,7 +87,7 @@ class ImpacketConnection:
     def queryInfo(self, tid, fid):
         while True:
             try:
-                info = self.conn.queryInfo(tid, fid)
+                info = self._conn.queryInfo(tid, fid)
                 return info
             except Exception as e:
                 if str(e).find('STATUS_SHARING_VIOLATION') >= 0:
@@ -100,7 +99,7 @@ class ImpacketConnection:
     def getFile(self, share_name, path_name, callback):
         while True:
             try:
-                self.conn.getFile(share_name, path_name, callback)
+                self._conn.getFile(share_name, path_name, callback)
                 break
             except Exception as e:
                 if str(e).find('STATUS_SHARING_VIOLATION') >= 0:
@@ -112,7 +111,7 @@ class ImpacketConnection:
     def deleteFile(self, share_name, path_name):
         while True:
             try:
-                self.conn.deleteFile(share_name, path_name)
+                self._conn.deleteFile(share_name, path_name)
                 self._log.debug("File {} deleted".format(path_name))
                 break
             except Exception as e:
@@ -123,19 +122,19 @@ class ImpacketConnection:
 
     def putFile(self, share_name, path_name, callback):
         try:
-            self.conn.putFile(share_name, path_name, callback)
+            self._conn.putFile(share_name, path_name, callback)
             self._log.debug("File {} uploaded".format(path_name))
         except Exception as e:
             raise Exception("An error occured while uploading %s on %s share : %s" % (path_name, share_name, e))
 
     def readFile(self, tid, fid, offset, size):
-        return self.conn.readFile(tid, fid, offset, size, singleCall=False)
+        return self._conn.readFile(tid, fid, offset, size, singleCall=False)
 
     def closeFile(self, tid, fid):
-        return self.conn.closeFile(tid, fid)
+        return self._conn.closeFile(tid, fid)
 
     def disconnectTree(self, tid):
-        return self.conn.disconnectTree(tid)
+        return self._conn.disconnectTree(tid)
 
     def isadmin(self):
         try:
@@ -146,7 +145,7 @@ class ImpacketConnection:
 
     def close(self):
         self._log.debug("Closing Impacket connection")
-        self.conn.close()
+        self._conn.close()
 
     def clean(self):
         try:

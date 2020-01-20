@@ -31,7 +31,7 @@ class ImpacketFile:
     def get_connection(self):
         return self._conn
 
-    def open(self, path, timeout=10):
+    def open(self, path, timeout=3):
         try:
             share_name, fpath = self._parse_path(path)
         except Exception as e:
