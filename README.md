@@ -55,12 +55,13 @@ CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo
 ```
 v2.0.0
 ------
-* Multiprocessing support to dump credentials on multiple host at a time
+* Multiprocessing support to dump credentials on multiple hosts at a time
 * Add new dumping method using "dumpert"
 * Can be used as a library in other python projects
 * Syntax changed to be more flexible
 * Complete code refactoring, way more organized and easy to maintain/extend
 * Better error handling
+* Complete wiki
 
 v1.1.0
 ------
