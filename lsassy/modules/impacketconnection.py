@@ -10,8 +10,8 @@ from socket import getaddrinfo, gaierror
 from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
 
-from lsassy.defines import *
-from lsassy.logger import Logger
+from lsassy.utils.defines import *
+from lsassy.modules.logger import Logger
 
 
 class ImpacketConnection:
@@ -43,20 +43,19 @@ class ImpacketConnection:
             return RetCode(ERROR_DNS_ERROR, e)
 
         try:
-            conn = SMBConnection(ip, ip)
+            self.conn = SMBConnection(ip, ip)
         except Exception as e:
             return RetCode(ERROR_CONNECTION_ERROR, e)
 
         username = self.username.split("@")[0]
         self._log.debug("Authenticating against {}".format(ip))
         try:
-            conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
+            self.conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
         except SessionError as e:
             self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
             return RetCode(ERROR_LOGIN_FAILURE, e)
         except Exception as e:
             return RetCode(ERROR_UNDEFINED, e)
-        self.conn = conn
         return RetCode(ERROR_SUCCESS)
 
     def connectTree(self, share_name):
@@ -146,6 +145,7 @@ class ImpacketConnection:
             return RetCode(ERROR_ACCESS_DENIED, e)
 
     def close(self):
+        self._log.debug("Closing Impacket connection")
         self.conn.close()
 
     def clean(self):

@@ -7,11 +7,11 @@
 
 import unittest
 
-from lsassy.defines import *
-from lsassy.dumper import Dumper
-from lsassy.impacketconnection import ImpacketConnection
-from lsassy.impacketfile import ImpacketFile
-from lsassy.logger import Logger
+from lsassy.utils.defines import *
+from lsassy.modules.dumper import Dumper
+from lsassy.modules.impacketconnection import ImpacketConnection
+from lsassy.modules.impacketfile import ImpacketFile
+from lsassy.modules.logger import Logger
 from .tests_config import *
 
 

@@ -8,7 +8,7 @@
 
 from pypykatz.pypykatz import pypykatz
 
-from lsassy.defines import *
+from lsassy.utils.defines import *
 
 
 class Parser:

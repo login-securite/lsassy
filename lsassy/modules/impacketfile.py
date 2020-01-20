@@ -6,7 +6,7 @@
 
 import re
 
-from lsassy.defines import *
+from lsassy.utils.defines import *
 
 
 class ImpacketFile:
@@ -85,9 +85,9 @@ class ImpacketFile:
         return value[:size]
 
     def close(self):
+        self._log.debug("Closing Impacket file \"{}\"".format(self._fpath))
         self._conn.closeFile(self._tid, self._fid)
         self._conn.disconnectTree(self._tid)
-        self._conn.close()
 
     def seek(self, offset, whence=0):
         if whence == 0:

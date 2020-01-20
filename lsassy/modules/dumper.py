@@ -7,10 +7,10 @@
 import random
 import string
 
-from lsassy.impacketfile import ImpacketFile
-from lsassy.taskexe import TASK_EXEC
-from lsassy.utils import *
-from lsassy.wmi import WMI
+from lsassy.modules.impacketfile import ImpacketFile
+from lsassy.exec.taskexe import TASK_EXEC
+from lsassy.exec.wmi import WMI
+from lsassy.utils.utils import *
 
 
 class Dumper:
