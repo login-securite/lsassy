@@ -137,6 +137,9 @@ class ImpacketConnection:
     def closeFile(self, tid, fid):
         return self.conn.closeFile(tid, fid)
 
+    def disconnectTree(self, tid):
+        return self.conn.disconnectTree(tid)
+
     def isadmin(self):
         try:
             self.connectTree("C$")

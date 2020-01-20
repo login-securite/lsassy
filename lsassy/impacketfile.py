@@ -41,18 +41,19 @@ class ImpacketFile:
         try:
             self._tid = self._conn.connectTree(share_name)
         except Exception as e:
+            self.clean()
             return RetCode(ERROR_SHARE, e)
         try:
             self._fid = self._conn.openFile(self._tid, self._fpath, timeout=timeout)
         except Exception as e:
+            self.clean()
             return RetCode(ERROR_FILE, e)
-
         self._fileInfo = self._conn.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._conn.close()
+        self.clean()
 
     def read(self, size):
         if size == 0:
@@ -85,6 +86,8 @@ class ImpacketFile:
 
     def close(self):
         self._conn.closeFile(self._tid, self._fid)
+        self._conn.disconnectTree(self._tid)
+        self._conn.close()
 
     def seek(self, offset, whence=0):
         if whence == 0:
@@ -101,6 +104,12 @@ class ImpacketFile:
 
     def size(self):
         return self._endOfFile
+
+    def clean(self):
+        try:
+            self.close()
+        except Exception as e:
+            pass
 
     @staticmethod
     def _parse_path(fpath):

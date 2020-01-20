@@ -20,6 +20,7 @@ class WMI:
         self.conn.hostname = list({addr[-1][0] for addr in socket.getaddrinfo(self.conn.hostname, 0, 0, 0, 0)})[0]
         self.log = logger
         self.win32Process = None
+        self.iWbemServices = None
         self.buffer = ""
         self.dcom = None
         self._getwin32process()
@@ -48,9 +49,9 @@ class WMI:
             )
             iInterface = self.dcom.CoCreateInstanceEx(wmi.CLSID_WbemLevel1Login, wmi.IID_IWbemLevel1Login)
             iWbemLevel1Login = wmi.IWbemLevel1Login(iInterface)
-            iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
+            self.iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
             iWbemLevel1Login.RemRelease()
-            self.win32Process, _ = iWbemServices.GetObject('Win32_Process')
+            self.win32Process, _ = self.iWbemServices.GetObject('Win32_Process')
         except KeyboardInterrupt as e:
             self.dcom.disconnect()
             raise KeyboardInterrupt(e)
@@ -61,11 +62,14 @@ class WMI:
         command = " & ".join(commands)
         try:
             self.win32Process.Create(command, "C:\\", None)
+            self.iWbemServices.disconnect()
             self.dcom.disconnect()
         except KeyboardInterrupt as e:
             self.log.debug("WMI Execution stopped because of keyboard interruption")
+            self.iWbemServices.disconnect()
             self.dcom.disconnect()
             raise KeyboardInterrupt(e)
         except Exception as e:
             self.log.debug("Error : {}".format(e))
+            self.iWbemServices.disconnect()
             self.dcom.disconnect()

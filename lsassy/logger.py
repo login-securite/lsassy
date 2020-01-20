@@ -8,7 +8,7 @@ import sys
 
 
 class Logger:
-    def __init__(self, target, align=1, is_debug=False, is_quiet=False):
+    def __init__(self, target="", align=1, is_debug=False, is_quiet=False):
         self._target = target
         self._align = align
         self._is_debug = is_debug

@@ -30,7 +30,6 @@ class test_impacketconnection(unittest.TestCase):
         ret = self.conn.login()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_DNS_ERROR[1], ret.error_msg)
-        self.tearDown()
 
     def test_login_connection_error(self):
         self.conn = ImpacketConnection("255.255.255.255", domain, da_login, da_password, None)
@@ -38,7 +37,6 @@ class test_impacketconnection(unittest.TestCase):
         ret = self.conn.login()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_CONNECTION_ERROR[1], ret.error_msg)
-        self.tearDown()
 
     def test_login_login_error(self):
         self.conn = ImpacketConnection(ip_address, domain, da_login, "wrong_password", None)
@@ -46,7 +44,6 @@ class test_impacketconnection(unittest.TestCase):
         ret = self.conn.login()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_LOGIN_FAILURE[1], ret.error_msg)
-        self.tearDown()
 
     def test_login_login_success(self):
         self.conn = ImpacketConnection(ip_address, domain, da_login, da_password, None)
@@ -54,7 +51,6 @@ class test_impacketconnection(unittest.TestCase):
         ret = self.conn.login()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
-        self.tearDown()
 
     def test_is_admin(self):
         self.conn = ImpacketConnection(ip_address, domain, da_login, da_password, None)
@@ -63,7 +59,6 @@ class test_impacketconnection(unittest.TestCase):
         ret = self.conn.isadmin()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
-        self.tearDown()
 
     @unittest.skipUnless(usr_login and usr_password, "No low privileged user credential provided")
     def test_is_admin_error(self):
@@ -73,7 +68,6 @@ class test_impacketconnection(unittest.TestCase):
         ret = self.conn.isadmin()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_ACCESS_DENIED[1], ret.error_msg)
-        self.tearDown()
 
 
 class test_impacketfile(unittest.TestCase):
@@ -85,6 +79,7 @@ class test_impacketfile(unittest.TestCase):
         self.ifile = ImpacketFile(self.conn, self.log)
 
     def tearDown(self):
+        self.ifile.clean()
         self.conn.clean()
 
     def test_path_error(self):
@@ -104,9 +99,8 @@ class test_impacketfile(unittest.TestCase):
 
     def test_file_success(self):
         ret = self.ifile.open("C$/Windows/System32/calc.exe")
+        ret.clean()
         self.assertIsInstance(ret, ImpacketFile)
-        if isinstance(ret, ImpacketFile):
-            ret.close()
 
 
 class test_dumper(unittest.TestCase):
@@ -218,9 +212,11 @@ class test_dumper(unittest.TestCase):
     def test_dump_success(self):
         dumper = Dumper(self.conn)
         ret = dumper.dump()
+        dumper.clean()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
-        dumper.clean()
+
+
 
 
 @unittest.skipUnless(procdump_path, "Procdump path wasn't provided")

@@ -10,7 +10,7 @@
 # IP address where LSASS can be dumped
 ip_address = "192.168.1.101"
 
-# IP address where LSASS is protected (empty to skip test)
+# IP address where LSASS is protected (empty to skip tests)
 ip_address_protected = "192.168.1.112"
 
 # Domain Name
@@ -20,10 +20,10 @@ domain = "lion.king"
 da_login = "simba"
 da_password = "Imtheking!"
 
-# User without admin rights on ip_address (empty to skip test)
+# User without admin rights on ip_address (empty to skip tests)
 usr_login = "skar"
 usr_password = "YouDontWannaMessWithMe"
 
-# Local tools for dumping methods (empty to skip test)
+# Local tools for dumping methods (empty to skip tests)
 procdump_path = "/home/pixis/Tools/Windows/Sysinternals/procdump.exe"
 dumpert_path = "/home/pixis/Tools/Windows/Dumpert/Outflank-Dumpert.exe"
