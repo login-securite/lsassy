@@ -4,15 +4,13 @@
 #  https://beta.hackndo.com [FR]
 #  https://en.hackndo.com [EN]
 
-import os
 import random
 import string
 
 from lsassy.impacketfile import ImpacketFile
 from lsassy.taskexe import TASK_EXEC
-from lsassy.wmi import WMI
-from lsassy.defines import *
 from lsassy.utils import *
+from lsassy.wmi import WMI
 
 
 class Dumper:

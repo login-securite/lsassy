@@ -6,12 +6,12 @@
 
 from threading import Thread, RLock
 
-from lsassy.impacketconnection import ImpacketConnection
 from lsassy.dumper import Dumper
-from lsassy.parser import Parser
+from lsassy.impacketconnection import ImpacketConnection
 from lsassy.logger import Logger
-from lsassy.writer import Writer
+from lsassy.parser import Parser
 from lsassy.utils import *
+from lsassy.writer import Writer
 
 lock = RLock()
 align = 1

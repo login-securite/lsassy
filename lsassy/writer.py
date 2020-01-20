@@ -5,8 +5,8 @@
 
 import json
 
-from lsassy.logger import Logger
 from lsassy.defines import *
+from lsassy.logger import Logger
 
 
 class Writer:

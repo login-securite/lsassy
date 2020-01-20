@@ -4,16 +4,14 @@
 #  https://beta.hackndo.com [FR]
 #  https://en.hackndo.com [EN]
 
-import re
-import sys
 import time
 from socket import getaddrinfo, gaierror
 
 from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
 
-from lsassy.logger import Logger
 from lsassy.defines import *
+from lsassy.logger import Logger
 
 
 class ImpacketConnection:

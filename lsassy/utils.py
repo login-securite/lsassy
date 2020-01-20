@@ -3,10 +3,12 @@
 # Website:
 #  https://beta.hackndo.com
 
-import sys
 import os
+import sys
+
 import pkg_resources
 from netaddr import IPAddress, IPRange, IPNetwork, AddrFormatError
+
 from lsassy.defines import *
 
 version = pkg_resources.require("lsassy")[0].version

@@ -7,6 +7,7 @@
 
 
 from pypykatz.pypykatz import pypykatz
+
 from lsassy.defines import *
 
 
