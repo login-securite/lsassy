@@ -69,10 +69,10 @@ def get_args():
 
     group_out = parser.add_argument_group('output')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
-    group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "none"], action='store', default="pretty", help='Print credentials in JSON format')
+    group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "none"], action='store', default="pretty", help='Output format (Default pretty)')
 
     parser.add_argument('-r', '--raw', action='store_true',
-                        help='No basic result filtering (Display host credentials and duplicates)')
+                        help='No basic result filtering (Display host credentials, duplicates and empty pass)')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='Verbosity level (0-2)')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
