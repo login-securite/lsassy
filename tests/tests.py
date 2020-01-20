@@ -246,9 +246,8 @@ class test_dumper_protected(unittest.TestCase):
 class test_lsassy(unittest.TestCase):
     def setUp(self):
         log_options = Logger.Options(True, 0)
-        conn_options = ImpacketConnection.Options(ip_address, domain, da_login, da_password)
         write_options = Writer.Options(format="none")
-        self.lsassy = Lsassy(conn_options=conn_options, log_options=log_options, write_options=write_options)
+        self.lsassy = Lsassy(ip_address, da_login, domain, da_password, log_options=log_options, write_options=write_options)
 
     def tearDown(self):
         self.lsassy.clean()

@@ -18,20 +18,20 @@ lock = RLock()
 
 class Lsassy:
     def __init__(self,
-                 conn_options: ImpacketConnection.Options,
+                 hostname, username, domain_name="", password="", lmhash="", nthash="",
                  log_options=Logger.Options(),
                  dump_options=Dumper.Options(),
                  parse_options=Parser.Options(),
                  write_options=Writer.Options()
                  ):
 
-        self.conn_options = conn_options
+        self.conn_options = ImpacketConnection.Options(hostname, domain_name, username, password, lmhash, nthash)
         self.log_options = log_options
         self.dump_options = dump_options
         self.parse_options = parse_options
         self.write_options = write_options
 
-        self._target = conn_options.hostname
+        self._target = hostname
 
         self._log = Logger(self._target, log_options)
 
@@ -39,7 +39,7 @@ class Lsassy:
         self._dumper = None
         self._parser = None
         self._dumpfile = None
-        self._credentials = None
+        self._credentials = []
         self._writer = None
 
     def connect(self, options: ImpacketConnection.Options):
@@ -102,6 +102,14 @@ class Lsassy:
                 lsassy_warn(self._log, r)
 
         self._log.info("Cleaning complete")
+
+    def get_credentials(self):
+        self.log_options.quiet = True
+        self.log_options.verbosity = False
+        self._log = Logger(self._target, self.log_options)
+        self.write_options.format = "none"
+        self.run()
+        return self._credentials
 
     def run(self):
         return_code = ERROR_UNDEFINED
@@ -181,7 +189,18 @@ class CLI(Thread):
     def run(self):
         args = get_args()
         self.set_options_from_args(args)
-        self.lsassy = Lsassy(self.conn_options, self.log_options, self.dump_options, self.parse_options, self.write_options)
+        self.lsassy = Lsassy(
+            self.conn_options.hostname,
+            self.conn_options.username,
+            self.conn_options.domain_name,
+            self.conn_options.password,
+            self.conn_options.lmhash,
+            self.conn_options.nthash,
+            self.log_options,
+            self.dump_options,
+            self.parse_options,
+            self.write_options
+        )
         return self.lsassy.run()
 
 
