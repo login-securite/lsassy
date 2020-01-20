@@ -4,7 +4,7 @@
 # Website:
 #  https://beta.hackndo.com
 
-from threading import Thread, RLock
+from multiprocessing import Process, RLock
 
 from lsassy.modules.dumper import Dumper
 from lsassy.modules.impacketconnection import ImpacketConnection
@@ -116,7 +116,8 @@ class Lsassy:
         try:
             return_code = self._run()
         except KeyboardInterrupt as e:
-            print("\nQuitting gracefully...")
+            print("")
+            self._log.warn("Quitting gracefully...")
             return_code = RetCode(ERROR_USER_INTERRUPTION)
         except Exception as e:
             return_code = RetCode(ERROR_UNDEFINED, e)
@@ -145,9 +146,8 @@ class Lsassy:
         return RetCode(ERROR_SUCCESS)
 
 
-class CLI(Thread):
+class CLI:
     def __init__(self, target):
-        Thread.__init__(self)
         self.conn_options = ImpacketConnection.Options()
         self.log_options = Logger.Options()
         self.dump_options = Dumper.Options()
@@ -210,12 +210,15 @@ def run():
     if len(targets) == 1:
         return CLI(targets[0]).run()
 
-    threads = [CLI(target) for target in targets]
-    for thread in threads:
-        thread.start()
-
-    for thread in threads:
-        thread.join()
+    jobs = [Process(target=CLI(target).run) for target in targets]
+    try:
+        for job in jobs:
+            job.start()
+    except KeyboardInterrupt as e:
+        print("\nQuitting gracefully...")
+        terminate_jobs(jobs)
+    finally:
+        join_jobs(jobs)
 
     return 0
 

@@ -25,6 +25,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 ## Requirements
 
 * Python >= 3.6
+* netaddr
 * [pypykatz](https://github.com/skelsec/pypykatz) >= 0.3.0
 * [impacket](https://github.com/SecureAuthCorp/impacket)
 
