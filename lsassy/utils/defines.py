@@ -11,7 +11,7 @@ ERROR_CONNECTION_ERROR      = (2, "Connection error")
 ERROR_ACCESS_DENIED         = (3, "Access denied. Administrative rights on remote host are required")
 ERROR_METHOD_NOT_SUPPORTED  = (4, "Method not supported")
 ERROR_LSASS_PROTECTED       = (5, "Lsass is protected")
-ERROR_SLOW_TARGET           = (6, "Target might be slow. Try to increase --timeout")
+ERROR_SLOW_TARGET           = (6, "Either lsass is protected or target might be slow. Try to increase --timeout")
 ERROR_LSASS_DUMP_NOT_FOUND  = (7, "lsass dump file does not exist. Use --debug flag for more details")
 ERROR_USER_INTERRUPTION     = (8, "lsassy has been interrupted")
 ERROR_PATH_FILE             = (9, "Invalid path")
@@ -52,3 +52,19 @@ class RetCode:
 
     def __str__(self):
         return "{} : {}".format(self.error_code, self.error_msg)
+
+    def __eq__(self, other):
+        if isinstance(other, RetCode):
+            return self.error_code == other.error_code
+        elif isinstance(other, int):
+            return self.error_code == other
+        return NotImplemented
+
+    def __ne__(self, other):
+        x = self.__eq__(other)
+        if x is not NotImplemented:
+            return not x
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
