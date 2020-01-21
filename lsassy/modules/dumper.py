@@ -280,9 +280,27 @@ class Dumper:
 
         try:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
+
         except Exception as e:
             if "STATUS_OBJECT_NAME_NOT_FOUND" not in str(e):
-                lsassy_warn(self._log, RetCode(ERROR_DUMP_CLEANING, e))
+                self._log.debug("Dump file \"{}\" wasn't removed.".format(
+                    self._tmp_dir + self._remote_lsass_dump))
+                if "Broken pipe" in str(e):
+                    try:
+                        self._log.debug("Reason : Broken pipe. Trying to reconnect ...")
+                        self._conn.clean()
+                        self._conn.login()
+                        self._log.debug("Reconnected !")
+                        self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
+                        self._log.debug("Dump file \"{}\" was successfully removed !".format(
+                            self._tmp_dir + self._remote_lsass_dump))
+                    except:
+                        self._log.error("Dump file \"{}\" wasn't removed. An error occurred.".format(self._tmp_dir + self._remote_lsass_dump))
+                        lsassy_warn(self._log, RetCode(ERROR_DUMP_CLEANING, e))
+                else:
+                    self._log.error("Dump file \"{}\" wasn't removed. An error occurred.".format(
+                        self._tmp_dir + self._remote_lsass_dump))
+                    lsassy_warn(self._log, RetCode(ERROR_DUMP_CLEANING, e))
 
         if self._use_procdump:
             # Delete procdump.exe
