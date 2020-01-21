@@ -252,10 +252,9 @@ class test_lsassy(unittest.TestCase):
     def tearDown(self):
         self.lsassy.clean()
 
-    def test_lsass_success(self):
+    def test_lsassy_success(self):
         ret = self.lsassy.run()
         self.assertEqual(0, ret)
-
 
 
 if __name__ == '__main__':
