@@ -90,8 +90,7 @@ class Writer:
                             domain,
                             username,
                             " " * (max_size - len(domain) - len(username) + 2),
-                            Logger.highlight(password)),
-                        force=True
+                            Logger.highlight(password))
                     )
 
         elif self._format == "none":

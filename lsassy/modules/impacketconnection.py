@@ -25,6 +25,7 @@ class ImpacketConnection:
             self.nthash = nthash
 
     def __init__(self, options: Options):
+        self.options = options
         self.hostname = options.hostname
         self.domain_name = options.domain_name
         self.username = options.username

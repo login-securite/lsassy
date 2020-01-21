@@ -20,12 +20,6 @@ class Logger:
         self._verbosity = options.verbosity
         self._quiet = options.quiet
 
-    def set_debug(self, debug):
-        self._verbosity = debug
-
-    def set_quiet(self, quiet):
-        self._quiet = quiet
-
     def info(self, msg):
         if not self._quiet:
             if self._verbosity >= 1:
@@ -49,10 +43,13 @@ class Logger:
             msg = "\n    ".join(msg.split("\n"))
             print("\033[1;31m[X]\033[0m [{}]{}{}".format(self._target, " "*self._align, msg), file=sys.stderr)
 
-    def success(self, msg, force=False):
-        if not self._quiet or force:
+    def success(self, msg):
+        if not self._quiet:
             msg = "\n    ".join(msg.split("\n"))
             print("\033[1;32m[+]\033[0m [{}]{}{}".format(self._target, " "*self._align, msg))
+
+    def raw(self, msg):
+        print("{}".format(msg), end='')
 
     @staticmethod
     def highlight(msg):

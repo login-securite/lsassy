@@ -158,7 +158,7 @@ class CLI:
 
     def set_options_from_args(self, args):
         # Logger Options
-        self.log_options.verbosity = args.verbose
+        self.log_options.verbosity = args.v
         self.log_options.quiet = args.quiet
 
         # Connection Options

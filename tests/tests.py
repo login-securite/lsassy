@@ -19,7 +19,7 @@ from tests.tests_config import *
 
 class test_impacketconnection(unittest.TestCase):
     def setUp(self):
-        self.log = Logger(Logger.Options(True, 0))
+        self.log = Logger(Logger.Options(verbosity=0, quiet=True))
         self.conn = None
 
     def tearDown(self):
@@ -74,7 +74,7 @@ class test_impacketconnection(unittest.TestCase):
 
 class test_impacketfile(unittest.TestCase):
     def setUp(self):
-        self.log = Logger(Logger.Options(True, 0))
+        self.log = Logger(Logger.Options(verbosity=0, quiet=True))
         self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
@@ -107,7 +107,7 @@ class test_impacketfile(unittest.TestCase):
 
 class test_dumper(unittest.TestCase):
     def setUp(self):
-        self.log = Logger(Logger.Options(True, 0))
+        self.log = Logger(Logger.Options(verbosity=0, quiet=True))
         self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
@@ -225,7 +225,7 @@ class test_dumper(unittest.TestCase):
 @unittest.skipUnless(ip_address_protected, "No IP address with protected LSASS was provided")
 class test_dumper_protected(unittest.TestCase):
     def setUp(self):
-        self.log = Logger(Logger.Options(True, 0))
+        self.log = Logger(Logger.Options(verbosity=0, quiet=True))
         self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address_protected, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
@@ -245,7 +245,7 @@ class test_dumper_protected(unittest.TestCase):
 
 class test_lsassy(unittest.TestCase):
     def setUp(self):
-        log_options = Logger.Options(True, 0)
+        log_options = Logger.Options(verbosity=0, quiet=True)
         write_options = Writer.Options(format="none")
         self.lsassy = Lsassy(ip_address, da_login, domain, da_password, log_options=log_options, write_options=write_options)
 
