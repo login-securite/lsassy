@@ -16,13 +16,14 @@ from lsassy.modules.logger import Logger
 
 class ImpacketConnection:
     class Options:
-        def __init__(self, hostname="", domain_name="", username="", password="", lmhash="", nthash=""):
+        def __init__(self, hostname="", domain_name="", username="", password="", lmhash="", nthash="", timeout=5):
             self.hostname = hostname
             self.domain_name = domain_name
             self.username = username
             self.password = password
             self.lmhash = lmhash
             self.nthash = nthash
+            self.timeout = timeout
 
     def __init__(self, options: Options):
         self.options = options
@@ -32,6 +33,7 @@ class ImpacketConnection:
         self.password = options.password
         self.lmhash = options.lmhash
         self.nthash = options.nthash
+        self.timeout = options.timeout
         self._log = Logger(self.hostname)
         self._conn = None
 
@@ -44,11 +46,13 @@ class ImpacketConnection:
     def login(self):
         try:
             ip = list({addr[-1][0] for addr in getaddrinfo(self.hostname, 0, 0, 0, 0)})[0]
+            if ip != self.hostname:
+                self._log.debug("Host {} resolved to {}".format(self.hostname, ip))
         except gaierror as e:
             return RetCode(ERROR_DNS_ERROR, e)
 
         try:
-            self._conn = SMBConnection(ip, ip)
+            self._conn = SMBConnection(ip, ip, timeout=self.timeout)
         except Exception as e:
             return RetCode(ERROR_CONNECTION_ERROR, e)
 
@@ -145,8 +149,9 @@ class ImpacketConnection:
             return RetCode(ERROR_ACCESS_DENIED, e)
 
     def close(self):
-        self._log.debug("Closing Impacket connection")
-        self._conn.close()
+        if self._conn is not None:
+            self._log.debug("Closing Impacket connection")
+            self._conn.close()
 
     def clean(self):
         try:
