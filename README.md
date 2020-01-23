@@ -102,7 +102,7 @@ If you find an issue with this tool (that's very plausible !), please
 
 * Check that you're using the latest version
 * Send as much details as possible.
-    - For standalone **lsassy**, please use the `-d` debug flag
+    - For standalone **lsassy**, please use maximum verbosity `-vv`
     - For CME module, please use CrackMapExec `--verbose` flag
 
 ## Acknowledgments
