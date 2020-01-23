@@ -2,7 +2,7 @@
 
 [![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=2.0.1&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
-![CME Module example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
+![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
 
 Python library to remotely extract credentials on a set of hosts. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
 
