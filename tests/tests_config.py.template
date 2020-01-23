@@ -1,0 +1,29 @@
+# Author:
+#  Romain Bentz (pixis - @hackanddo)
+# Website:
+#  https://beta.hackndo.com
+
+"""
+# RENAME THIS FILE TO tests_config.py
+"""
+
+# IP address where LSASS can be dumped
+ip_address = "192.168.1.101"
+
+# IP address where LSASS is protected (empty to skip tests)
+ip_address_protected = "192.168.1.112"
+
+# Domain Name
+domain = "lion.king"
+
+# User with admin rights on ip_address and ip_address_protected
+da_login = "simba"
+da_password = "Imtheking!"
+
+# User without admin rights on ip_address (empty to skip tests)
+usr_login = "skar"
+usr_password = "YouDontWannaMessWithMe"
+
+# Local tools for dumping methods (empty to skip tests)
+procdump_path = "/home/pixis/Tools/Windows/Sysinternals/procdump.exe"
+dumpert_path = "/home/pixis/Tools/Windows/Dumpert/Outflank-Dumpert.exe"

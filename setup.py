@@ -13,7 +13,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="lsassy",
-    version="1.1.7",
+    version="2.0.0",
     author="Pixis",
     author_email="hackndo@gmail.com",
     description="Python library to parse remote lsass dumps",
@@ -39,7 +39,8 @@ setup(
     ),
     entry_points={
         'console_scripts': [
-            'lsassy = lsassy.__main__:run',
+            'lsassy = lsassy.core:run',
         ],
-    }
+    },
+    test_suite='tests.tests'
 )

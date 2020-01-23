@@ -1,2 +1,3 @@
 impacket
+netaddr
 pypykatz>=0.3.0

@@ -28,5 +28,4 @@ MANIFEST
 .idea
 
 # Tests
-
-test/tests.config.sh
+tests/tests_config.py
