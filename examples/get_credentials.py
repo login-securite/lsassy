@@ -3,8 +3,7 @@
 # Website:
 #  https://beta.hackndo.com
 
-from lsassy import Lsassy
-from lsassy.modules import Logger, Dumper, Parser, Writer
+from lsassy import Lsassy, Logger, Dumper, Parser, Writer
 
 log_options = Logger.Options(verbosity=2, quiet=False)
 dump_options = Dumper.Options(method=2, dumpname="lsass.dmp", procdump="/opt/Sysinternals/procdump.exe")
