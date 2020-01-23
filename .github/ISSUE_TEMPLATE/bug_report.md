@@ -23,7 +23,7 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
- * For standalone lsassy, please use the -d debug flag
+ * For standalone lsassy, please use maximum verbosity `-vv`
  * For CME module, please use CrackMapExec --verbose flag
 
 **Additional context**
