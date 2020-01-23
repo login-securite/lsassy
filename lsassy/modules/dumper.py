@@ -282,7 +282,8 @@ class Dumper:
             self._conn.deleteFile(self._share, self._tmp_dir + self._remote_lsass_dump)
 
         except Exception as e:
-            if "STATUS_OBJECT_NAME_NOT_FOUND" not in str(e):
+            # STATUS_NO_SUCH_FILE for WinXP
+            if "STATUS_OBJECT_NAME_NOT_FOUND" not in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
 
                 self._log.debug("Dump file \"{}\" wasn't removed. Error : {}".format(
                     self._tmp_dir + self._remote_lsass_dump, str(e)[:100] + "..." if len(str(e)) > 100 else str(e)))

@@ -38,7 +38,7 @@ def get_args():
     group_dump.add_argument('--dumpname', action='store', help='Name given to lsass dump (Default: Random)')
     group_dump.add_argument('--procdump', action='store', help='Procdump path')
     group_dump.add_argument('--dumpert', action='store', help='dumpert path')
-    group_dump.add_argument('--timeout', default=3, type=int, action='store',
+    group_dump.add_argument('--timeout', default=10, type=int, action='store',
                             help='Timeout before considering lsass was not dumped successfully')
 
     group_auth = parser.add_argument_group('authentication')
