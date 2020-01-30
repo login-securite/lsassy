@@ -83,6 +83,11 @@ class CMEModule:
         password = getattr(connection, "password", "")
         lmhash = getattr(connection, "lmhash", "")
         nthash = getattr(connection, "nthash", "")
+
+        password = "" if password is None else password
+        lmhash = "" if lmhash is None else lmhash
+        nthash = "" if nthash is None else nthash
+
         host = connection.host
 
         command = r"lsassy --format json -d '{}' -u '{}' -p '{}' -H '{}:{}' {}".format(
