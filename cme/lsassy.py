@@ -85,9 +85,14 @@ class CMEModule:
         nthash = getattr(connection, "nthash", "")
         host = connection.host
 
-        command = r"lsassy --format json -d '{}' -u '{}' -p '{}' -H '{}:{}' {}".format(
-            domain_name, username, password, lmhash, nthash, host
-        )
+        if password is not None:
+            command = r"lsassy --format json -d '{}' -u '{}' -p '{}' -H '{}:{}' {}".format(
+                domain_name, username, password, lmhash, nthash, host
+            )
+        else:
+            command = r"lsassy --format json -d '{}' -u '{}' -H '{}:{}' {}".format(
+                domain_name, username, lmhash, nthash, host
+            )
 
         if context.verbose:
             command += " -vv "
