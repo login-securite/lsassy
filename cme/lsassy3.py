@@ -98,7 +98,7 @@ class CMEModule:
         write_option = Writer.Options()
 
         if self.method:
-            dump_options.method = self.method
+            dump_options.method = int(self.method)
 
         if self.remote_lsass_dump:
             dump_options.dumpname = self.remote_lsass_dump
