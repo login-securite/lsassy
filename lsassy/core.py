@@ -108,8 +108,18 @@ class Lsassy:
         self.log_options.verbosity = False
         self._log = Logger(self._target, self.log_options)
         self.write_options.format = "none"
-        self.run()
-        return self._credentials
+        return_code = self.run()
+        ret = {
+                "success": True,
+                "credentials": self._credentials
+            }
+        if not return_code.success():
+            ret["success"] = False
+            ret["error_code"] = return_code.error_code
+            ret["error_msg"] = return_code.error_msg
+            ret["error_exception"] = return_code.error_exception
+
+        return ret
 
     def run(self):
         return_code = ERROR_UNDEFINED
@@ -124,7 +134,7 @@ class Lsassy:
         finally:
             self.clean()
             lsassy_exit(self._log, return_code)
-            return return_code.error_code
+            return return_code
 
     def _run(self):
         """
@@ -208,7 +218,7 @@ def run():
     targets = get_targets(get_args().target)
 
     if len(targets) == 1:
-        return CLI(targets[0]).run()
+        return CLI(targets[0]).run().error_code
 
     jobs = [Process(target=CLI(target).run) for target in targets]
     try:
