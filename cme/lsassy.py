@@ -261,7 +261,7 @@ class CMEModule:
             with session.begin_transaction() as tx:
                 query = """
                     MATCH (n:User {{name:\"{}\"}}),(m:Group),p=shortestPath((n)-[r:{}*1..]->(m))
-                    WHERE m.objectsid ENDS WITH "-512" 
+                    WHERE m.objectsid ENDS WITH "-512" OR m.objectid ENDS WITH "-512"
                     RETURN COUNT(p) AS pathNb
                     """.format(username, '|'.join(effective_edges))
 
