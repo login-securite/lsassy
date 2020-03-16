@@ -24,6 +24,12 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# virtualenv
+env
+.env
+venv
+.venv
+
 # IDE
 .idea
 
