@@ -116,3 +116,4 @@ If you find an issue with this tool (that's very plausible !), please
 * [ITPPA](https://github.com/ITPPA/)
 * [viaccoz](https://github.com/viaccoz)
 * [blurbdust](https://github.com/blurbdust)
+* [exploide](https://github.com/exploide)
