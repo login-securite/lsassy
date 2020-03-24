@@ -43,10 +43,14 @@ class Logger:
             msg = "\n    ".join(msg.split("\n"))
             print("\033[1;31m[X]\033[0m [{}]{}{}".format(self._target, " "*self._align, msg), file=sys.stderr)
 
-    def success(self, msg):
+    def success(self, msg, output=True):
         if not self._quiet:
             msg = "\n    ".join(msg.split("\n"))
-            print("\033[1;32m[+]\033[0m [{}]{}{}".format(self._target, " "*self._align, msg))
+            out = "\033[1;32m[+]\033[0m [{}]{}{}".format(self._target, " "*self._align, msg)
+            if output:
+                print(out)
+            else:
+                return out
 
     def raw(self, msg):
         print("{}".format(msg), end='')
