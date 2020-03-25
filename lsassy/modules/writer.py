@@ -12,9 +12,10 @@ from lsassy.modules.logger import Logger
 
 class Writer:
     class Options:
-        def __init__(self, format="pretty", output_file=None):
+        def __init__(self, format="pretty", output_file=None, quiet=False):
             self.format = format
             self.output_file = output_file
+            self.quiet = quiet
 
     def __init__(self, hostname, credentials, logger, options=Options()):
         self._hostname = hostname
@@ -22,6 +23,7 @@ class Writer:
         self._credentials = credentials
         self._format = options.format
         self._file = options.output_file
+        self._quiet = options.quiet
 
     @staticmethod
     def _decode(data):
@@ -34,7 +36,7 @@ class Writer:
         except:
             return data
 
-    def write(self):
+    def get_output(self):
         output = ""
 
         if self._format == "json":
@@ -57,7 +59,7 @@ class Writer:
                 }
                 if credential not in json_output[domain][username]:
                     json_output[domain][username].append(credential)
-            output = json.dumps(json_output)
+            output = json.dumps(json_output) + "\n"
         elif self._format == "grep":
             credentials = set()
             for cred in self._credentials:
@@ -92,7 +94,15 @@ class Writer:
         else:
             return RetCode(ERROR_OUTPUT_FORMAT_INVALID, Exception("Output format {} is not valid".format(self._format)))
 
-        print(output, end="")
+        return output
+
+    def write(self):
+        output = self.get_output()
+        if isinstance(output, int):
+            return output
+
+        if not self._quiet:
+            print(output, end="")
         if self._file:
             ret = self.write_file(output)
             if not ret.success():

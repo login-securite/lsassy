@@ -104,14 +104,11 @@ class Lsassy:
         self._log.info("Cleaning complete")
 
     def get_credentials(self):
-        self.log_options.quiet = True
-        self.log_options.verbosity = False
-        self._log = Logger(self._target, self.log_options)
-        self.write_options.format = "none"
         return_code = self.run()
+        self._writer = Writer(self._target, self._credentials, self._log, self.write_options)
         ret = {
                 "success": True,
-                "credentials": self._credentials
+                "credentials": self._writer.get_output()
             }
         if not return_code.success():
             ret["success"] = False
@@ -195,6 +192,7 @@ class CLI:
         # Writer Options
         self.write_options.output_file = args.outfile
         self.write_options.format = args.format
+        self.write_options.quiet = args.quiet
 
     def run(self):
         args = get_args()
