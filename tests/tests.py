@@ -33,6 +33,13 @@ class test_impacketconnection(unittest.TestCase):
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_DNS_ERROR[1], ret.error_msg)
 
+    def test_login_kerberos_success(self):
+        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password, '', '', kerberos, ''))
+        self.conn.set_logger(self.log)
+        ret = self.conn.login()
+        self.assertIsInstance(ret, RetCode)
+        self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
+
     def test_login_connection_error(self):
         self.conn = ImpacketConnection(ImpacketConnection.Options("255.255.255.255", domain, da_login, da_password))
         self.conn.set_logger(self.log)

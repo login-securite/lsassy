@@ -27,3 +27,6 @@ usr_password = "YouDontWannaMessWithMe"
 # Local tools for dumping methods (empty to skip tests)
 procdump_path = "/home/pixis/Tools/Windows/Sysinternals/procdump.exe"
 dumpert_path = "/home/pixis/Tools/Windows/Dumpert/Outflank-Dumpert.exe"
+
+# Include kerberos tests
+kerberos = True
