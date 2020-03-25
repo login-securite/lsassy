@@ -9,6 +9,7 @@ from socket import getaddrinfo, gaierror
 
 from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
+from impacket.krb5.types import KerberosException
 
 from lsassy.utils.defines import *
 from lsassy.modules.logger import Logger
@@ -76,8 +77,10 @@ class ImpacketConnection:
             else:
                 self._conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
         except SessionError as e:
-            if not self.kerberos:
-                self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
+            self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
+            return RetCode(ERROR_LOGIN_FAILURE, e)
+        except KerberosException as e:
+            self._log.debug("Kerberos error")
             return RetCode(ERROR_LOGIN_FAILURE, e)
         except Exception as e:
             return RetCode(ERROR_UNDEFINED, e)
