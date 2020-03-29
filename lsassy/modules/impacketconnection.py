@@ -72,10 +72,13 @@ class ImpacketConnection:
             self._log.debug("Authenticating against {}".format(self.hostname))
 
         try:
-            if self.kerberos:
-                self._conn.kerberosLogin(username, self.password, self.domain_name, self.lmhash, self.nthash, self.aesKey, self.dc_ip)
+            if not self.kerberos:
+                self._conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash,
+                                 nthash=self.nthash, ntlmFallback=True)
             else:
-                self._conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
+                self._conn.kerberosLogin(username, self.password, domain=self.domain_name, lmhash=self.lmhash,
+                                         nthash=self.nthash, aesKey=self.aesKey, kdcHost=self.dc_ip)
+
         except SessionError as e:
             self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
             return RetCode(ERROR_LOGIN_FAILURE, e)
