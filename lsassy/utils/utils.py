@@ -71,7 +71,13 @@ def get_args():
         parser.print_help()
         sys.exit(RetCode(ERROR_MISSING_ARGUMENTS).error_code)
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if not args.target:
+        parser.print_help()
+        sys.exit(RetCode(ERROR_MISSING_ARGUMENTS).error_code)
+
+    return args
 
 
 def lsassy_exit(logger, error):
