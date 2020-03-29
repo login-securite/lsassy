@@ -13,6 +13,7 @@ import time
 
 from impacket.dcerpc.v5 import tsch, transport
 from impacket.dcerpc.v5.dtypes import NULL
+from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_GSS_NEGOTIATE
 
 
 class TASK_EXEC:
@@ -24,12 +25,16 @@ class TASK_EXEC:
         self._rpctransport = transport.DCERPCTransportFactory(stringbinding)
 
         if hasattr(self._rpctransport, 'set_credentials'):
-            self._rpctransport.set_credentials(self._conn.username, self._conn.password, self._conn.domain_name, self._conn.lmhash, self._conn.nthash)
+            self._rpctransport.set_credentials(self._conn.username, self._conn.password, self._conn.domain_name,
+                                              self._conn.lmhash, self._conn.nthash, self._conn.aesKey)
+            self._rpctransport.set_kerberos(self._conn.kerberos, self._conn.dc_ip)
 
     def execute(self, commands):
         dce = self._rpctransport.get_dce_rpc()
 
         dce.set_credentials(*self._rpctransport.get_credentials())
+        if self._conn.kerberos:
+            dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
         dce.connect()
         dce.bind(tsch.MSRPC_UUID_TSCHS)
         xml = self.gen_xml(commands)

@@ -17,7 +17,8 @@ from impacket.dcerpc.v5.dtypes import NULL
 class WMI:
     def __init__(self, connection, logger):
         self.conn = connection
-        self.conn.hostname = list({addr[-1][0] for addr in socket.getaddrinfo(self.conn.hostname, 0, 0, 0, 0)})[0]
+        if not self.conn.kerberos:
+            self.conn.hostname = list({addr[-1][0] for addr in socket.getaddrinfo(self.conn.hostname, 0, 0, 0, 0)})[0]
         self.log = logger
         self.win32Process = None
         self.iWbemServices = None
@@ -29,11 +30,14 @@ class WMI:
         self.buffer += str(data)
 
     def _getwin32process(self):
-        self.log.debug("Trying to authenticate using : {}\\{}:{}".format(
-            self.conn.domain_name,
-            self.conn.username,
-            self.conn.password)
-        )
+        if self.conn.kerberos:
+            self.log.debug("Trying to authenticate using kerberos ticket")
+        else:
+            self.log.debug("Trying to authenticate using : {}\\{}:{}".format(
+                self.conn.domain_name,
+                self.conn.username,
+                self.conn.password)
+            )
 
         try:
             self.dcom = DCOMConnection(
@@ -43,9 +47,10 @@ class WMI:
                 self.conn.domain_name,
                 self.conn.lmhash,
                 self.conn.nthash,
-                None,
+                self.conn.aesKey,
                 oxidResolver=True,
-                doKerberos=False
+                doKerberos=self.conn.kerberos,
+                kdcHost=self.conn.dc_ip
             )
             iInterface = self.dcom.CoCreateInstanceEx(wmi.CLSID_WbemLevel1Login, wmi.IID_IWbemLevel1Login)
             iWbemLevel1Login = wmi.IWbemLevel1Login(iInterface)

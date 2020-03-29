@@ -19,6 +19,12 @@ class Logger:
         self._align = options.align
         self._verbosity = options.verbosity
         self._quiet = options.quiet
+        if self._verbosity == 2:
+            # This part is to have impacket debug informations
+            import logging
+            from impacket.examples import logger
+            logger.init()
+            logging.getLogger().setLevel(logging.DEBUG)
 
     def info(self, msg):
         if not self._quiet:
