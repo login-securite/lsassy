@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=2.0.6&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=2.1.0&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
 
@@ -11,37 +11,39 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
 | [Requirements](#requirements)                | Requirements to install lsassy from source              |
-| [Installation](#installation)                | Installation commands from pip or from source           |
 | [Documentation](#documentation)              | Lsassy documentation                                    |
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
 | [Contributors](#contributors)                | People contributing to this tool                        |
 
-## Requirements
+## Requirement
 
 * Python >= 3.6
-* netaddr
-* [pypykatz](https://github.com/skelsec/pypykatz) >= 0.3.0
-* [impacket](https://github.com/SecureAuthCorp/impacket)
-
-## Installation
-
-### From pip
-
-```
-python3.7 -m pip install lsassy
-```
-
-### From sources
-
-```
-python3.7 setup.py install
-```
 
 ## Documentation
 
-The tool is fully documented in the [wiki](https://github.com/Hackndo/lsassy/wiki) of this project
+The tool is fully documented in the project's [wiki](https://github.com/Hackndo/lsassy/wiki)
+
+### Installation
+
+* [Installation](https://github.com/Hackndo/lsassy/wiki/Lsassy-Installation)
+
+### Standalone
+
+* [Basic Usage](https://github.com/Hackndo/lsassy/wiki/Lsassy-Basic-Usage)
+* [Advanced Usage](https://github.com/Hackndo/lsassy/wiki/Lsassy-Advanced-Usage)
+
+### Library
+
+* [Basic Usage](https://github.com/Hackndo/lsassy/wiki/Lsassy-lib-Basic-Usage)
+* [Advanced Usage](https://github.com/Hackndo/lsassy/wiki/Lsassy-lib-Advanced-Usage)
+
+### CrackMapExec module
+
+* [Installation](https://github.com/Hackndo/lsassy/wiki/CME-Installation)
+* [Basic Usage](https://github.com/Hackndo/lsassy/wiki/CME-Basic-Usage)
+* [Advanced Usage](https://github.com/Hackndo/lsassy/wiki/CME-Advanced-Usage)
 
 ## CrackMapExec module
 
@@ -53,6 +55,13 @@ CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo
 ### ChangeLog
 
 ```
+v2.1.0
+------
+* Kerberos authentication support (Thank you laxa for PR)
+* Add CME module for python3
+* Update bloodhound queries for BloodHound3
+* Bug fixes
+
 v2.0.0
 ------
 * Multiprocessing support to dump credentials on multiple hosts at a time
@@ -117,3 +126,4 @@ If you find an issue with this tool (that's very plausible !), please
 * [viaccoz](https://github.com/viaccoz)
 * [blurbdust](https://github.com/blurbdust)
 * [exploide](https://github.com/exploide)
+* [Laxa](https://github.com/Laxa)
