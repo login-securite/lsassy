@@ -46,6 +46,15 @@ def get_args():
     group_auth.add_argument('-p', '--password', action='store', help='Plaintext password')
     group_auth.add_argument('-d', '--domain', default="", action='store', help='Domain name')
     group_auth.add_argument('-H', '--hashes', action='store', help='[LM:]NT hash')
+    group_auth.add_argument('-k', '--kerberos', action="store_true", help='Use Kerberos authentication. Grabs credentials from ccache file '
+                                                    '(KRB5CCNAME) based on target parameters. If valid credentials '
+                                                    'cannot be found, it will use the ones specified in the command '
+                                                    'line')
+    group_auth.add_argument('-dc-ip', action='store', metavar="ip address",
+                       help='IP Address of the domain controller. If omitted it will use the domain part (FQDN) specified in '
+                            'the target parameter')
+    group_auth.add_argument('-aesKey', action="store", metavar = "hex key", help='AES key to use for Kerberos Authentication '
+                                                                    '(128 or 256 bits)')
 
     group_out = parser.add_argument_group('output')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
@@ -62,7 +71,13 @@ def get_args():
         parser.print_help()
         sys.exit(RetCode(ERROR_MISSING_ARGUMENTS).error_code)
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if not args.target:
+        parser.print_help()
+        sys.exit(RetCode(ERROR_MISSING_ARGUMENTS).error_code)
+
+    return args
 
 
 def lsassy_exit(logger, error):

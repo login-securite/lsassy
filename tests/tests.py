@@ -33,6 +33,14 @@ class test_impacketconnection(unittest.TestCase):
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_DNS_ERROR[1], ret.error_msg)
 
+    @unittest.skipUnless(kerberos, "Skipping Kerberos (Set kerberos=True to incude Kerberos tests)")
+    def test_login_kerberos_success(self):
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, da_login, da_password, '', '', kerberos, domain_controller))
+        self.conn.set_logger(self.log)
+        ret = self.conn.login()
+        self.assertIsInstance(ret, RetCode)
+        self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
+
     def test_login_connection_error(self):
         self.conn = ImpacketConnection(ImpacketConnection.Options("255.255.255.255", domain, da_login, da_password))
         self.conn.set_logger(self.log)
@@ -41,21 +49,21 @@ class test_impacketconnection(unittest.TestCase):
         self.assertEqual(ERROR_CONNECTION_ERROR[1], ret.error_msg)
 
     def test_login_login_error(self):
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, "wrong_password"))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, da_login, "wrong_password"))
         self.conn.set_logger(self.log)
         ret = self.conn.login()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_LOGIN_FAILURE[1], ret.error_msg)
 
     def test_login_login_success(self):
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         ret = self.conn.login()
         self.assertIsInstance(ret, RetCode)
         self.assertEqual(ERROR_SUCCESS[1], ret.error_msg)
 
     def test_is_admin(self):
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
         ret = self.conn.isadmin()
@@ -64,7 +72,7 @@ class test_impacketconnection(unittest.TestCase):
 
     @unittest.skipUnless(usr_login and usr_password, "No low privileged user credential provided")
     def test_is_admin_error(self):
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, usr_login, usr_password))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, usr_login, usr_password))
         self.conn.set_logger(self.log)
         self.conn.login()
         ret = self.conn.isadmin()
@@ -75,7 +83,7 @@ class test_impacketconnection(unittest.TestCase):
 class test_impacketfile(unittest.TestCase):
     def setUp(self):
         self.log = Logger(Logger.Options(verbosity=0, quiet=True))
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
         self.ifile = ImpacketFile(self.conn, self.log)
@@ -108,7 +116,7 @@ class test_impacketfile(unittest.TestCase):
 class test_dumper(unittest.TestCase):
     def setUp(self):
         self.log = Logger(Logger.Options(verbosity=0, quiet=True))
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address, domain, da_login, da_password))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(target, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
 
@@ -222,11 +230,11 @@ class test_dumper(unittest.TestCase):
 
 
 @unittest.skipUnless(procdump_path, "Procdump path wasn't provided")
-@unittest.skipUnless(ip_address_protected, "No IP address with protected LSASS was provided")
+@unittest.skipUnless(protected_target, "No IP address with protected LSASS was provided")
 class test_dumper_protected(unittest.TestCase):
     def setUp(self):
         self.log = Logger(Logger.Options(verbosity=0, quiet=True))
-        self.conn = ImpacketConnection(ImpacketConnection.Options(ip_address_protected, domain, da_login, da_password))
+        self.conn = ImpacketConnection(ImpacketConnection.Options(protected_target, domain, da_login, da_password))
         self.conn.set_logger(self.log)
         self.conn.login()
 
@@ -247,7 +255,7 @@ class test_lsassy(unittest.TestCase):
     def setUp(self):
         log_options = Logger.Options(verbosity=0, quiet=True)
         write_options = Writer.Options(format="none")
-        self.lsassy = Lsassy(ip_address, da_login, domain, da_password, log_options=log_options, write_options=write_options)
+        self.lsassy = Lsassy(target, da_login, domain, da_password, log_options=log_options, write_options=write_options)
 
     def tearDown(self):
         self.lsassy.clean()

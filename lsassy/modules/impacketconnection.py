@@ -9,6 +9,7 @@ from socket import getaddrinfo, gaierror
 
 from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
+from impacket.krb5.types import KerberosException
 
 from lsassy.utils.defines import *
 from lsassy.modules.logger import Logger
@@ -16,7 +17,8 @@ from lsassy.modules.logger import Logger
 
 class ImpacketConnection:
     class Options:
-        def __init__(self, hostname="", domain_name="", username="", password="", lmhash="", nthash="", timeout=5):
+        def __init__(self, hostname="", domain_name="", username="", password="",
+                    lmhash="", nthash="", kerberos=False, aesKey="", dc_ip=None, timeout=5):
             self.hostname = hostname
             self.domain_name = domain_name
             self.username = username
@@ -24,6 +26,9 @@ class ImpacketConnection:
             self.lmhash = lmhash
             self.nthash = nthash
             self.timeout = timeout
+            self.kerberos = kerberos
+            self.aesKey = aesKey
+            self.dc_ip = dc_ip
 
     def __init__(self, options: Options):
         self.options = options
@@ -33,6 +38,9 @@ class ImpacketConnection:
         self.password = options.password
         self.lmhash = options.lmhash
         self.nthash = options.nthash
+        self.kerberos = options.kerberos
+        self.aesKey = options.aesKey
+        self.dc_ip = options.dc_ip
         self.timeout = options.timeout
         self._log = Logger(self.hostname)
         self._conn = None
@@ -52,16 +60,30 @@ class ImpacketConnection:
             return RetCode(ERROR_DNS_ERROR, e)
 
         try:
-            self._conn = SMBConnection(ip, ip, timeout=self.timeout)
+            self._conn = SMBConnection(self.hostname, ip, timeout=self.timeout)
         except Exception as e:
             return RetCode(ERROR_CONNECTION_ERROR, e)
 
-        username = self.username.split("@")[0]
-        self._log.debug("Authenticating against {}".format(ip))
+        username = ''
+        if not self.kerberos:
+            username = self.username.split("@")[0]
+            self._log.debug("Authenticating against {}".format(ip))
+        else:
+            self._log.debug("Authenticating against {}".format(self.hostname))
+
         try:
-            self._conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash, nthash=self.nthash, ntlmFallback=True)
+            if not self.kerberos:
+                self._conn.login(username, self.password, domain=self.domain_name, lmhash=self.lmhash,
+                                 nthash=self.nthash, ntlmFallback=True)
+            else:
+                self._conn.kerberosLogin(username, self.password, domain=self.domain_name, lmhash=self.lmhash,
+                                         nthash=self.nthash, aesKey=self.aesKey, kdcHost=self.dc_ip)
+
         except SessionError as e:
             self._log.debug("Provided credentials : {}\\{}:{}".format(self.domain_name, username, self.password))
+            return RetCode(ERROR_LOGIN_FAILURE, e)
+        except KerberosException as e:
+            self._log.debug("Kerberos error")
             return RetCode(ERROR_LOGIN_FAILURE, e)
         except Exception as e:
             return RetCode(ERROR_UNDEFINED, e)
