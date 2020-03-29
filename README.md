@@ -51,8 +51,16 @@ I wrote a CrackMapExec module that uses **lsassy** to extract credentials on com
 
 CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo/lsassy/tree/master/cme)
 
+## Issues
 
-### ChangeLog
+If you find an issue with this tool (that's very plausible !), please
+
+* Check that you're using the latest version
+* Send as much details as possible.
+    - For standalone **lsassy**, please use maximum verbosity `-vv`
+    - For CME module, please use CrackMapExec `--verbose` flag
+
+## Changelog
 
 ```
 v2.1.0
@@ -104,15 +112,6 @@ v0.1.0
 ------
 First release
 ```
-
-## Issues
-
-If you find an issue with this tool (that's very plausible !), please
-
-* Check that you're using the latest version
-* Send as much details as possible.
-    - For standalone **lsassy**, please use maximum verbosity `-vv`
-    - For CME module, please use CrackMapExec `--verbose` flag
 
 ## Acknowledgments
 
