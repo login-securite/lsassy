@@ -105,8 +105,6 @@ class Lsassy:
         self._log.info("Cleaning complete")
 
     def get_credentials(self):
-        self.log_options.quiet = True
-        self.log_options.verbosity = False
         self._log = Logger(self._target, self.log_options)
         self.write_options.format = "none"
         return_code = self.run()
