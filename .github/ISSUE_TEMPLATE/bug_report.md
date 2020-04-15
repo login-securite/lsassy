@@ -15,16 +15,26 @@ Send as much details as possible.
  * For CME module, please use CrackMapExec --verbose flag
 -->
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Version(s)
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+* lsassy : version Y
+* CME : version Y
+* <other>
 
-**Screenshots**
+## Describe the bug
+
+A clear description of what the bug is.
+
+## Expected behavior
+
+A clear description of what you expected to happen.
+
+## Screenshots
+
 If applicable, add screenshots to help explain your problem.
  * For standalone lsassy, please use maximum verbosity `-vv`
  * For CME module, please use CrackMapExec --verbose flag
 
-**Additional context**
+## Additional context
+
 Add any other context about the problem here.
