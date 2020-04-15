@@ -96,8 +96,6 @@ class CMEModule:
 
         if context.verbose:
             command += " -vv "
-        else:
-            command += " --quiet "
 
         if self.method:
             command += " --method {}".format(self.method)
