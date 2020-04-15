@@ -95,7 +95,7 @@ class CMEModule:
         log_options = Logger.Options()
         dump_options = Dumper.Options()
         parse_options = Parser.Options()
-        write_option = Writer.Options()
+        write_option = Writer.Options(format="json", quiet=True)
 
         if self.method:
             dump_options.method = int(self.method)
@@ -142,11 +142,16 @@ class CMEModule:
         return proc.returncode, stdout, stderr
 
     def process_credentials(self, context, connection, credentials):
+        for domain, creds in json.loads(credentials).items():
+            for username, passwords in creds.items():
+                for password in passwords:
+                    plain = password["password"]
+                    lmhash = password["lmhash"]
+                    nthash = password["nthash"]
+                    self.save_credentials(context, connection, domain, username, plain, lmhash, nthash)
+                    self.print_credentials(context, connection, domain, username, plain, lmhash, nthash)
 
-        for cred in credentials:
-            ssp, domain, username, password, lmhash, nthash = cred
-            self.save_credentials(context, connection, domain, username, password, lmhash, nthash)
-            self.print_credentials(context, connection, domain, username, password, lmhash, nthash)
+
 
     @staticmethod
     def save_credentials(context, connection, domain, username, password, lmhash, nthash):

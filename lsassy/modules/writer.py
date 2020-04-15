@@ -59,12 +59,12 @@ class Writer:
                 }
                 if credential not in json_output[domain][username]:
                     json_output[domain][username].append(credential)
-            output = json.dumps(json_output) + "\n"
+            output = json.dumps(json_output)
         elif self._format == "grep":
             credentials = set()
             for cred in self._credentials:
                 credentials.add('\t'.join([Writer._decode(c) if c is not None else '' for c in cred]))
-            output = "\n".join(cred for cred in credentials) + "\n"
+            output = "\n".join(cred for cred in credentials)
         elif self._format == "pretty":
             if len(self._credentials) == 0:
                 self._log.warn('No credentials found')
@@ -87,7 +87,7 @@ class Writer:
                                 username,
                                 " " * (max_size - len(domain) - len(username) + 2),
                                 Logger.highlight(password)), output=False
-                        ) + "\n"
+                        )
 
         elif self._format == "none":
             pass
@@ -102,7 +102,7 @@ class Writer:
             return output
 
         if not self._quiet:
-            print(output, end="")
+            print(output, end="\n")
         if self._file:
             ret = self.write_file(output)
             if not ret.success():
@@ -118,5 +118,5 @@ class Writer:
             return RetCode(ERROR_OUTPUT_DIR_NOT_EXIST, Exception("Directory {} does not exist".format(path)))
 
         with open(self._file, 'a+') as f:
-            f.write(output)
+            f.write(output + "\n")
         return RetCode(ERROR_SUCCESS)
