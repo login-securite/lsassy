@@ -1,6 +1,6 @@
 # lsassy CrackMapExec Module
 
-![CrackMapExec >= 4.0.1](https://img.shields.io/badge/CrackMapExec-%3E=4.0.1-red)
+![CrackMapExec >= 5.0.0](https://img.shields.io/badge/CrackMapExec-%3E=5.0.0-red)
 
 This CME module uses **lsassy** to remotely extract lsass password, and optionally interacts with Bloodhound to **set compromised hosts as owned** and check if compromised users have a **path to domain admin**.
 
@@ -8,42 +8,40 @@ This CME module uses **lsassy** to remotely extract lsass password, and optional
 
 ## Requirements
 
-* Python2.7
-  - [CrackMapExec](https://github.com/byt3bl33d3r/CrackMapExec)
-* Python3.6+
-  - [lsassy](https://github.com/Hackndo/lsassy/)
+* [CrackMapExec](https://github.com/byt3bl33d3r/CrackMapExec)
+* [lsassy](https://github.com/Hackndo/lsassy/)
 
 
 ## Installation
 
 * Install **lsassy**
 
-### Python2
+### Python 3
 
 * Download [lsassy CrackMapExec module](https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy.py)
 * Copy `lsassy.py` in `[CrackMapExec Path]/cme/modules`
-* Reinstall CrackMapExec using python2.7 `python setup.py install`
+* Reinstall CrackMapExec using python 3 `python setup.py install`
 
 ```bash
-python3 -m pip install lsassy
+python -m pip install lsassy
 wget https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy.py
 cp lsassy.py /opt/CrackMapExec/cme/modules/
 cd /opt/CrackMapExec
-python2.7 setup.py install
+python setup.py install
 ```
 
-### Python3
+### Python 2 (No support)
 
-* Download [lsassy CrackMapExec module](https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy3.py)
-* Copy `lsassy3.py` in `[CrackMapExec Path]/cme/modules`
-* Reinstall CrackMapExec using python3 `python setup.py install`
+* Download [lsassy CrackMapExec module](https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy_py2.py)
+* Copy `lsassy_py2.py` in `[CrackMapExec Path]/cme/modules`
+* Reinstall CrackMapExec using python 2.7 `python2.7 setup.py install`
 
 ```bash
 python3 -m pip install lsassy
-wget https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy3.py
-cp lsassy3.py /opt/CrackMapExec/cme/modules/
+wget https://raw.githubusercontent.com/Hackndo/lsassy/master/cme/lsassy_py2.py
+cp lsassy_py2.py /opt/CrackMapExec/cme/modules/
 cd /opt/CrackMapExec
-python3 setup.py install
+python2.7 setup.py install
 ```
 
 ## Usage

