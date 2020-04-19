@@ -41,24 +41,8 @@ The tool is fully documented in the project's [wiki](https://github.com/Hackndo/
 
 ### CrackMapExec module
 
-* [Installation](https://github.com/Hackndo/lsassy/wiki/CME-Installation)
-* [Basic Usage](https://github.com/Hackndo/lsassy/wiki/CME-Basic-Usage)
-* [Advanced Usage](https://github.com/Hackndo/lsassy/wiki/CME-Advanced-Usage)
-
-## CrackMapExec module
-
-I wrote a CrackMapExec module that uses **lsassy** to extract credentials on compromised hosts
-
-CrackMapExec module is in `cme` folder : [CME Module](https://github.com/Hackndo/lsassy/tree/master/cme)
-
-## Issues
-
-If you find an issue with this tool (that's very plausible !), please
-
-* Check that you're using the latest version
-* Send as much details as possible.
-    - For standalone **lsassy**, please use maximum verbosity `-vv`
-    - For CME module, please use CrackMapExec `--verbose` flag
+* CrackMapExec module is now [part of CrackMapExec project](https://github.com/byt3bl33d3r/CrackMapExec/pull/341)
+* CME module is [documentated in project's wiki](https://github.com/Hackndo/lsassy/wiki/)
 
 ## Changelog
 
