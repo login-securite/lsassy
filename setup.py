@@ -21,7 +21,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(exclude=["assets", "cme"]),
     include_package_data=True,
-    url="https://github.com/hackanddo/lsassy",
+    url="https://github.com/Hackndo/lsassy/",
     zip_safe = True,
     license="MIT",
     install_requires=[
