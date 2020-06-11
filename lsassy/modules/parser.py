@@ -36,18 +36,21 @@ class Parser:
                     password = getattr(cred, "password", None)
                     LMHash = getattr(cred, "LMHash", None)
                     NThash = getattr(cred, "NThash", None)
+                    SHAHash = getattr(cred, "SHAHash", None)
                     if LMHash is not None:
                         LMHash = LMHash.hex()
                     if NThash is not None:
                         NThash = NThash.hex()
+                    if SHAHash is not None:
+                        SHAHash = SHAHash.hex()
                     # Remove empty password, machine accounts and buggy entries
                     if self._raw:
-                        self._credentials.append([ssp, domain, username, password, LMHash, NThash])
-                    elif (not all(v is None or v == '' for v in [password, LMHash, NThash])
+                        self._credentials.append([ssp, domain, username, password, LMHash, NThash, SHAHash])
+                    elif (not all(v is None or v == '' for v in [password, LMHash, NThash, SHAHash])
                             and username is not None
                             and not username.endswith('$')
                             and not username == ''):
-                        self._credentials.append((ssp, domain, username, password, LMHash, NThash))
+                        self._credentials.append((ssp, domain, username, password, LMHash, NThash, SHAHash))
         return RetCode(ERROR_SUCCESS)
 
     def get_credentials(self):

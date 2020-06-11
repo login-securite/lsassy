@@ -55,7 +55,7 @@ class Logger:
         if not self._quiet:
             if output:
                 print(out)
-        return out
+        return (out+"\n")
 
     def raw(self, msg):
         print("{}".format(msg), end='')
