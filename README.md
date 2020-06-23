@@ -1,12 +1,14 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=2.1.2&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
 
-Python library to remotely extract credentials on a set of hosts. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
 
-This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
+
+Python tool to remotely extract credentials on a set of hosts. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
+
+This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to remotely read necessary bytes in lsass dump and [pypykatz](https://github.com/skelsec/pypykatz) to extract credentials.
 
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
@@ -47,6 +49,12 @@ The tool is fully documented in the project's [wiki](https://github.com/Hackndo/
 ## Changelog
 
 ```
+v3.0.0
+------
+* Complete rewrite of the tool
+* Easy way to add new dump method, exec method, output formats
+* Modular
+
 v2.1.0
 ------
 * Kerberos authentication support (Thank you laxa for PR)

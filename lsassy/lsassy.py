@@ -3,7 +3,7 @@ import argparse
 import logging
 from threading import Thread, RLock
 from lsassy import logger
-from lsassy import utils
+from lsassy.utils import get_targets
 from lsassy.parser import Parser
 from lsassy.session import Session
 from lsassy.writer import Writer
@@ -37,7 +37,7 @@ class TLsassy(Thread):
                 lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
 
         # Exec methods parsing
-        exec_methods = self.args.exec.split[","] if self.args.exec else None
+        exec_methods = self.args.exec.split(",") if self.args.exec else None
 
         # Dump modules options parsing
         options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
@@ -93,7 +93,12 @@ class TLsassy(Thread):
             exit(1)
 
         with lock:
-            Writer(credentials).write(self.args.format, output_file=self.args.outfile, quiet=self.args.quiet)
+            Writer(credentials).write(
+                self.args.format,
+                output_file=self.args.outfile,
+                quiet=self.args.quiet,
+                users_only=self.args.users
+            )
 
         session.smb_session.close()
         logging.debug("SMB session closed")
@@ -113,7 +118,7 @@ def run():
     group_dump.add_argument('-e', '--exec', action='store',
                             help='List of execution methods, comma separated (Default: wmi,task)')
     group_dump.add_argument('--no-powershell', action='store_true', help='Disable powershell')
-    group_dump.add_argument('--options', action='store',
+    group_dump.add_argument('-O', '--options', action='store',
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
 
     group_auth = parser.add_argument_group('authentication')
@@ -137,9 +142,8 @@ def run():
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
     group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep"], action='store', default="pretty",
                            help='Output format (Default pretty)')
+    group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
 
-    parser.add_argument('-r', '--raw', action='store_true',
-                        help='No basic result filtering (Display host credentials, duplicates and empty pass)')
     parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
@@ -167,7 +171,7 @@ def run():
     else:
         logging.getLogger().setLevel(logging.ERROR)
 
-    for target in utils.get_targets(args.target):
+    for target in get_targets(args.target):
         TLsassy(target, args).start()
 
 

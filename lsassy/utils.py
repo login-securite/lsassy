@@ -1,6 +1,7 @@
 from netaddr import IPAddress, IPRange, IPNetwork, AddrFormatError
 import os
 
+
 def is_valid_ip(ip):
     ip = ip.split(".")
     if len(ip) != 4:

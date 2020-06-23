@@ -26,7 +26,10 @@ class Session:
                 self.smb_session.login(username, password, domain, lmhash, nthash)
             logging.info("SMB session opened")
         except Exception as e:
-            logging.warning("Connexion error", exc_info=True)
+            if "KDC_ERR_S_PRINCIPAL_UNKNOWN" in str(e):
+                logging.error("Connexion error (Use FQDN for kerberos authentication)", exc_info=True)
+            else:
+                logging.warning("Connexion error", exc_info=True)
             self.smb_session = None
             return None
 
@@ -53,4 +56,5 @@ class Session:
         self.kerberos = kerberos
 
         logging.success("Authentication successful")
+        return True
 
