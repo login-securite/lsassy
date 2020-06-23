@@ -42,7 +42,7 @@ class Writer:
         if self._format == "json":
             json_output = {}
             for cred in self._credentials:
-                ssp, domain, username, password, lmhash, nthash = cred
+                ssp, domain, username, password, lmhash, nthash, shahash = cred
 
                 domain = Writer._decode(domain)
                 username = Writer._decode(username)
@@ -55,7 +55,8 @@ class Writer:
                 credential = {
                     "password": password,
                     "lmhash": lmhash,
-                    "nthash": nthash
+                    "nthash": nthash,
+                    "shahash": shahash
                 }
                 if credential not in json_output[domain][username]:
                     json_output[domain][username].append(credential)
@@ -73,12 +74,15 @@ class Writer:
                 max_size = max(len(c[1]) + len(c[2]) for c in self._credentials)
                 credentials = []
                 for cred in self._credentials:
-                    ssp, domain, username, password, lmhash, nthash = cred
+                    ssp, domain, username, password, lmhash, nthash, shahash = cred
                     domain = Writer._decode(domain)
                     username = Writer._decode(username)
                     password = Writer._decode(password)
                     if password is None:
-                        password = ':'.join(h for h in [lmhash, nthash] if h is not None)
+                        password = ("[LM]"+lmhash+":") if lmhash is not None else ""
+                        password+= ("[NT]"+nthash+":") if nthash is not None else ""
+                        password+= ("[SHA1]"+shahash) if shahash is not None else ""
+                        #password = ':'.join(h for h in [lmhash, nthash,shahash] if h is not None)
                     if [domain, username, password] not in credentials:
                         credentials.append([domain, username, password])
                         output += self._log.success(
