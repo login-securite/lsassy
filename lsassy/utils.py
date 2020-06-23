@@ -3,6 +3,11 @@ import os
 
 
 def is_valid_ip(ip):
+    """
+    Check if IP address is valid
+    :param ip: IP address
+    :return: Is valid
+    """
     ip = ip.split(".")
     if len(ip) != 4:
         return False
@@ -10,14 +15,30 @@ def is_valid_ip(ip):
 
 
 def get_log_max_spaces(targets):
+    """
+    Padding utility for targets
+    :param targets: List of targets
+    :return: Padding size
+    """
     return max(len(t) for t in targets) + 4
 
 
 def get_log_spaces(target, spaces):
+    """
+    Get padding for a specific host when displayed to user
+    :param target: Host
+    :param spaces: Total padding
+    :return: Padding for specific host
+    """
     return spaces - len(target)
 
 
 def parse_targets(target):
+    """
+    Parse provided targets
+    :param target: Targets
+    :return: List of IP addresses
+    """
     if '-' in target:
         ip_range = target.split('-')
         try:
@@ -47,6 +68,11 @@ def parse_targets(target):
 
 
 def get_targets(targets):
+    """
+    Get targets from file or string
+    :param targets: List of targets
+    :return: List of IP addresses
+    """
     ret_targets = []
     for target in targets:
         if os.path.exists(target):

@@ -5,6 +5,9 @@ from lsassy import logger
 
 
 class Output(IOutput):
+    """
+    Return output in pretty colorful format
+    """
     def get_output(self):
         output = []
         if len(self._credentials) == 0:

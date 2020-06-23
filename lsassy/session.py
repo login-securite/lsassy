@@ -3,6 +3,9 @@ from impacket.smbconnection import SMBConnection
 
 
 class Session:
+    """
+    Custom impacket SMB session
+    """
     def __init__(self, smb_session=None):
         self.smb_session = smb_session
         self.address = ""
@@ -18,6 +21,21 @@ class Session:
         self.kerberos = False
 
     def get_session(self, address, target_ip="", port=445, username="", password="", lmhash="", nthash="", domain="", aesKey="", dc_ip="", kerberos=False):
+        """
+        Login on remote host
+        :param address: Remote host
+        :param target_ip: Remote host IP address
+        :param port: Remote port
+        :param username: Username
+        :param password: Password
+        :param lmhash: LM Hash
+        :param nthash: NT Hash
+        :param domain: Domain
+        :param aesKey: AES Key
+        :param dc_ip: Domain Controller IP address
+        :param kerberos: Use kerberos
+        :return: SMB Session
+        """
         try:
             self.smb_session = SMBConnection(address, target_ip, sess_port=port, timeout=5)
             if kerberos is True:

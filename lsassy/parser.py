@@ -4,11 +4,17 @@ from pypykatz.pypykatz import pypykatz
 
 
 class Parser:
-
+    """
+    Parse remote lsass dump file using impacketfile and pypykatz
+    """
     def __init__(self, dumpfile):
         self._dumpfile = dumpfile
 
     def parse(self):
+        """
+        Parse remote dump file and delete it after parsing
+        :return: List of Credentials
+        """
         credentials = []
         pypy_parse = pypykatz.parse_minidump_external(self._dumpfile)
         share_name, fpath = self._dumpfile.get_path()

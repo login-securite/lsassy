@@ -10,6 +10,11 @@ from lsassy.exec.iexec import IExec
 
 
 class Exec(IExec):
+    """
+    Remote execution using task creation as SYSTEM
+
+    This execution method provides debug privilege
+    """
     debug_privilege = True
 
     def __init__(self, session):

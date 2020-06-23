@@ -3,6 +3,17 @@ import re
 import time
 
 class ImpacketFile:
+    """
+    Remote file representation
+
+    This class uses impacket method to create a file object with usual read methods so that it looks like a local
+    file from another library point of view. Methods are
+    - open
+    - read
+    - close
+    - seek
+    - tell
+    """
     def __init__(self, session):
         self._session = session
         self._share_name = None
@@ -22,9 +33,21 @@ class ImpacketFile:
         }
 
     def get_connection(self):
+        """
+        Method to access a private attribute
+        :return: session instance
+        """
         return self._session
 
     def open(self, share, path, file, timeout=3):
+        """
+        Open remote file
+        :param share: Share location of the remote file
+        :param path: Path of the remote file on provided share
+        :param file: Remote filename
+        :param timeout: Timeout if file access hangs
+        :return: instance of this class
+        """
         path = path.replace("\\", "/")
         try:
             self._share_name, self._fpath = share, path + "/" + file
@@ -55,6 +78,13 @@ class ImpacketFile:
         return self
 
     def read(self, size):
+        """
+        Read an amount of bytes on the remote file
+
+        This method uses some caching mechanisms to increase reading speed
+        :param size: Number of bytes to read
+        :return: Buffer containing file's content
+        """
         if size == 0:
             return b''
 
@@ -87,10 +117,18 @@ class ImpacketFile:
         return value[:size]
 
     def close(self):
+        """
+        Close handle to remote file
+        """
         self._session.smb_session.closeFile(self._tid, self._fid)
         self._session.smb_session.disconnectTree(self._tid)
 
     def seek(self, offset, whence=0):
+        """
+        Seek a certain byte on the remote file
+        :param offset: Offset on the remote file
+        :param whence: 0 if absolute offset, 1 if relative offset, 2 if relative to the end of file
+        """
         if whence == 0:
             self._currentOffset = offset
         elif whence == 1:
@@ -101,13 +139,29 @@ class ImpacketFile:
             raise Exception('Seek function whence value must be between 0-2')
 
     def tell(self):
+        """
+        Get current offset
+        :return: Current offset
+        """
         return self._currentOffset
 
     def size(self):
+        """
+        Get remote file size
+        :return: Remote file size
+        """
         return self._endOfFile
 
     def get_path(self):
+        """
+        Get remote file path
+        :return: Remote file path (share, path)
+        """
         return self._share_name, self._fpath
 
     def get_session(self):
+        """
+        Get current session
+        :return: Current session
+        """
         return self._session

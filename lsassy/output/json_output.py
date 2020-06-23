@@ -4,6 +4,9 @@ from lsassy.output.ioutput import IOutput
 
 
 class Output(IOutput):
+    """
+    Return output in json format
+    """
     def get_output(self):
         json_output = {}
         for cred in self._credentials:

@@ -3,13 +3,18 @@ import sys
 
 
 class LsassyFormatter(logging.Formatter):
-    # Custom formatting. Inspired by impacket "Logger" class
+    """
+    Custom formatting. Inspired by impacket "Logger" class
+    """
 
     def __init__(self):
         logging.Formatter.__init__(self, '%(bullet)s %(threadName)s %(message)s', None)
 
     def format(self, record):
-        # Custom bullet formatting with colors
+        """
+        Custom bullet formatting with colors
+        :param record: Record to log
+        """
         if record.levelno == logging.INFO:
             record.bullet = '\033[1;34m[*]\033[0m'
         elif record.levelno == logging.DEBUG:
@@ -29,11 +34,18 @@ class LsassyFormatter(logging.Formatter):
 
 
 def highlight(msg):
+    """
+    Highlight in yellow provided message
+    :param msg: Message to highlight
+    :return: Highlighted message
+    """
     return "\033[1;33m{}\033[0m".format(msg)
 
 
 def init():
-    # We add a StreamHandler and formatter to the root logger
+    """
+    StreamHandler and formatter added to root logger
+    """
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(LsassyFormatter())
     logging.getLogger().addHandler(handler)

@@ -7,6 +7,11 @@ from impacket.dcerpc.v5.dcomrt import DCOMConnection
 from impacket.dcerpc.v5.dtypes import NULL
 
 class Exec(IExec):
+    """
+    Remote execution using WMI as provided user
+
+    This execution method does not provide debug privilege
+    """
     debug_privilege = False
 
     def __init__(self, session):

@@ -2,6 +2,9 @@ import logging
 
 
 class Credential:
+    """
+    Credential class to hold extracted credentials from remote hosts
+    """
     def __init__(self, username="", password="", domain="", lmhash="", nthash="", ssp=""):
         self.username = username
         self.password = password
@@ -11,12 +14,24 @@ class Credential:
         self.ssp = ssp
 
     def get_username(self):
+        """
+        Get credential username
+        :return: username
+        """
         return self.username
 
     def get_password(self):
+        """
+        Get credential password
+        :return: password
+        """
         return self.password
 
     def get_domain(self):
+        """
+        Get credential domain
+        :return: domain
+        """
         return self.domain
 
     @staticmethod
@@ -31,6 +46,10 @@ class Credential:
             return data
 
     def get_object(self):
+        """
+        Transform credential instance into dictionary
+        :return: dict with credentials information
+        """
         return {
             "username": self.username,
             "password": self.password,

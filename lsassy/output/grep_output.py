@@ -2,6 +2,9 @@ from lsassy.output.ioutput import IOutput
 
 
 class Output(IOutput):
+    """
+    Returns output in greppable format
+    """
     def get_output(self):
         credentials = set()
         for cred in self._credentials:

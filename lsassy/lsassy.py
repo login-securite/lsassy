@@ -15,12 +15,18 @@ lock = RLock()
 
 
 class TLsassy(Thread):
+    """
+    Main class to extract credentials from one remove host. Can be used in different threads for parallelization
+    """
     def __init__(self, target_name, arguments):
         self.target = target_name
         self.args = arguments
         super().__init__(name=target_name)
 
     def run(self):
+        """
+        Main method to dump credentials on a remote host
+        """
         # Credentials parsing
         username = self.args.username if self.args.username else ""
         password = self.args.password if self.args.password else ""
@@ -105,6 +111,9 @@ class TLsassy(Thread):
 
 
 def run():
+    """
+    Command line function to call lsassy
+    """
     version = pkg_resources.require("lsassy")[0].version
     parser = argparse.ArgumentParser(
         prog="lsassy",
