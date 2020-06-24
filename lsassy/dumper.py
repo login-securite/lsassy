@@ -1,5 +1,6 @@
 import logging
 import importlib
+import os
 
 
 class Dumper:
@@ -28,3 +29,12 @@ class Dumper:
         except Exception:
             logging.warning("Unknown error while loading '{}'".format(dump_module), exc_info=True)
             return None
+
+    @staticmethod
+    def list():
+        return [
+            "comsvcs",
+            "procdump",
+            "dumpert",
+            "dumpertdll",
+        ]

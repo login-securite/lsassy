@@ -27,7 +27,8 @@ class TLsassy(Thread):
         """
         Main method to dump credentials on a remote host
         """
-        # Credentials parsing
+
+        # Credential parsing
         username = self.args.username if self.args.username else ""
         password = self.args.password if self.args.password else ""
 
@@ -121,7 +122,7 @@ def run():
     )
 
     group_dump = parser.add_argument_group('dump')
-    group_dump.add_argument('-m', '--dump-method', action='store', default="comsvcs", help="Dumping method")
+    group_dump.add_argument('-m', '--dump-method', action='store', default="comsvcs", help="Dumping method ({})".format(",".join(Dumper.list())))
     group_dump.add_argument('--dump-path', action='store', help='Path to store lsass dumpfile (Default: \\Windows\\Temp)')
     group_dump.add_argument('--dump-name', action='store', help='Name given to lsass dumpfile (Default: Random)')
     group_dump.add_argument('-e', '--exec', action='store',
