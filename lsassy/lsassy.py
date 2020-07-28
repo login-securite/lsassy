@@ -16,7 +16,7 @@ lock = RLock()
 
 class TLsassy(Thread):
     """
-    Main class to extract credentials from one remove host. Can be used in different threads for parallelization
+    Main class to extract credentials from one remote host. Can be used in different threads for parallelization
     """
     def __init__(self, target_name, arguments):
         self.target = target_name
