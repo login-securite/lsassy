@@ -34,6 +34,7 @@ class Dumper:
     def list():
         return [
             "comsvcs",
+            "comsvcs_stealth",
             "procdump",
             "dumpert",
             "dumpertdll",
