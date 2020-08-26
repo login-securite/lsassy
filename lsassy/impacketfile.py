@@ -25,6 +25,8 @@ class ImpacketFile:
         self._fileInfo = None
         self._endOfFile = None
 
+        self._opened = False
+
         self._buffer_min_size = 1024 * 8
         self._buffer_data = {
             "offset": 0,
@@ -75,6 +77,7 @@ class ImpacketFile:
 
         self._fileInfo = self._session.smb_session.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]
+        self._opened = True
         return self
 
     def read(self, size):
@@ -120,8 +123,10 @@ class ImpacketFile:
         """
         Close handle to remote file
         """
-        self._session.smb_session.closeFile(self._tid, self._fid)
-        self._session.smb_session.disconnectTree(self._tid)
+        if self._opened:
+            self._session.smb_session.closeFile(self._tid, self._fid)
+            self._session.smb_session.disconnectTree(self._tid)
+            self._opened = False
 
     def seek(self, offset, whence=0):
         """
