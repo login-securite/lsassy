@@ -5,6 +5,7 @@
 #  https://beta.hackndo.com
 
 from multiprocessing import Process, RLock
+import time
 
 from lsassy.modules.dumper import Dumper
 from lsassy.modules.impacketconnection import ImpacketConnection
@@ -221,13 +222,21 @@ class CLI:
 
 def run():
     targets = get_targets(get_args().target)
+    # Maximum 256 processes because maximum 256 opened files in python by default
+    processes = min(get_args().threads, 256)
 
     if len(targets) == 1:
         return CLI(targets[0]).run().error_code
-
     jobs = [Process(target=CLI(target).run) for target in targets]
     try:
         for job in jobs:
+            # Checking running processes to avoid reaching --threads limit
+            while True:
+                counter = sum(1 for j in jobs if j.is_alive())
+                if counter >= processes:
+                    time.sleep(1)
+                else:
+                    break
             job.start()
     except KeyboardInterrupt as e:
         print("\nQuitting gracefully...")
