@@ -28,6 +28,7 @@ class TLsassy(Thread):
         Main method to dump credentials on a remote host
         """
         try:
+            file, dumper, method = None, None, None
             # Credential parsing
             username = self.args.username if self.args.username else ""
             password = self.args.password if self.args.password else ""
