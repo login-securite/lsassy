@@ -1,6 +1,8 @@
 import logging
-import re
 import time
+
+from impacket.smb3structs import *
+
 
 class ImpacketFile:
     """
@@ -41,6 +43,51 @@ class ImpacketFile:
         """
         return self._session
 
+    def _open_share(self):
+        try:
+            self._tid = self._session.smb_session.connectTree(self._share_name)
+        except Exception as e:
+            logging.warning("ConnectTree error with '{}'".format(self._share_name), exc_info=True)
+            return None
+        return self
+
+    @staticmethod
+    def create_file(session, share, path, file, content):
+        path = path.replace("\\", "/")
+        try:
+            share, fpath = share, path + "/" + file
+        except Exception as e:
+            logging.warning("Parsing error with '{}'".format(path), exc_info=True)
+            return None
+        try:
+            tid = session.smb_session.connectTree(share)
+        except Exception as e:
+            logging.warning("ConnectTree error with '{}'".format(share), exc_info=True)
+            return None
+
+        fid = None
+
+        try:
+            fid = session.smb_session._SMBConnection.create(tid, fpath, FILE_WRITE_DATA, FILE_SHARE_WRITE, FILE_NON_DIRECTORY_FILE, FILE_OVERWRITE_IF, 0)
+            finished = False
+            MAX_FILE_WRITE = session.smb_session._SMBConnection._Connection['MaxWriteSize']
+            rnd = 0
+            while not finished:
+                data = content[rnd*MAX_FILE_WRITE:(rnd+1)*MAX_FILE_WRITE]
+                if len(data) == 0:
+                    break
+                session.smb_session._SMBConnection.write(tid, fid, data, rnd*2048, len(data))
+                rnd += 1
+        finally:
+            if fid is not None:
+                logging.debug("File {}{} created!".format(share, fpath))
+                session.smb_session._SMBConnection.close(tid, fid)
+                session.smb_session._SMBConnection.disconnectTree(tid)
+                return True
+        if tid is not None:
+            session.smb_session._SMBConnection.disconnectTree(tid)
+        return None
+
     def open(self, share, path, file, timeout=3):
         """
         Open remote file
@@ -57,11 +104,9 @@ class ImpacketFile:
             logging.warning("Parsing error with '{}'".format(path), exc_info=True)
             return None
 
-        try:
-            self._tid = self._session.smb_session.connectTree(self._share_name)
-        except Exception as e:
-            logging.warning("ConnectTree error with '{}'".format(self._share_name), exc_info=True)
+        if self._open_share() is None:
             return None
+
         t = time.time()
         while True:
             try:
