@@ -84,7 +84,7 @@ class TLsassy(Thread):
                 exit(1)
 
             file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
-                               dump_name=self.args.dump_name, **options)
+                               dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
 
             if file is None:
                 logging.error("Unable to dump lsass.")
@@ -138,6 +138,8 @@ def run():
     group_dump.add_argument('--no-powershell', action='store_true', help='Disable powershell')
     group_dump.add_argument('-O', '--options', action='store',
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
+    group_dump.add_argument('--timeout', action='store', type=int, default=5, help='Max time to wait for lsass dump (Default 5s)')
+    
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('-u', '--username', action='store', help='Username')

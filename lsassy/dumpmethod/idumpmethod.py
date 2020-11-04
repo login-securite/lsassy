@@ -66,7 +66,7 @@ class IDumpMethod:
             return None
         return built_command
 
-    def dump(self, dump_path=None, dump_name=None, no_powershell=False, exec_methods=None, **kwargs):
+    def dump(self, dump_path=None, dump_name=None, no_powershell=False, exec_methods=None, timeout=5, **kwargs):
         logging.info("Dumping via {}".format(self.__module__))
         if exec_methods is not None:
             self.exec_methods = exec_methods
@@ -126,7 +126,7 @@ class IDumpMethod:
             logging.debug("Transformed command: {}".format(exec_command))
             try:
                 exec_method.exec(exec_command)
-                self._file_handle = self._file.open(self.dump_share, self.dump_path, self.dump_name)
+                self._file_handle = self._file.open(self.dump_share, self.dump_path, self.dump_name, timeout=timeout)
                 if self._file_handle is None:
                     logging.error("Failed to dump lsass")
                     self.clean()
