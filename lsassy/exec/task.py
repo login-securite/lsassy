@@ -5,7 +5,7 @@ import time
 
 from impacket.dcerpc.v5 import tsch, transport
 from impacket.dcerpc.v5.dtypes import NULL
-from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_GSS_NEGOTIATE
+from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_GSS_NEGOTIATE, RPC_C_AUTHN_LEVEL_PKT_PRIVACY
 from lsassy.exec.iexec import IExec
 
 
@@ -36,6 +36,7 @@ class Exec(IExec):
         if self.session.kerberos:
             dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
         dce.connect()
+        dce.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
         dce.bind(tsch.MSRPC_UUID_TSCHS)
         xml = self.gen_xml(command)
         tmpName = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
