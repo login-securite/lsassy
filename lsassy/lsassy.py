@@ -27,8 +27,8 @@ class TLsassy(Thread):
         """
         Main method to dump credentials on a remote host
         """
+        session, file, dumper, method = None, None, None, None
         try:
-            file, dumper, method = None, None, None
             # Credential parsing
             username = self.args.username if self.args.username else ""
             password = self.args.password if self.args.password else ""
@@ -107,26 +107,23 @@ class TLsassy(Thread):
         except Exception as e:
             logging.error("An unknown error has occurred.", exc_info=True)
         finally:
-            if file is not None:
-                try:
-                    file.close()
-                    logging.debug("Lsass handle closed")
-                except:
-                    pass
+            try:
+                file.close()
+                logging.debug("Lsass handle closed")
+            except:
+                pass
 
-            if dumper is not None:
-                try:
-                    dumper.failsafe()
-                    logging.debug("Lsass dump removed")
-                except:
-                    pass
+            try:
+                dumper.failsafe()
+                logging.debug("Lsass dump removed")
+            except:
+                pass
 
-            if session is not None:
-                try:
-                    session.smb_session.close()
-                    logging.debug("SMB session closed")
-                except:
-                    pass
+            try:
+                session.smb_session.close()
+                logging.debug("SMB session closed")
+            except:
+                pass
 
 
 def run():
