@@ -76,6 +76,7 @@ class TLsassy(Thread):
             )
 
             if session.smb_session is None:
+                logging.error("Couldn't connect to remote host")
                 exit(1)
 
             dumper = Dumper(session).load(self.args.dump_method)
@@ -107,16 +108,25 @@ class TLsassy(Thread):
             logging.error("An unknown error has occurred.", exc_info=True)
         finally:
             if file is not None:
-                file.close()
-                logging.debug("Lsass handle closed")
+                try:
+                    file.close()
+                    logging.debug("Lsass handle closed")
+                except:
+                    pass
 
             if dumper is not None:
-                dumper.failsafe()
-                logging.debug("Lsass dump removed")
+                try:
+                    dumper.failsafe()
+                    logging.debug("Lsass dump removed")
+                except:
+                    pass
 
             if session is not None:
-                session.smb_session.close()
-                logging.debug("SMB session closed")
+                try:
+                    session.smb_session.close()
+                    logging.debug("SMB session closed")
+                except:
+                    pass
 
 
 def run():
