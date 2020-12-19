@@ -26,7 +26,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 
 Although I have made every effort to make the tool stable, traces may be left if errors occur.
 
-This tool can either leave some lsass dumps if it failed to delete it (eventhough it tries hard to do so) or leave a scheduled task running if it fails to delete it. This shouldn't happen, but it might. Know, you know, use it with caution.
+This tool can either leave some lsass dumps if it failed to delete it (eventhough it tries hard to do so) or leave a scheduled task running if it fails to delete it. This shouldn't happen, but it might. Now, you know, use it with caution.
 
 ## Documentation
 
