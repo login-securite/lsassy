@@ -11,6 +11,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
 | [Requirements](#requirements)                | Requirements to install lsassy from source              |
+| [Warning](#warning)                          | Before using this tool, read this                       |
 | [Documentation](#documentation)              | Lsassy documentation                                    |
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Issues](#issues)                            | Read this before creating an issue                      |
@@ -20,6 +21,12 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 ## Requirement
 
 * Python >= 3.6
+
+## Warning
+
+Although I have made every effort to make the tool stable, traces may be left if errors occur.
+
+This tool can either leave some lsass dumps if it failed to delete it (eventhough it tries hard to do so) or leave a scheduled task running if it fails to delete it. This shouldn't happen, but it might. Know, you know, use it with caution.
 
 ## Documentation
 
