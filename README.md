@@ -12,6 +12,7 @@ This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to
 
 | Chapters                                     | Description                                             |
 |----------------------------------------------|---------------------------------------------------------|
+| [Warning](#warning)                          | Before using this tool, read this                       |
 | [Installation](#installation)                | Lsassy installation                                     |
 | [Basic usage](#basic-usage)                  | Basic lsassy usage                                      |
 | [Advanced usage](#advanced-usage)            | Advanced lsassy usage with params explaination          |
