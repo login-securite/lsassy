@@ -141,23 +141,11 @@ class IDumpMethod:
         self.clean()
         return None
 
-    def failsafe(self):
+    def failsafe(self, timeout=3):
         t = time.time()
-        timeout = 3
         while True:
             if self._file_handle is not None:
-                try:
-                    self._file_handle.close()
-                    self._session.smb_session.deleteFile(self._file_handle._share_name, self._file_handle._fpath)
-                    logging.debug("Lsass dump successfully deleted")
-                except Exception as e:
-                    if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
-                        return True
-                    if time.time() - t > timeout:
-                        logging.warning("Lsass dump wasn't removed in {}{}".format(self._file_handle._share_name, self._file_handle._fpath), exc_info=True)
-                        return None
-                    logging.debug("Unable to delete lsass dump file {}{}. Retrying...".format(self._file_handle._share_name, self._file_handle._fpath))
-                    time.sleep(0.5)
+                self._file_handle.delete(timeout=timeout)
             else:
                 try:
                     self._session.smb_session.deleteFile(self.dump_share, self.dump_path + "/" + self.dump_name)
