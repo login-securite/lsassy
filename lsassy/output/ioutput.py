@@ -23,7 +23,8 @@ class IOutput:
         except:
             return data
 
-    def get_credentials(self, credentials, users_only=False):
+    @staticmethod
+    def get_credentials(credentials, users_only=False):
         """
         Get list of credentials with potential filtering depending on users_only flag
         :param credentials: List of credentials instances
