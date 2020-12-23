@@ -25,13 +25,13 @@ class DumpMethod(IDumpMethod):
     # dump_share             = ""    # Default: "C$"
     # dump_path              = ""    # Default: "\\Windows\\Temp\\"
 
-    def __init__(self, session):
+    def __init__(self, session, timeout):
         """
         * Optional *
         Initiates self._session and self._file in super().
         Do not remove "super().__init__(session)" call if keeping __init__
         """
-        super().__init__(session)
+        super().__init__(session, timeout)
 
         """
         You can set custom variable in this section for later use

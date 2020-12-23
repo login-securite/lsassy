@@ -20,10 +20,11 @@ class IDumpMethod:
 
     exec_methods = ("wmi", "task")
 
-    def __init__(self, session, *args, **kwargs):
+    def __init__(self, session, timeout, *args, **kwargs):
         self._session = session
         self._file = ImpacketFile(self._session)
         self._file_handle = None
+        self._timeout = timeout
 
     def get_exec_method(self, exec_method, no_powershell=False):
         try:

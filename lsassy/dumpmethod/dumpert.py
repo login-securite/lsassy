@@ -1,8 +1,8 @@
 import logging
 import os
-import time
 
 from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.impacketfile import ImpacketFile
 
 
 class DumpMethod(IDumpMethod):
@@ -13,8 +13,8 @@ class DumpMethod(IDumpMethod):
     dump_share = "C$"
     dump_path = "\\Windows\\Temp\\"
 
-    def __init__(self, session):
-        super().__init__(session)
+    def __init__(self, session, timeout):
+        super().__init__(session, timeout)
         self.dumpert = "dumpert.exe"
         self.dumpert_path = False
         self.dumpert_remote_share = "C$"
@@ -50,18 +50,7 @@ class DumpMethod(IDumpMethod):
 
     def clean(self):
         if self.dumpert_uploaded:
-            t = time.time()
-            while True:
-                try:
-                    self._session.smb_session.deleteFile(self.dumpert_remote_share, self.dumpert_remote_path + self.dumpert)
-                    logging.debug("dumpert successfully deleted")
-                    return True
-                except Exception as e:
-                    if time.time() - t > 5:
-                        logging.warning("dumpert deletion error.")
-                        return False
-                    logging.debug("dumpert deletion error. Retrying...")
-                    time.sleep(0.2)
+            ImpacketFile.delete(self._session, self.dumpert_remote_path + self.dumpert, timeout=self._timeout)
 
     def get_commands(self):
         cmd_command = """{}{}""".format(self.dumpert_remote_path, self.dumpert)

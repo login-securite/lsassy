@@ -1,8 +1,10 @@
 from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.impacketfile import ImpacketFile
 import logging
 import time
 import random
 import string
+
 
 class CustomBuffer():
     def __init__(self):
@@ -26,8 +28,8 @@ class DumpMethod(IDumpMethod):
 
     need_debug_privilege = True
 
-    def __init__(self, session):
-        super().__init__(session)
+    def __init__(self, session, timeout):
+        super().__init__(session, timeout)
         self.comsvcs_copied = False
         self.comsvcs_copy_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".dll"
         self.comsvcs_copy_path = "\\Windows\\Temp\\"
@@ -45,7 +47,6 @@ class DumpMethod(IDumpMethod):
             "pwsh": pwsh_command
         }
 
-
     def prepare(self, options):
         try:
             logging.info("Opening comsvcs.dll")
@@ -61,14 +62,4 @@ class DumpMethod(IDumpMethod):
 
     def clean(self):
         if self.comsvcs_copied:
-            t = time.time()
-            while True:
-                try:
-                    self._session.smb_session.deleteFile("C$", self.comsvcs_copy_path + self.comsvcs_copy_name)
-                    logging.debug("Comsvcs.dll copy successfully deleted")
-                    return True
-                except Exception as e:
-                    if time.time() - t > 5:
-                        logging.warning("Comsvcs.dll copy deletion error.")
-                        return False
-                    time.sleep(0.2)
+            ImpacketFile.delete(self._session, self.comsvcs_copy_path + self.comsvcs_copy_name, timeout=self._timeout)
