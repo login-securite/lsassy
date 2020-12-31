@@ -33,5 +33,5 @@ venv
 # IDE
 .idea
 
-# Tests
-tests/tests_config.py
+.coverage
+.python-version

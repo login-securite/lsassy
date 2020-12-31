@@ -5,22 +5,23 @@ clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f  {} +
+	find . -name '__pycache__' -exec rm -rf  {} +
 
-publish: clean
-	python3.7 setup.py sdist bdist_wheel
-	python3.7 -m twine upload dist/*
+publish: clean build
+	poetry publish
 
-testpublish: clean
-	python3.7 setup.py sdist bdist_wheel
-	python3.7 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+testpublish: clean build
+	poetry config repositories.testpypi https://test.pypi.org/legacy/
+	poetry publish --repository testpypi
 
 rebuild: clean
-	python3.7 setup.py install
+	poetry install
 
 build: clean
-	python3.7 setup.py install
+	poetry build
 
-install: build
+install:
+	poetry install
 
 test:
-	python3.7 setup.py test
+	nox -r

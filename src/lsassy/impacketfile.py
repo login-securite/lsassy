@@ -95,6 +95,14 @@ class ImpacketFile:
             try:
                 session.smb_session.deleteFile("C$", file_path)
                 logging.debug("File {}{} successfully deleted".format("C$", file_path))
+            except BrokenPipeError:
+                if time.time() - t > timeout:
+                    logging.warning("File wasn't removed `{}{}`, connection lost".format("C$", file_path),
+                                    exc_info=True)
+                    return None
+                logging.debug("Trying to reconnect ...")
+                if session.login():
+                    logging.success("Reconnected after unexpected disconnection!")
             except Exception as e:
                 if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
                     return True

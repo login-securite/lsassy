@@ -1,6 +1,0 @@
-pytest==5.3.2
-pytest-cov==2.8.1
-impacket~=0.9.21
-pypykatz~=0.3.9
-
-netaddr~=0.7.19

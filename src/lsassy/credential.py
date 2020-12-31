@@ -42,7 +42,7 @@ class Credential:
         """
         try:
             return data.decode('utf-8', 'backslashreplace')
-        except:
+        except Exception:
             return data
 
     def get_object(self):

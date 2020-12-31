@@ -1,8 +1,9 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
-![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+
+<!-- ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png) -->
 
 
 
@@ -24,11 +25,11 @@ This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to
 
 Although I have made every effort to make the tool stable, traces may be left if errors occur.
 
-This tool can either leave some lsass dumps if it failed to delete it (eventhough it tries hard to do so) or leave a scheduled task running if it fails to delete it. This shouldn't happen, but it might. Now, you know, use it with caution.
+This tool can either leave some lsass dumps if it failed to delete it (even though it tries hard to do so) or leave a scheduled task running if it fails to delete it. This shouldn't happen, but it might. Now, you know, use it with caution.
 
 ## Installation
 
-**lsassy** works with python >= 3.6
+**lsassy** works with python >= 3.7
 
 ### pip (Recommended)
 
@@ -36,10 +37,10 @@ This tool can either leave some lsass dumps if it failed to delete it (eventhoug
 python3 -m pip install lsassy
 ```
 
-### From source
+### From source for development
 
 ```
-python3 setup.py install
+poetry install lsassy
 ```
 
 ## Basic Usage
@@ -433,6 +434,7 @@ You can check dummy class for more comments and/or informations.
 ```
 v3.0.0
 ------
+* Use poetry instead of setuptools
 * Complete rewrite of the tool
 * Easy way to add new dump method, exec method, output formats
 * Add "parse-only" feature

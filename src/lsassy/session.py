@@ -38,6 +38,12 @@ class Session:
         """
         try:
             self.smb_session = SMBConnection(address, target_ip, sess_port=port, timeout=5)
+        except Exception:
+            logging.warning("Network error", exc_info=True)
+            self.smb_session = None
+            return None
+
+        try:
             if kerberos is True:
                 self.smb_session.kerberosLogin(username, password, domain, lmhash, nthash, aesKey, dc_ip)
             else:
@@ -76,3 +82,6 @@ class Session:
         logging.success("Authentication successful")
         return True
 
+    def login(self):
+        return self.get_session(self.address, self.target_ip, self.port, self.username, self.password, self.lmhash,
+                         self.nthash, self.domain, self.aesKey, self.dc_ip, self.kerberos)

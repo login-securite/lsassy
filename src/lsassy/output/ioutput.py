@@ -20,7 +20,7 @@ class IOutput:
         """
         try:
             return data.decode('utf-8', 'backslashreplace')
-        except:
+        except Exception:
             return data
 
     @staticmethod
