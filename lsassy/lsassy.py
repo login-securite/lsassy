@@ -133,27 +133,31 @@ class TLsassy(Thread):
         except Exception as e:
             logging.error("An unknown error has occurred.", exc_info=True)
         finally:
+            logging.debug("Cleaning...")
+            logging.debug("dumper: {}".format(dumper))
+            logging.debug("file: {}".format(file))
+            logging.debug("session: {}".format(session))
             try:
                 dumper.clean()
-            except:
+            except Exception:
                 pass
 
             try:
                 file.close()
-            except:
+            except Exception:
                 pass
 
             if not parse_only:
                 try:
-                    ImpacketFile.delete(file, timeout=self.args.timeout)
+                    ImpacketFile.delete(session, file_path=file.get_file_path(), timeout=self.args.timeout)
                     logging.debug("Lsass dump removed")
-                except:
+                except Exception:
                     pass
 
             try:
                 session.smb_session.close()
                 logging.debug("SMB session closed")
-            except:
+            except Exception:
                 pass
 
 
