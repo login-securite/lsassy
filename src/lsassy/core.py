@@ -121,7 +121,8 @@ class TLsassy(threading.Thread):
                 domain=self.args.domain,
                 aesKey=self.args.aesKey,
                 dc_ip=self.args.dc_ip,
-                kerberos=self.args.kerberos
+                kerberos=self.args.kerberos,
+                timeout=self.args.timeout
             )
 
             if session.smb_session is None:

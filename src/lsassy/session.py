@@ -19,8 +19,9 @@ class Session:
         self.aesKey = ""
         self.dc_ip = ""
         self.kerberos = False
+        self.timeout = 5
 
-    def get_session(self, address, target_ip="", port=445, username="", password="", lmhash="", nthash="", domain="", aesKey="", dc_ip="", kerberos=False):
+    def get_session(self, address, target_ip="", port=445, username="", password="", lmhash="", nthash="", domain="", aesKey="", dc_ip="", kerberos=False, timeout=5):
         """
         Login on remote host
         :param address: Remote host
@@ -37,7 +38,7 @@ class Session:
         :return: SMB Session
         """
         try:
-            self.smb_session = SMBConnection(address, target_ip, sess_port=port, timeout=5)
+            self.smb_session = SMBConnection(address, target_ip, sess_port=port, timeout=timeout)
         except Exception:
             logging.warning("Network error", exc_info=True)
             self.smb_session = None
@@ -78,10 +79,11 @@ class Session:
         self.aesKey = aesKey
         self.dc_ip = dc_ip
         self.kerberos = kerberos
+        self.timeout = timeout
 
         logging.success("Authentication successful")
         return True
 
     def login(self):
         return self.get_session(self.address, self.target_ip, self.port, self.username, self.password, self.lmhash,
-                         self.nthash, self.domain, self.aesKey, self.dc_ip, self.kerberos)
+                         self.nthash, self.domain, self.aesKey, self.dc_ip, self.kerberos, self.timeout)
