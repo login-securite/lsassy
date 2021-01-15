@@ -10,6 +10,7 @@ from socket import getaddrinfo, gaierror
 from impacket.smb3structs import FILE_READ_DATA
 from impacket.smbconnection import SMBConnection, SessionError
 from impacket.krb5.types import KerberosException
+from impacket.nmb import NetBIOSTimeout
 
 from lsassy.utils.defines import *
 from lsassy.modules.logger import Logger
@@ -155,7 +156,12 @@ class ImpacketConnection:
             raise Exception("An error occured while uploading %s on %s share : %s" % (path_name, share_name, e))
 
     def readFile(self, tid, fid, offset, size):
-        return self._conn.readFile(tid, fid, offset, size, singleCall=False)
+        try:
+            return self._conn.readFile(tid, fid, offset, size, singleCall=False)
+        except NetBIOSTimeout as e:
+            self._log.error("The NetBIOS connection timed out to the target. It may not be online, or you can try increasing --nmb-timeout")
+            raise Exception(e)
+
 
     def closeFile(self, tid, fid):
         return self._conn.closeFile(tid, fid)

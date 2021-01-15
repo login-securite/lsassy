@@ -19,15 +19,23 @@ lock = RLock()
 
 class Lsassy:
     def __init__(self,
+<<<<<<< HEAD
+                 hostname, username, domain="", password="", lmhash="", nthash="", conn_timeout=5,
+=======
                  hostname, username, domain="", password="", lmhash="", nthash="",
-                 kerberos=False, aesKey="", dc_ip=None, nmb_timeout=10,
+                 kerberos=False, aesKey="", dc_ip=None,
+>>>>>>> ef1fb7e4716bbef2391554f1921f5c9ec394258e
                  log_options=Logger.Options(),
                  dump_options=Dumper.Options(),
                  parse_options=Parser.Options(),
                  write_options=Writer.Options()
                  ):
 
-        self.conn_options = ImpacketConnection.Options(hostname, domain, username, password, lmhash, nthash, kerberos, aesKey, dc_ip, nmb_timeout)
+<<<<<<< HEAD
+        self.conn_options = ImpacketConnection.Options(hostname, domain, username, password, lmhash, nthash, conn_timeout)
+=======
+        self.conn_options = ImpacketConnection.Options(hostname, domain, username, password, lmhash, nthash, kerberos, aesKey, dc_ip)
+>>>>>>> ef1fb7e4716bbef2391554f1921f5c9ec394258e
         self.log_options = log_options
         self.dump_options = dump_options
         self.parse_options = parse_options
@@ -178,12 +186,12 @@ class CLI:
         self.conn_options.aes_key = '' if args.aesKey is None else args.aesKey
         self.conn_options.dc_ip = args.dc_ip
         self.conn_options.password = '' if args.password is None else args.password
-        self.conn_options.timeout = args.nmb_timeout
         if not self.conn_options.password and args.hashes:
             if ":" in args.hashes:
                 self.conn_options.lmhash, self.conn_options.nthash = args.hashes.split(":")
             else:
                 self.conn_options.lmhash, self.conn_options.nthash = 'aad3b435b51404eeaad3b435b51404ee', args.hashes
+        self.conn_options.timeout = args.conn_timeout
 
         # Dumper Options
         self.dump_options.dumpname = args.dumpname
@@ -213,7 +221,6 @@ class CLI:
             self.conn_options.kerberos,
             self.conn_options.aesKey,
             self.conn_options.dc_ip,
-            self.conn_options.timeout,
             log_options=self.log_options,
             dump_options=self.dump_options,
             parse_options=self.parse_options,

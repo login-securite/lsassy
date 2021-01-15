@@ -47,8 +47,10 @@ def get_args():
     group_auth.add_argument('-p', '--password', action='store', help='Plaintext password')
     group_auth.add_argument('-d', '--domain', default="", action='store', help='Domain name')
     group_auth.add_argument('-H', '--hashes', action='store', help='[LM:]NT hash')
-    group_auth.add_argument('--nmb-timeout', dest='nmb_timeout', action='store', type=int, default=10,
-                            help='Time to wait before abandoning SMB/NetBIOS host connection')
+<<<<<<< HEAD
+    group_auth.add_argument('-T', '--conn-timeout', action='store', default=5, type=int,
+                            help='Timeout value before connection to host is abandoned')
+=======
     group_auth.add_argument('-k', '--kerberos', action="store_true", help='Use Kerberos authentication. Grabs credentials from ccache file '
                                                     '(KRB5CCNAME) based on target parameters. If valid credentials '
                                                     'cannot be found, it will use the ones specified in the command '
@@ -58,6 +60,7 @@ def get_args():
                             'the target parameter')
     group_auth.add_argument('-aesKey', action="store", metavar = "hex key", help='AES key to use for Kerberos Authentication '
                                                                     '(128 or 256 bits)')
+>>>>>>> ef1fb7e4716bbef2391554f1921f5c9ec394258e
 
     group_out = parser.add_argument_group('output')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
