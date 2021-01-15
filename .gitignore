@@ -35,3 +35,4 @@ venv
 
 .coverage
 .python-version
+poetry.lock
