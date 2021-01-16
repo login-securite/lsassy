@@ -31,7 +31,7 @@ class Exec(IExec):
             logging.debug("Trying to authenticate using : {}\\{}:{}".format(
                 self.session.domain,
                 self.session.username,
-                self.session.password)
+                self.session.password[0] + "**********" + self.session.password[-1])
             )
 
         try:

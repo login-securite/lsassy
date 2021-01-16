@@ -23,6 +23,7 @@ class Lsassy:
 
     def run(self):
         logger.init()
+        threading.current_thread().name = "LSASSY CORE"
 
         if self.arguments.v == 1:
             logging.getLogger().setLevel(logging.INFO)
@@ -58,6 +59,7 @@ class Lsassy:
                     [t.join(1) for t in self.threads if t is not None and t.is_alive()]
             except KeyboardInterrupt:
                 # Ctrl-C handling and send kill to threads
+                print()
                 logging.error("Quitting gracefully...")
                 quitting = True
                 for t in self.threads:
