@@ -55,6 +55,7 @@ def main():
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
 
     parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
+    parser.add_argument('--threads', default=10, type=int, action='store', help='Threads number')
     parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode, only display credentials')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s (version {})'.format(version))
     parser.add_argument('target', nargs='*', type=str, action='store',

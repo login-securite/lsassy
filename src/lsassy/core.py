@@ -2,6 +2,7 @@ import logging
 
 import threading
 import ctypes
+import time
 from lsassy import logger
 from lsassy.utils import get_targets
 from lsassy.parser import Parser
@@ -18,6 +19,7 @@ class Lsassy:
         self.targets = targets
         self.arguments = arguments
         self.threads = []
+        self.max_threads = arguments.threads
 
     def run(self):
         logger.init()
@@ -29,18 +31,35 @@ class Lsassy:
         else:
             logging.getLogger().setLevel(logging.ERROR)
 
-        for target in get_targets(self.targets):
-            thread = TLsassy(target, self.arguments)
-            thread.start()
-            self.threads.append(thread)
-
-        while self.has_live_threads():
+        started = False
+        quitting = False
+        thread_id = 0
+        total_threads = len(self.targets)
+        if self.max_threads < 1:
+            logging.error("How do you expect for this to work with {} threads?".format(self.max_threads))
+            return False
+        elif self.max_threads > 256:
+            self.max_threads = 256
+            logging.info("Max threads has been reduced to 256 as python doesn't allow for more than 256 opened files")
+        while not started or self.has_live_threads() or (not quitting and thread_id < total_threads):
             try:
-                # synchronization timeout of threads kill
-                [t.join(1) for t in self.threads if t is not None and t.is_alive()]
+                if not quitting and thread_id < total_threads:
+                    current_target = self.targets[thread_id]
+                    counter = sum(1 for t in self.threads if t.is_alive())
+                    if counter < self.max_threads:
+                        thread = TLsassy(current_target, self.arguments, thread_id+1, total_threads)
+                        thread.start()
+                        started = True
+                        self.threads.append(thread)
+                        thread_id += 1
+                    else:
+                        time.sleep(1)
+                else:
+                    [t.join(1) for t in self.threads if t is not None and t.is_alive()]
             except KeyboardInterrupt:
                 # Ctrl-C handling and send kill to threads
                 logging.error("Quitting gracefully...")
+                quitting = True
                 for t in self.threads:
                     t.raise_exception(KeyboardInterrupt)
 
@@ -53,10 +72,14 @@ class TLsassy(threading.Thread):
     Main class to extract credentials from one remote host. Can be used in different threads for parallelization
     """
 
-    def __init__(self, target_name, arguments):
+    def __init__(self, target_name, arguments, thread_id=1, targets_count=1):
         self.target = target_name
         self.args = arguments
-        super().__init__(name=target_name)
+        if targets_count > 1:
+            thread_name = "[{}/{}] {}".format(thread_id, targets_count, self.target)
+        else:
+            thread_name = self.target
+        super().__init__(name=thread_name)
 
     def raise_exception(self, exception):
         t_id = 0
