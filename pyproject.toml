@@ -12,7 +12,7 @@ authors = ["pixis <hackndo@gmail.com>"]
 python = "^3.7"
 typer = "^0.3.2"
 netaddr = "^0.8.0"
-pypykatz = "^0.3.15"
+pypykatz = "^0.4.3"
 impacket = "^0.9.22"
 
 [tool.poetry.dev-dependencies]
