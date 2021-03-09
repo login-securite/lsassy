@@ -18,7 +18,7 @@ class IDumpMethod:
     dump_share = "C$"
     dump_path = "\\Windows\\Temp\\"
 
-    exec_methods = ("wmi", "task")
+    exec_methods = ("smb", "wmi", "task")
 
     def __init__(self, session, timeout, *args, **kwargs):
         self._session = session
