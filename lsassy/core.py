@@ -180,7 +180,7 @@ class TLsassy(threading.Thread):
             credentials = Parser(file).parse(parse_only=parse_only)
             file.close()
 
-            if not parse_only and False:
+            if not parse_only:
                 ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
                 logging.success("Lsass dump successfully deleted")
             else:
