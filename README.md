@@ -40,8 +40,7 @@ python3 -m pip install lsassy
 ### From source for development
 
 ```
-poetry install
-poetry run lsassy -u user -p password -d domain.local 192.168.1.0/24
+python3 setup.py install
 ```
 
 ## Basic Usage
