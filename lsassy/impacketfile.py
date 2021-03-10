@@ -179,6 +179,8 @@ class ImpacketFile:
 
             else:
                 value = self._session.smb_session.readFile(self._tid, self._fid, self._currentOffset, size + self._buffer_min_size)
+                while len(value) < size+self._buffer_min_size and self._currentOffset + len(value) < self._endOfFile:
+                    value += self._session.smb_session.readFile(self._tid, self._fid, self._currentOffset + len(value), size + self._buffer_min_size - len(value))
                 self._buffer_data["size"] = size + self._buffer_min_size
                 self._total_read += size
 
