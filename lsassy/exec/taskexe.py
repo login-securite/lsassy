@@ -30,29 +30,47 @@ class TASK_EXEC:
             self._rpctransport.set_kerberos(self._conn.kerberos, self._conn.dc_ip)
 
     def execute(self, commands):
-        dce = self._rpctransport.get_dce_rpc()
+        try:
+            dce = self._rpctransport.get_dce_rpc()
 
-        dce.set_credentials(*self._rpctransport.get_credentials())
-        if self._conn.kerberos:
-            dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
-        dce.connect()
-        dce.bind(tsch.MSRPC_UUID_TSCHS)
-        xml = self.gen_xml(commands)
-        tmpName = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-        self._log.debug("Register random task {}".format(tmpName))
-        tsch.hSchRpcRegisterTask(dce, '\\%s' % tmpName, xml, tsch.TASK_CREATE, NULL, tsch.TASK_LOGON_NONE)
-        tsch.hSchRpcRun(dce, '\\%s' % tmpName)
-        done = False
-        while not done:
-            resp = tsch.hSchRpcGetLastRunInfo(dce, '\\%s' % tmpName)
-            if resp['pLastRuntime']['wYear'] != 0:
-                done = True
-            else:
-                time.sleep(2)
+            dce.set_credentials(*self._rpctransport.get_credentials())
+            if self._conn.kerberos:
+                dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
+            dce.connect()
+            dce.bind(tsch.MSRPC_UUID_TSCHS)
+            xml = self.gen_xml(commands)
+            tmpName = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+            self._log.debug("Register random task {}".format(tmpName))
+            tsch.hSchRpcRegisterTask(dce, '\\%s' % tmpName, xml, tsch.TASK_CREATE, NULL, tsch.TASK_LOGON_NONE)
+            tsch.hSchRpcRun(dce, '\\%s' % tmpName)
+            done = False
+            while not done:
+                resp = tsch.hSchRpcGetLastRunInfo(dce, '\\%s' % tmpName)
+                if resp['pLastRuntime']['wYear'] != 0:
+                    done = True
+                else:
+                    time.sleep(2)
 
-        time.sleep(3)
-        tsch.hSchRpcDelete(dce, '\\%s' % tmpName)
-        dce.disconnect()
+            time.sleep(3)
+            tsch.hSchRpcDelete(dce, '\\%s' % tmpName)
+            dce.disconnect()
+        except KeyboardInterrupt as e:
+            self._log.debug("Scheduled task execution stopped because of keyboard interruption")
+            self.cleanup_task(dce, tmpName)
+            dce.disconnect()
+            raise KeyboardInterrupt(e)
+        except Exception as e:
+            print("Exception !!")
+            self._log.debug("Error : {}".format(e))
+            self.cleanup_task(dce, tmpName)
+            dce.disconnect()
+            raise Exception(e)
+            
+    def cleanup_task(self, dce, taskname):
+        resp = tsch.hSchRpcEnumInstances(dce, '\\%s' % taskname)
+        if len(resp['pGuids']) != 0:
+            tsch.hSchRpcStopInstance(dce, resp['pGuids'][0])
+        tsch.hSchRpcDelete(dce, '\\%s' % taskname)     
 
     def gen_xml(self, commands):
 
