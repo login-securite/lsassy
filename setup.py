@@ -40,7 +40,7 @@ setup(
     ),
     entry_points={
         'console_scripts': [
-            'lsassy = src.lsassy.console:main',
+            'lsassy = lsassy.console:main',
         ],
     },
     test_suite='tests.tests'
