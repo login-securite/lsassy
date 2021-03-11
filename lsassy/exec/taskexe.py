@@ -60,7 +60,6 @@ class TASK_EXEC:
             dce.disconnect()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            print("Exception !!")
             self._log.debug("Error : {}".format(e))
             self.cleanup_task(dce, tmpName)
             dce.disconnect()
