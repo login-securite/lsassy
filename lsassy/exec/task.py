@@ -56,12 +56,10 @@ class Exec(IExec):
             tsch.hSchRpcDelete(dce, '\\%s' % tmpName)
             dce.disconnect()
         except KeyboardInterrupt as e:
-            self._log.debug("Scheduled task execution stopped because of keyboard interruption")
             self.cleanup_task(dce, tmpName)
             dce.disconnect()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            self._log.debug("Error : {}".format(e))
             self.cleanup_task(dce, tmpName)
             dce.disconnect()
             raise Exception(e)
