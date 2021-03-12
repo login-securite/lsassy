@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "lsassy"
+version = "3.0.0"
+description = "Tool to remotely extract credentials"
+readme = "README.md"
+homepage = "https://github.com/hackndo/lsassy"
+repository = "https://github.com/hackndo/lsassy"
+keywords = ["lsassy", "lsass", "pypykatz", "credentials"]
+authors = ["pixis <hackndo@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+typer = "^0.3.2"
+netaddr = "^0.8.0"
+pypykatz = "^0.4.3"
+impacket = "^0.9.22"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.1"
+coverage = "^5.3.1"
+pytest-cov = "^2.10.1"
+nox = "^2020.8.22"
+pytest-mock = "^3.4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+lsassy = "lsassy.console:main"
+
+[tool.coverage.paths]
+source = ["lsassy", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["lsassy"]
+
+[tool.coverage.report]
+show_missing = true

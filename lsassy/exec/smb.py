@@ -1,4 +1,3 @@
-
 # Author:
 #  Romain Bentz (pixis - @hackanddo)
 # Website:
@@ -7,6 +6,8 @@
 
 # Based on Impacket smbexec implementation by @agsolino
 # https://github.com/SecureAuthCorp/impacket/blob/master/examples/smbexec.py
+
+import logging
 
 from impacket.dcerpc.v5 import transport, scmr
 from lsassy.exec.iexec import IExec
