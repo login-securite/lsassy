@@ -1,4 +1,12 @@
-import logging
+
+# Author:
+#  Romain Bentz (pixis - @hackanddo)
+# Website:
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
+
+# Based on Impacket smbexec implementation by @agsolino
+# https://github.com/SecureAuthCorp/impacket/blob/master/examples/smbexec.py
 
 from impacket.dcerpc.v5 import transport, scmr
 from lsassy.exec.iexec import IExec
