@@ -1,3 +1,12 @@
+# Author:
+#  Romain Bentz (pixis - @hackanddo)
+# Website:
+#  https://beta.hackndo.com [FR]
+#  https://en.hackndo.com [EN]
+
+# Based on Impacket wmiexec implementation by @agsolino
+# https://github.com/SecureAuthCorp/impacket/blob/master/examples/atexec.py
+
 import logging
 import random
 import string
