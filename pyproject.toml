@@ -10,7 +10,6 @@ authors = ["pixis <hackndo@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-typer = "^0.3.2"
 netaddr = "^0.8.0"
 pypykatz = "^0.4.3"
 impacket = "^0.9.22"
