@@ -56,6 +56,8 @@ class Exec(IExec):
             self.dcom.disconnect()
             raise KeyboardInterrupt(e)
         except Exception as e:
+            if self.dcom is not None:
+                self.dcom.disconnect()
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.session.address, e))
 
     def exec(self, command):
