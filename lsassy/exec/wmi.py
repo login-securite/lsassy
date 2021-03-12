@@ -61,6 +61,8 @@ class WMI:
             self.dcom.disconnect()
             raise KeyboardInterrupt(e)
         except Exception as e:
+            if self.dcom is not None:
+                self.dcom.disconnect()
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.conn.hostname, e))
 
     def execute(self, commands):
