@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Poetry
+poetry.lock
+
 # Distribution / packaging
 .Python
 build/
