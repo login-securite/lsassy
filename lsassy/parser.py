@@ -20,7 +20,6 @@ class Parser:
             pypy_parse = pypykatz.parse_minidump_external(self._dumpfile)
         except Exception as e:
             logging.error("An error occurred while parsing lsass dump", exc_info=True)
-            print(self._dumpfile.read(10))
             return None
 
         ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds', 'tspkg_creds']
