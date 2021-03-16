@@ -16,7 +16,7 @@ lock = threading.RLock()
 
 class Lsassy:
     def __init__(self, targets, arguments):
-        self.targets = targets
+        self.targets = get_targets(targets)
         self.arguments = arguments
         self.threads = []
         self.max_threads = arguments.threads
