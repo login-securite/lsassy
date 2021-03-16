@@ -34,15 +34,6 @@ class Exec(IExec):
         self.buffer += str(data)
 
     def _getwin32process(self):
-        if self.session.kerberos:
-            logging.debug("Trying to authenticate using kerberos ticket")
-        else:
-            logging.debug("Trying to authenticate using : {}\\{}:{}".format(
-                self.session.domain,
-                self.session.username,
-                self.session.password[0] + "**********" + self.session.password[-1])
-            )
-
         try:
             self.dcom = DCOMConnection(
                 self.session.address,
@@ -62,11 +53,10 @@ class Exec(IExec):
             iWbemLevel1Login.RemRelease()
             self.win32Process, _ = self.iWbemServices.GetObject('Win32_Process')
         except KeyboardInterrupt as e:
-            self.dcom.disconnect()
+            self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            if self.dcom is not None:
-                self.dcom.disconnect()
+            self.clean()
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.session.address, e))
 
     def exec(self, command):
@@ -78,10 +68,18 @@ class Exec(IExec):
             self.dcom.disconnect()
         except KeyboardInterrupt as e:
             logging.debug("WMI Execution stopped because of keyboard interruption")
-            self.iWbemServices.disconnect()
-            self.dcom.disconnect()
+            self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            logging.debug("Error : {}".format(e))
+            logging.debug("Error : {}".format(e), exc_info=True)
+            self.clean()
+
+    def clean(self):
+        try:
             self.iWbemServices.disconnect()
+        except Exception as e:
+            pass
+        try:
             self.dcom.disconnect()
+        except Exception as e:
+            pass

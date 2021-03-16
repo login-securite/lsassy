@@ -29,6 +29,8 @@ class Exec(IExec):
     def __init__(self, session):
         super().__init__(session)
         self._rpctransport = None
+        self._dce = None
+        self._taskname = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
 
     def exec(self, command):
         try:
@@ -40,44 +42,41 @@ class Exec(IExec):
                 self._rpctransport.set_credentials(self.session.username, self.session.password, self.session.domain,
                                                    self.session.lmhash, self.session.nthash, self.session.aesKey)
                 self._rpctransport.set_kerberos(self.session.kerberos, self.session.dc_ip)
-            dce = self._rpctransport.get_dce_rpc()
-
-            dce.set_credentials(*self._rpctransport.get_credentials())
+            self._dce = self._rpctransport.get_dce_rpc()
+            self._dce.set_credentials(*self._rpctransport.get_credentials())
             if self.session.kerberos:
-                dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
-            dce.connect()
-            dce.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
-            dce.bind(tsch.MSRPC_UUID_TSCHS)
+                self._dce.set_auth_type(RPC_C_AUTHN_GSS_NEGOTIATE)
+            self._dce.connect()
+            self._dce.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
+            self._dce.bind(tsch.MSRPC_UUID_TSCHS)
             xml = self.gen_xml(command)
-            tmpName = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-            logging.debug("Register random task {}".format(tmpName))
-            tsch.hSchRpcRegisterTask(dce, '\\%s' % tmpName, xml, tsch.TASK_CREATE, NULL, tsch.TASK_LOGON_NONE)
-            tsch.hSchRpcRun(dce, '\\%s' % tmpName)
+            logging.debug("Register random task {}".format(self._taskname))
+            tsch.hSchRpcRegisterTask(self._dce, '\\%s' % self._taskname, xml, tsch.TASK_CREATE, NULL, tsch.TASK_LOGON_NONE)
+            tsch.hSchRpcRun(self._dce, '\\%s' % self._taskname)
             done = False
             while not done:
-                resp = tsch.hSchRpcGetLastRunInfo(dce, '\\%s' % tmpName)
+                resp = tsch.hSchRpcGetLastRunInfo(self._dce, '\\%s' % self._taskname)
                 if resp['pLastRuntime']['wYear'] != 0:
                     done = True
                 else:
                     time.sleep(2)
 
             time.sleep(3)
-            tsch.hSchRpcDelete(dce, '\\%s' % tmpName)
-            dce.disconnect()
+            self.clean()
         except KeyboardInterrupt as e:
-            self.cleanup_task(dce, tmpName)
-            dce.disconnect()
+            self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            self.cleanup_task(dce, tmpName)
-            dce.disconnect()
+            self.clean()
             raise Exception(e)
     
-    def cleanup_task(self, dce, taskname):
-        resp = tsch.hSchRpcEnumInstances(dce, '\\%s' % taskname)
+    def clean(self):
+        resp = tsch.hSchRpcEnumInstances(self._dce, '\\%s' % self._taskname)
         if len(resp['pGuids']) != 0:
-            tsch.hSchRpcStopInstance(dce, resp['pGuids'][0])
-        tsch.hSchRpcDelete(dce, '\\%s' % taskname)
+            tsch.hSchRpcStopInstance(self._dce, resp['pGuids'][0])
+        tsch.hSchRpcDelete(self._dce, '\\%s' % self._taskname)
+        self._dce.disconnect()
+        logging.debug("Task %s has been removed" % self._taskname)
             
     def gen_xml(self, command):
 
