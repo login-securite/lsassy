@@ -1,4 +1,6 @@
 import logging
+import os
+import ntpath
 from lsassy.credential import Credential
 from pypykatz.pypykatz import pypykatz
 
@@ -10,7 +12,7 @@ class Parser:
     def __init__(self, dumpfile):
         self._dumpfile = dumpfile
 
-    def parse(self, parse_only=False):
+    def parse(self,kerberos_dir,parse_only=False):
         """
         Parse remote dump file and delete it after parsing
         :return: List of Credentials
@@ -39,4 +41,20 @@ class Parser:
                         NThash = NThash.hex()
                     if username and (password or NThash or LMHash):
                         credentials.append(Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash, nthash=NThash))
+
+        if kerberos_dir:
+            dir = os.path.abspath(kerberos_dir)
+            logging.success("Writing kerberos tickets to %s" % dir)
+            ccache_filename = '%s.ccache' % (os.urandom(4).hex()) #to avoid collisions
+            pypy_parse.kerberos_ccache.to_file(os.path.join(dir, ccache_filename))
+            for luid in pypy_parse.logon_sessions:
+                for kcred in pypy_parse.logon_sessions[luid].kerberos_creds:
+                    for ticket in kcred.tickets:
+                        ticket.to_kirbi(dir)
+
+            for cred in pypy_parse.orphaned_creds:
+                if cred.credtype == 'kerberos':
+                    for ticket in cred.tickets:
+                        ticket.to_kirbi(dir)
+
         return credentials

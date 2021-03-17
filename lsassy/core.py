@@ -128,6 +128,7 @@ class TLsassy(threading.Thread):
                 dump_path += "\\"
 
         parse_only = self.args.parse_only
+        kerberos_dir = self.args.kerberos_dir
 
         if parse_only and (dump_path is None or self.args.dump_name is None):
             logging.error("--dump-path and --dump-name required for --parse-only option")
@@ -177,7 +178,7 @@ class TLsassy(threading.Thread):
                     logging.error("Unable to open lsass dump.")
                     exit(1)
 
-            credentials = Parser(file).parse(parse_only=parse_only)
+            credentials = Parser(file).parse(parse_only=parse_only,kerberos_dir=kerberos_dir)
             file.close()
 
             if not parse_only:
