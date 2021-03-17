@@ -16,7 +16,7 @@ lock = threading.RLock()
 
 class Lsassy:
     def __init__(self, targets, arguments):
-        self.targets = targets
+        self.targets = get_targets(targets)
         self.arguments = arguments
         self.threads = []
         self.max_threads = arguments.threads
@@ -178,7 +178,7 @@ class TLsassy(threading.Thread):
                     logging.error("Unable to open lsass dump.")
                     exit(1)
 
-            credentials = Parser(file).parse(parse_only=parse_only,kerberos_dir=kerberos_dir)
+            credentials, tickets = Parser(file).parse()
             file.close()
 
             if not parse_only:
@@ -192,11 +192,12 @@ class TLsassy(threading.Thread):
                 exit(1)
 
             with lock:
-                Writer(credentials).write(
+                Writer(credentials, tickets).write(
                     self.args.format,
                     output_file=self.args.outfile,
                     quiet=self.args.quiet,
-                    users_only=self.args.users
+                    users_only=self.args.users,
+                    kerberos_dir=kerberos_dir
                 )
 
         except KeyboardInterrupt:
