@@ -9,8 +9,9 @@ class Writer:
     """
     Class used to write output results either on screen and/or in a file
     """
-    def __init__(self, credentials):
+    def __init__(self, credentials, tickets):
         self._credentials = credentials
+        self._tickets = tickets
 
     def get_output(self, out_format, users_only=False):
         """
@@ -27,7 +28,7 @@ class Writer:
 
         return output_method.get_output()
 
-    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False):
+    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None):
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
@@ -54,4 +55,23 @@ class Writer:
             with open(output_file, 'a+') as f:
                 f.write(output + "\n")
             logging.success("Credentials saved to {}".format(output_file))
+
+        if kerberos_dir is not None:
+            if len(self._tickets) == 0 and not quiet:
+                logging.warning("No kerberos tickets found")
+                return True
+            abs_dir = os.path.abspath(kerberos_dir)
+            if not os.path.exists(abs_dir):
+                try:
+                    os.makedirs(abs_dir)
+                except Exception as e:
+                    logging.warning("Cannot create %s for saving kerberos tickets" % abs_dir, exc_info=True)
+                    return True
+            for ticket in self._tickets:
+                ticket.to_kirbi(abs_dir)
+            if not quiet:
+                if len(self._tickets) > 1:
+                    logging.success("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
+                else:
+                    logging.success("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
         return True

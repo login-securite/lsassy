@@ -49,6 +49,7 @@ def main():
                                  '(128 or 256 bits)')
 
     group_out = parser.add_argument_group('output')
+    group_out.add_argument('-K', '--kerberos-dir', action='store', help='Save kerberos tickets to a directory')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
     group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep"], action='store', default="pretty",
                            help='Output format (Default pretty)')

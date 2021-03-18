@@ -1,4 +1,6 @@
 import logging
+import os
+import ntpath
 from lsassy.credential import Credential
 from pypykatz.pypykatz import pypykatz
 
@@ -7,22 +9,25 @@ class Parser:
     """
     Parse remote lsass dump file using impacketfile and pypykatz
     """
+
     def __init__(self, dumpfile):
         self._dumpfile = dumpfile
 
-    def parse(self, parse_only=False):
+    def parse(self):
         """
         Parse remote dump file and delete it after parsing
         :return: List of Credentials
         """
         credentials = []
+        tickets = []
         try:
             pypy_parse = pypykatz.parse_minidump_external(self._dumpfile)
         except Exception as e:
             logging.error("An error occurred while parsing lsass dump", exc_info=True)
             return None
 
-        ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds', 'tspkg_creds']
+        ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds',
+                'tspkg_creds']
         for luid in pypy_parse.logon_sessions:
 
             for ssp in ssps:
@@ -37,5 +42,17 @@ class Parser:
                     if NThash is not None:
                         NThash = NThash.hex()
                     if username and (password or NThash or LMHash):
-                        credentials.append(Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash, nthash=NThash))
-        return credentials
+                        credentials.append(
+                            Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash,
+                                       nthash=NThash))
+
+            for kcred in pypy_parse.logon_sessions[luid].kerberos_creds:
+                for ticket in kcred.tickets:
+                    tickets.append(ticket)
+
+        for cred in pypy_parse.orphaned_creds:
+            if cred.credtype == 'kerberos':
+                for ticket in cred.tickets:
+                    tickets.append(ticket)
+
+        return credentials, tickets
