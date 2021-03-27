@@ -27,7 +27,7 @@ setup(
     install_requires=[
         'impacket',
         'netaddr',
-        'pypykatz>=0.4.3'
+        'pypykatz>=0.4.8'
     ],
     python_requires='>=3.6',
     classifiers=(
