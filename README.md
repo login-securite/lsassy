@@ -19,7 +19,7 @@ This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to
 | [Advanced usage](#advanced-usage)            | Advanced lsassy usage with params explaination          |
 | [Add dump method](#add-dump-method)          | How to add a custom lsass dump method                   |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
-| [Contributors](#contributors)                | People contributing to this tool                        |
+| [Official Discord](#official-discord-channel)| Official Discord channel                                |
 
 ## Warning
 
