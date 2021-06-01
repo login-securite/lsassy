@@ -110,10 +110,6 @@ First release
 * [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
 
-## Contributors
+## Official Discord Channel
 
-* [ITPPA](https://github.com/ITPPA/)
-* [viaccoz](https://github.com/viaccoz)
-* [blurbdust](https://github.com/blurbdust)
-* [exploide](https://github.com/exploide)
-* [Laxa](https://github.com/Laxa)
+[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)](https://discord.gg/sEkn3aa)
