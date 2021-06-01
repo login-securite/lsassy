@@ -16,7 +16,7 @@ This library uses [impacket](https://github.com/SecureAuthCorp/impacket) project
 | [CrackMapExec Module](#crackmapexec-module)  | Link to CrackMapExec module included in this repository |
 | [Issues](#issues)                            | Read this before creating an issue                      |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
-| [Contributors](#contributors)                | People contributing to this tool                        |
+| [Official Discord](#official-discord-channel)| Official Discord channel                                |
 
 ## Requirement
 
