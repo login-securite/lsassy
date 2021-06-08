@@ -59,13 +59,10 @@ class TASK_EXEC:
         return """<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <Triggers>
-    <CalendarTrigger>
-      <StartBoundary>2015-07-15T20:35:13.2757294</StartBoundary>
+    <TimeTrigger>
+      <StartBoundary>1989-09-17T02:20:00</StartBoundary>
       <Enabled>true</Enabled>
-      <ScheduleByDay>
-        <DaysInterval>1</DaysInterval>
-      </ScheduleByDay>
-    </CalendarTrigger>
+    </TimeTrigger>
   </Triggers>
   <Principals>
     <Principal id="LocalSystem">
