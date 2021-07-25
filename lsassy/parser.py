@@ -21,7 +21,7 @@ class Parser:
         credentials = []
         tickets = []
         try:
-            pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize = 60*1024)
+            pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize=64*1024)
         except Exception as e:
             logging.error("An error occurred while parsing lsass dump", exc_info=True)
             return None
