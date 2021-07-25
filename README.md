@@ -1,7 +1,7 @@
 # lsassy
 
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.1&x2=0)](https://pypi.org/project/lsassy/) [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 <!-- ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png) -->
 
