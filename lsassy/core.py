@@ -66,6 +66,7 @@ class ThreadPool:
             # Turn-on the worker threads
             for i in range(self.max_threads):
                 thread = Worker(self.task_q)
+                thread.daemon = True
                 self.threads.append(thread)
                 thread.start()
 
