@@ -106,6 +106,9 @@ First release
 
 ## Acknowledgments
 
+![image](https://user-images.githubusercontent.com/11051803/127148091-6b52f38a-de64-4114-b1ef-465e65deacfb.png)
+
+* [Kodoque](https://github.com/Kodoque1) for lsassy name
 * [Impacket](https://github.com/SecureAuthCorp/impacket)
 * [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
