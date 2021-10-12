@@ -3,9 +3,7 @@
 
 [![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
-<!-- ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png) -->
-
-[![asciicast](https://asciinema.org/a/441582.svg)](https://asciinema.org/a/441582?autoplay=1)
+<a href="https://asciinema.org/a/441582?autoplay=1" target="_blank"><img src="https://asciinema.org/a/441582.svg" width="80%"></a>
 
 Python tool to remotely extract credentials on a set of hosts. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
 
