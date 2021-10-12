@@ -4,7 +4,7 @@
 #  https://beta.hackndo.com [FR]
 #  https://en.hackndo.com [EN]
 
-# Based on Impacket wmiexec implementation by @agsolino
+# Based on Impacket atexec implementation by @agsolino
 # https://github.com/SecureAuthCorp/impacket/blob/master/examples/atexec.py
 
 import logging
@@ -15,7 +15,7 @@ import time
 from impacket.dcerpc.v5 import tsch, transport
 from impacket.dcerpc.v5.dtypes import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_GSS_NEGOTIATE, RPC_C_AUTHN_LEVEL_PKT_PRIVACY
-from lsassy.exec.iexec import IExec
+from lsassy.exec import IExec
 
 
 class Exec(IExec):
@@ -33,8 +33,9 @@ class Exec(IExec):
         self._taskname = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
 
     def exec(self, command):
+        if not super().exec(command):
+            return False
         try:
-            super().exec(command)
             stringbinding = r'ncacn_np:%s[\pipe\atsvc]' % self.session.address
             self._rpctransport = transport.DCERPCTransportFactory(stringbinding)
 
@@ -69,6 +70,7 @@ class Exec(IExec):
         except Exception as e:
             self.clean()
             raise Exception(e)
+        return True
     
     def clean(self):
         resp = tsch.hSchRpcEnumInstances(self._dce, '\\%s' % self._taskname)

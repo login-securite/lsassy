@@ -38,7 +38,7 @@ class Session:
         :return: SMB Session
         """
         try:
-            self.smb_session = SMBConnection(address, target_ip, sess_port=port, timeout=timeout)
+            self.smb_session = SMBConnection(address, target_ip, None, sess_port=port, timeout=timeout)
         except Exception:
             logging.warning("Network error", exc_info=True)
             self.smb_session = None

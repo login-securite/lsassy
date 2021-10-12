@@ -1,4 +1,4 @@
-from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.dumpmethod import IDumpMethod
 
 
 class DumpMethod(IDumpMethod):

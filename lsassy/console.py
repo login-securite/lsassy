@@ -1,4 +1,4 @@
-from . import __version__
+from lsassy import __version__
 import sys
 import argparse
 
@@ -22,7 +22,7 @@ def main():
                             help='Path to store lsass dumpfile (Default: \\Windows\\Temp)')
     group_dump.add_argument('--dump-name', action='store', help='Name given to lsass dumpfile (Default: Random)')
     group_dump.add_argument('-e', '--exec', action='store',
-                            help='List of execution methods, comma separated (Default: wmi,task)')
+                            help='List of execution methods, comma separated (Default: smb,wmi,task,mmc)')
     group_dump.add_argument('--no-powershell', action='store_true', help='Disable powershell')
     group_dump.add_argument('-O', '--options', action='store',
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
@@ -51,7 +51,7 @@ def main():
     group_out = parser.add_argument_group('output')
     group_out.add_argument('-K', '--kerberos-dir', action='store', help='Save kerberos tickets to a directory')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
-    group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep"], action='store', default="pretty",
+    group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "table"], action='store', default="pretty",
                            help='Output format (Default pretty)')
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
 

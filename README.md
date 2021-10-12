@@ -1,7 +1,7 @@
 # lsassy
 
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.1&x2=0)](https://pypi.org/project/lsassy/) [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.0.0&x2=0)](https://pypi.org/project/lsassy/) [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests) [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
 
 <!-- ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png) -->
 
@@ -19,7 +19,7 @@ This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to
 | [Advanced usage](#advanced-usage)            | Advanced lsassy usage with params explaination          |
 | [Add dump method](#add-dump-method)          | How to add a custom lsass dump method                   |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
-| [Official Discord](#official-discord-channel)| Official Discord channel                                |
+| [Contributors](#contributors)                | People contributing to this tool                        |
 
 ## Warning
 
@@ -115,10 +115,6 @@ This module is the orchestrator. It creates lsassy class with provided arguments
 
 This module is used for logging purpose.
 
-#### Session module
-
-This is a layer built over Impacket to handle connections to remote host and low level file operation
-
 #### File module
 
 This is a layer built over Impacket to behave like a python built-in file object. It overrides methods like open, read, seek, or close.
@@ -141,9 +137,14 @@ This tool can dump lsass in different ways.
 
 Dumping methods (`-m` or `--method`)
 * comsvcs
+* comsvcs_stealth
+* dllinject
 * procdump
+* procdump_embedded
 * dumpert
 * dumpertdll
+* ppldump
+* ppldump_embedded
 
 #### comsvcs method
 
@@ -455,12 +456,24 @@ You can check dummy class for more comments and/or informations.
 ```
 v3.0.0
 ------
-* Use poetry instead of setuptools
 * Complete rewrite of the tool
-* Easy way to add new dump method, exec method, output formats
-* Add "parse-only" feature
-* Add new dump methods (dumpertdll, comsvcs_stealth, procdump_embedded)
-* Modular
+    * Way more modular
+    * Easy way to add new dump method, exec method, output formats
+* Add new dump methods
+    * dumpertdll
+    * comsvcs_stealth
+    * procdump_embedded
+    * dllinject (advanced)
+    * ppldump
+    * ppldump_embedded
+    * wer
+* Add execution methods
+    * SMB service creation
+    * SMB service modification
+    * MMC
+* Add "parse-only" feature to parse remote existing dump
+* Rewrote multithread logic
+* Random dump extension by default
 
 v2.1.0
 ------
@@ -518,6 +531,10 @@ First release
 * [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
 
-## Official Discord Channel
+## Contributors
 
-[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)](https://discord.gg/sEkn3aa)
+* [ITPPA](https://github.com/ITPPA/)
+* [viaccoz](https://github.com/viaccoz)
+* [blurbdust](https://github.com/blurbdust)
+* [exploide](https://github.com/exploide)
+* [Laxa](https://github.com/Laxa)

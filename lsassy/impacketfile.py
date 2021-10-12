@@ -95,6 +95,7 @@ class ImpacketFile:
             try:
                 session.smb_session.deleteFile("C$", file_path)
                 logging.debug("File {}{} successfully deleted".format("C$", file_path))
+                return True
             except BrokenPipeError:
                 if time.time() - t > timeout:
                     logging.warning("File wasn't removed `{}{}`, connection lost".format("C$", file_path),

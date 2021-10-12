@@ -21,7 +21,7 @@ class Parser:
         credentials = []
         tickets = []
         try:
-            pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize=64*1024)
+            pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize = 60*1024)
         except Exception as e:
             logging.error("An error occurred while parsing lsass dump", exc_info=True)
             return None
@@ -37,14 +37,17 @@ class Parser:
                     password = getattr(cred, "password", None)
                     LMHash = getattr(cred, "LMHash", None)
                     NThash = getattr(cred, "NThash", None)
+                    SHA1 = getattr(cred, "SHAHash", None)
                     if LMHash is not None:
                         LMHash = LMHash.hex()
                     if NThash is not None:
                         NThash = NThash.hex()
+                    if SHA1 is not None:
+                        SHA1 = SHA1.hex()
                     if username and (password or NThash or LMHash):
                         credentials.append(
                             Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash,
-                                       nthash=NThash))
+                                       nthash=NThash, sha1=SHA1))
 
             for kcred in pypy_parse.logon_sessions[luid].kerberos_creds:
                 for ticket in kcred.tickets:

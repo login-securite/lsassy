@@ -39,11 +39,11 @@ class ThreadPool:
         signal.signal(signal.SIGTERM, self.interrupt_event)
 
     def interrupt_event(self, signum, stack):
+        logging.error("**CTRL+C** QUITTING GRACEFULLY")
         self.stop()
         raise KeyboardInterrupt
 
     def stop(self):
-        logging.error("**CTRL+C** QUITTING GRACEFULLY")
         for thread in self.threads:
             thread.shutdown_flag.set()
         for thread in self.threads:
@@ -77,6 +77,7 @@ class ThreadPool:
 
             # Block until all tasks are done
             self.task_q.join()
+
         except KeyboardInterrupt as e:
             logging.error("Quitting.")
 

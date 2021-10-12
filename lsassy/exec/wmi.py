@@ -8,12 +8,13 @@
 # https://github.com/SecureAuthCorp/impacket/blob/master/examples/wmiexec.py
 
 import logging
-from lsassy.exec.iexec import IExec
-import socket
 
 from impacket.dcerpc.v5.dcom import wmi
 from impacket.dcerpc.v5.dcomrt import DCOMConnection
 from impacket.dcerpc.v5.dtypes import NULL
+
+from lsassy.exec import IExec
+
 
 class Exec(IExec):
     """
@@ -60,7 +61,8 @@ class Exec(IExec):
             raise Exception("WMIEXEC not supported on host %s : %s" % (self.session.address, e))
 
     def exec(self, command):
-        super().exec(command)
+        if not super().exec(command):
+            return False
         try:
             self._getwin32process()
             self.win32Process.Create(command, "C:\\", None)
@@ -73,6 +75,8 @@ class Exec(IExec):
         except Exception as e:
             logging.debug("Error : {}".format(e), exc_info=True)
             self.clean()
+            raise Exception(e)
+        return True
 
     def clean(self):
         try:

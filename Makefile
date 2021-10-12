@@ -14,6 +14,10 @@ testpublish: clean build
 	poetry config repositories.testpypi https://test.pypi.org/legacy/
 	poetry publish --repository testpypi
 
+package: clean
+	python setup.py install
+	pyinstaller ./lsassy/console.py --onefile --clean -n lsassy
+
 rebuild: clean
 	poetry install
 

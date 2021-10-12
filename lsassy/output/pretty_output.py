@@ -1,7 +1,5 @@
-import logging
-
-from lsassy.output.ioutput import IOutput
 from lsassy import logger
+from lsassy.output import IOutput
 
 
 class Output(IOutput):
@@ -16,15 +14,19 @@ class Output(IOutput):
             max_size = max(len(c["domain"]) + len(c["username"]) for c in self._credentials)
             credentials = []
             for cred in self._credentials:
+                type = "PWD"
                 if cred["password"] is None:
                     cred["password"] = ':'.join(h for h in [cred["lmhash"], cred["nthash"]] if h is not None)
+                    type = "NT"
                 if [cred["domain"], cred["username"], cred["password"]] not in credentials:
                     credentials.append([cred["domain"], cred["username"], cred["password"]])
                     output.append(
-                        "{}\\{}{}{}".format(
+                        "{}\\{}{}{}{}{}".format(
                             cred["domain"],
                             cred["username"],
                             " " * (max_size - len(cred["domain"]) - len(cred["username"]) + 2),
-                            logger.highlight(cred["password"]))
+                            logger.highlight("[{}] ".format(type)),
+                            logger.highlight(cred["password"]),
+                            " | {}".format(logger.highlight("[{}] {}".format("SHA1", cred["sha1"]))) if cred["sha1"] else "")
                     )
         return "\n".join(output)

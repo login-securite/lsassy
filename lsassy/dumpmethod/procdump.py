@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.dumpmethod import IDumpMethod
 from lsassy.impacketfile import ImpacketFile
 
 

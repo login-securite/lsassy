@@ -1,6 +1,6 @@
 import json
 
-from lsassy.output.ioutput import IOutput
+from lsassy.output import IOutput
 
 
 class Output(IOutput):
@@ -17,7 +17,8 @@ class Output(IOutput):
             credential = {
                 "password": cred["password"],
                 "lmhash": cred["lmhash"],
-                "nthash": cred["nthash"]
+                "nthash": cred["nthash"],
+                "sha1": cred["sha1"]
             }
             if credential not in json_output[cred["domain"]][cred["username"]]:
                 json_output[cred["domain"]][cred["username"]].append(credential)

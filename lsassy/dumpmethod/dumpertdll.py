@@ -1,7 +1,7 @@
 import logging
 import os
 
-from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.dumpmethod import IDumpMethod
 from lsassy.impacketfile import ImpacketFile
 
 

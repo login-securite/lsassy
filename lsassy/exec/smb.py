@@ -12,12 +12,12 @@ import random
 import string
 
 from impacket.dcerpc.v5 import transport, scmr
-from lsassy.exec.iexec import IExec
+from lsassy.exec import IExec
 
 
 class Exec(IExec):
     """
-    Remote execution using task creation as SYSTEM
+    Remote execution using service creation as SYSTEM
 
     This execution method provides debug privilege
     """
@@ -63,7 +63,8 @@ class Exec(IExec):
                 pass
 
     def exec(self, command):
-        super().exec(command)
+        if not super().exec(command):
+            return False
         try:
             stringbinding = r'ncacn_np:%s[\pipe\svcctl]' % self.session.address
             logging.debug('StringBinding %s' % stringbinding)
@@ -101,3 +102,5 @@ class Exec(IExec):
             raise KeyboardInterrupt(e)
         except Exception as e:
             self.clean()
+            raise Exception(e)
+        return True
