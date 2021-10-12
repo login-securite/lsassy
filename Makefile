@@ -16,7 +16,7 @@ testpublish: clean build
 
 package: clean
 	python setup.py install
-	pyinstaller ./lsassy/console.py --onefile --clean -n lsassy
+	pyinstaller ./lsassy/console.py --onefile --clean -n lsassy --additional-hooks-dir=hooks
 
 rebuild: clean
 	poetry install

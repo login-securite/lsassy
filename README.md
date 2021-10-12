@@ -5,7 +5,7 @@
 
 <!-- ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png) -->
 
-
+[![asciicast](https://asciinema.org/a/441582.svg)](https://asciinema.org/a/441582)
 
 Python tool to remotely extract credentials on a set of hosts. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
 
@@ -538,3 +538,8 @@ First release
 * [blurbdust](https://github.com/blurbdust)
 * [exploide](https://github.com/exploide)
 * [Laxa](https://github.com/Laxa)
+
+
+## Known bugs
+
+* Compiled versions don't include table_output because of some weird error with rich library
