@@ -7,25 +7,25 @@ clean:
 	find . -name '*~' -exec rm -f  {} +
 	find . -name '__pycache__' -exec rm -rf  {} +
 
-publish: clean build
-	poetry publish
+publish: clean
+	python3.7 setup.py sdist bdist_wheel
+	python3.7 -m twine upload dist/*
 
-testpublish: clean build
-	poetry config repositories.testpypi https://test.pypi.org/legacy/
-	poetry publish --repository testpypi
+testpublish: clean
+	python3.7 setup.py sdist bdist_wheel
+	python3.7 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 package: clean
 	python setup.py install
 	pyinstaller ./lsassy/console.py --onefile --clean -n lsassy --additional-hooks-dir=hooks
 
 rebuild: clean
-	poetry install
+	python3.7 setup.py install
 
 build: clean
-	poetry build
+	python3.7 setup.py install
 
-install:
-	poetry install
+install: build
 
 test:
-	nox -r
+	python3.7 setup.py test
