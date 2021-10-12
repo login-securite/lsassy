@@ -5,7 +5,7 @@
 
 <!-- ![Example](https://github.com/Hackndo/lsassy/raw/master/assets/example.png) -->
 
-[![asciicast](https://asciinema.org/a/441582.svg)](https://asciinema.org/a/441582)
+[![asciicast](https://asciinema.org/a/441582.svg)](https://asciinema.org/a/441582?autoplay=1)
 
 Python tool to remotely extract credentials on a set of hosts. This [blog post](https://en.hackndo.com/remote-lsass-dump-passwords/) explains how it works.
 
