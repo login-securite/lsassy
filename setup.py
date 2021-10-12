@@ -13,13 +13,13 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="lsassy",
-    version="2.1.5",
+    version="3.0.0",
     author="Pixis",
     author_email="hackndo@gmail.com",
-    description="Python library to parse remote lsass dumps",
+    description="Python library to extract credentials from lsass remotely",
     long_description=README,
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=["assets", "cme"]),
+    packages=find_packages(exclude=["assets"]),
     include_package_data=True,
     url="https://github.com/Hackndo/lsassy/",
     zip_safe = True,
@@ -27,7 +27,8 @@ setup(
     install_requires=[
         'impacket',
         'netaddr',
-        'pypykatz>=0.4.3'
+        'pypykatz>=0.4.8',
+        'rich'
     ],
     python_requires='>=3.6',
     classifiers=(
@@ -40,7 +41,7 @@ setup(
     ),
     entry_points={
         'console_scripts': [
-            'lsassy = lsassy.core:run',
+            'lsassy = lsassy.console:main',
         ],
     },
     test_suite='tests.tests'

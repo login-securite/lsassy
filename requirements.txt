@@ -1,3 +1,0 @@
-impacket
-netaddr
-pypykatz>=0.4.3

@@ -1,5 +1,23 @@
-# Author:
-#  Romain Bentz (pixis - @hackanddo)
-# Website:
-#  https://beta.hackndo.com
+import logging
 
+
+class IExec:
+    """
+    Interface for remote execution
+    """
+    debug_privilege = False
+    kerberos_support = True
+
+    def __init__(self, session):
+        self.session = session
+
+    def exec(self, command):
+        """
+        To be implemented in all exec modules
+        :param command: Command to be executed on remote host
+        """
+        logging.info("Executing using {}".format(self.__module__))
+        if not self.kerberos_support and self.session.kerberos is True:
+            logging.error("Module {} does not support Kerberos authentication".format(self.__module__))
+            return False
+        return True
