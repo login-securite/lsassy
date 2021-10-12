@@ -42,7 +42,7 @@ def highlight(msg):
     return "\033[1;33m{}\033[0m".format(msg)
 
 
-def init():
+def init(quiet=False):
     """
     StreamHandler and formatter added to root logger
     """
@@ -50,5 +50,7 @@ def init():
     handler.setFormatter(LsassyFormatter())
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
+
     logging.addLevelName(25, 'SUCCESS')
     setattr(logging, 'success', lambda message, *args: logging.getLogger()._log(25, message, args))
+    logging.getLogger().disabled = quiet
