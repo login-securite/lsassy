@@ -17,7 +17,7 @@ This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to
 | [Advanced usage](#advanced-usage)            | Advanced lsassy usage with params explaination          |
 | [Add dump method](#add-dump-method)          | How to add a custom lsass dump method                   |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
-| [Contributors](#contributors)                | People contributing to this tool                        |
+| [Official Discord](#official-discord-channel)| Official Discord channel                                |
 
 ## Warning
 
@@ -525,18 +525,16 @@ First release
 
 ## Acknowledgments
 
+![image](https://user-images.githubusercontent.com/11051803/127148091-6b52f38a-de64-4114-b1ef-465e65deacfb.png)
+
+* [Kodoque](https://github.com/Kodoque1) for lsassy name
 * [Impacket](https://github.com/SecureAuthCorp/impacket)
 * [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
 
-## Contributors
+## Official Discord Channel
 
-* [ITPPA](https://github.com/ITPPA/)
-* [viaccoz](https://github.com/viaccoz)
-* [blurbdust](https://github.com/blurbdust)
-* [exploide](https://github.com/exploide)
-* [Laxa](https://github.com/Laxa)
-
+[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)](https://discord.gg/sEkn3aa)
 
 ## Known bugs
 
