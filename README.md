@@ -447,82 +447,6 @@ class DumpMethod(IDumpMethod):
 
 You can check dummy class for more comments and/or informations.
 
-
-
-## Changelog
-
-```
-v3.0.0
-------
-* Complete rewrite of the tool
-    * Way more modular
-    * Easy way to add new dump method, exec method, output formats
-* Add new dump methods
-    * dumpertdll
-    * comsvcs_stealth
-    * procdump_embedded
-    * dllinject (advanced)
-    * ppldump
-    * ppldump_embedded
-    * wer
-* Add execution methods
-    * SMB service creation
-    * SMB service modification
-    * MMC
-* Add "parse-only" feature to parse remote existing dump
-* Rewrote multithread logic
-* Random dump extension by default
-
-v2.1.0
-------
-* Kerberos authentication support (Thank you laxa for PR)
-* Add CME module for python3
-* Update bloodhound queries for BloodHound3
-* Bug fixes
-
-v2.0.0
-------
-* Multiprocessing support to dump credentials on multiple hosts at a time
-* Add new dumping method using "dumpert"
-* Can be used as a library in other python projects
-* Syntax changed to be more flexible
-* Complete code refactoring, way more organized and easy to maintain/extend
-* Better error handling
-* Complete wiki
-
-v1.1.0
-------
-* Better execution process : --method flag has been added and described in help text
-* Uses random dump name
-* Chose between cmd, powershell, dll and/or procdump methods
-* CME module is now using light lsassy WMIExec et TASKExec implementation
-* Bug fixes
-
-v1.0.0
-------
-* Built-in lsass dump
-** Lsass dump using built-in Windows
-** Lsass dump using procdump (using -p parameter)
-* Add --dumppath to ask for remote parsing only
-* Code refactoring
-* Add --quiet to quiet output
-
-v0.2.0
-------
-* Add BloodHound option to CME module (-o BLOODHOUND=True)
-    - Set compromised targets as "owned" in BloodHound
-    - Check if compromised users have at least one path to domain admin
-* Custom parsing (json, grep, pretty [default])
-* New --hashes option to lsassy
-* Include CME module in repository
-* Add credentials to CME database
-
-
-v0.1.0
-------
-First release
-```
-
 ## Acknowledgments
 
 ![image](https://user-images.githubusercontent.com/11051803/127148091-6b52f38a-de64-4114-b1ef-465e65deacfb.png)
@@ -531,6 +455,10 @@ First release
 * [Impacket](https://github.com/SecureAuthCorp/impacket)
 * [SkelSec](http://twitter.com/skelsec) for Pypykatz, but also for his patience and help
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
+* [Cn33liz](https://twitter.com/Cneelis) for [Dumpert](https://github.com/outflanknl/Dumpert)
+* [itm4n](https://twitter.com/itm4n) for [PPLDump](https://github.com/itm4n/PPLdump)
+* [Matt Graeber](https://twitter.com/mattifestation) for [WER Technique](https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Out-Minidump.ps1)
+* [MrUn1k0d3r](https://twitter.com/MrUn1k0d3r) for [SMB Service Modification technique](https://raw.githubusercontent.com/Mr-Un1k0d3r/SCShell/master/scshell.py)
 
 ## Official Discord Channel
 
