@@ -38,4 +38,5 @@ class Dumper:
             "procdump",
             "dumpert",
             "dumpertdll",
+            "mirrordump",
         ]
