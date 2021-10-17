@@ -76,7 +76,7 @@ class ImpacketFile:
                 data = content[rnd*MAX_FILE_WRITE:(rnd+1)*MAX_FILE_WRITE]
                 if len(data) == 0:
                     break
-                session.smb_session._SMBConnection.write(tid, fid, data, rnd*2048, len(data))
+                session.smb_session._SMBConnection.write(tid, fid, data, rnd*MAX_FILE_WRITE, len(data))
                 rnd += 1
         finally:
             if fid is not None:
