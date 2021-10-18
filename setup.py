@@ -13,7 +13,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="lsassy",
-    version="3.0.0",
+    version="3.0.2",
     author="Pixis",
     author_email="hackndo@gmail.com",
     description="Python library to extract credentials from lsass remotely",
