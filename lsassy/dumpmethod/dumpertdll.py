@@ -32,21 +32,26 @@ class DumpMethod(IDumpMethod):
             logging.error("Missing dumpertdll_path")
             return None
 
-        if not os.path.exists(self.dumpertdll_path):
-            logging.error("{} does not exist.".format(self.dumpertdll_path))
-            return None
-
-        # Upload dumpertdll
-        logging.debug('Copy {} to {}'.format(self.dumpertdll_path, self.dumpertdll_remote_path))
-        with open(self.dumpertdll_path, 'rb') as p:
-            try:
-                self._session.smb_session.putFile(self.dumpertdll_remote_share, self.dumpertdll_remote_path + self.dumpertdll, p.read)
-                logging.success("dumpertdll successfully uploaded")
-                self.dumpertdll_uploaded = True
-                return True
-            except Exception as e:
-                logging.error("dumpertdll upload error", exc_info=True)
+        if self.dumpertdll_path.startswith('\\\\'):
+            # Share providen
+            self.dumpertdll_remote_path = self.dumpertdll_path
+            self.dumpertdll = ""
+            return True
+        else:
+            if not os.path.exists(self.dumpertdll_path):
+                logging.error("{} does not exist.".format(self.dumpertdll_path))
                 return None
+            # Upload dumpertdll
+            logging.debug('Copy {} to {}'.format(self.dumpertdll_path, self.dumpertdll_remote_path))
+            with open(self.dumpertdll_path, 'rb') as p:
+                try:
+                    self._session.smb_session.putFile(self.dumpertdll_remote_share, self.dumpertdll_remote_path + self.dumpertdll, p.read)
+                    logging.success("dumpertdll successfully uploaded")
+                    self.dumpertdll_uploaded = True
+                    return True
+                except Exception as e:
+                    logging.error("dumpertdll upload error", exc_info=True)
+                    return None
 
     def clean(self):
         if self.dumpertdll_uploaded:
