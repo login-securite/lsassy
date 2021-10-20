@@ -1,5 +1,7 @@
 import logging
 import signal
+import queue
+import time
 
 import threading
 from queue import Queue
@@ -22,7 +24,14 @@ class Worker(threading.Thread):
 
     def run(self):
         while not self.shutdown_flag.is_set():
-            worker_lsassy = self.task_q.get()
+            """
+            GO back to the beginning of the loop to check for ctrl+c events using timeout trick
+            """
+            try:
+                worker_lsassy = self.task_q.get(timeout=1)
+            except queue.Empty as e:
+                time.sleep(1)
+                continue
             self.name = worker_lsassy.target
             worker_lsassy.run()
             self.task_q.task_done()
@@ -79,7 +88,7 @@ class ThreadPool:
             self.task_q.join()
 
         except KeyboardInterrupt as e:
-            logging.error("Quitting.")
+            logging.error("By then!")
 
 
 class Lsassy:
