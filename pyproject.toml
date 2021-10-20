@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lsassy"
-version = "3.0.2"
+version = "3.0.3"
 description = "Tool to remotely extract credentials"
 readme = "README.md"
 homepage = "https://github.com/hackndo/lsassy"
