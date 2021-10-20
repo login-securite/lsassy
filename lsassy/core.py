@@ -88,7 +88,7 @@ class ThreadPool:
             self.task_q.join()
 
         except KeyboardInterrupt as e:
-            logging.error("By then!")
+            logging.error("Au revoir.")
 
 
 class Lsassy:
