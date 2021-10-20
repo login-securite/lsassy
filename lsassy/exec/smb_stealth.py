@@ -12,7 +12,6 @@
 # https://raw.githubusercontent.com/Mr-Un1k0d3r/SCShell/master/scshell.py
 
 import logging
-import time
 
 from impacket.dcerpc.v5 import transport, scmr
 from impacket.dcerpc.v5.ndr import NULL

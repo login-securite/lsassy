@@ -1,6 +1,6 @@
-import logging
-import importlib
 import base64
+import importlib
+import logging
 import random
 import string
 import time
@@ -13,8 +13,10 @@ class IDumpMethod:
     need_debug_privilege = False
     custom_dump_path_support = True
     custom_dump_name_support = True
+    custom_dump_ext_support = True
 
     dump_name = ""
+    dump_ext = ""
     dump_share = "C$"
     dump_path = "\\Windows\\Temp\\"
 
@@ -82,6 +84,8 @@ class IDumpMethod:
             ext = ["csv", "db", "dbf", "log", "sav", "sql", "tar", "xml", "fnt", "fon", "otf", "ttf", "bak", "cfg",
                    "cpl", "cur", "dll", "drv", "icns", "ico", "ini", "lnk", "msi", "sys", "tmp", "doc", "docx", "odt",
                    "pdf", "rtf", "tex", "txt", "wpd", "png", "jpg"]
+            if not self.custom_dump_ext_support:
+                ext = [self.dump_ext]
             self.dump_name = "{}.{}".format(
                 ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(random.randint(3,9))),
                 random.choice(ext))

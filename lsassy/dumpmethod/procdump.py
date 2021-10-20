@@ -7,6 +7,9 @@ from lsassy.impacketfile import ImpacketFile
 
 
 class DumpMethod(IDumpMethod):
+    custom_dump_ext_support = False
+    dump_ext = "dmp"
+
     def __init__(self, session, timeout):
         super().__init__(session, timeout)
         self.procdump = "procdump.exe"
