@@ -15,6 +15,7 @@ import time
 from impacket.dcerpc.v5 import tsch, transport
 from impacket.dcerpc.v5.dtypes import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_GSS_NEGOTIATE, RPC_C_AUTHN_LEVEL_PKT_PRIVACY
+
 from lsassy.exec import IExec
 
 
