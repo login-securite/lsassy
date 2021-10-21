@@ -1,7 +1,7 @@
-from lsassy import __version__
-import sys
 import argparse
+import sys
 
+from lsassy import __version__
 from lsassy.core import ThreadPool
 
 
@@ -24,6 +24,7 @@ def main():
     group_dump.add_argument('-e', '--exec', action='store',
                             help='List of execution methods, comma separated (Default: smb,wmi,task,mmc)')
     group_dump.add_argument('--no-powershell', action='store_true', help='Disable powershell')
+    group_dump.add_argument('--copy', action='store_true', help='Copies cmd or powershell with random name before using it')
     group_dump.add_argument('-O', '--options', action='store',
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
     group_dump.add_argument('--timeout', action='store', type=int, default=5,

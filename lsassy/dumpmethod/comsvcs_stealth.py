@@ -1,26 +1,9 @@
-from lsassy.dumpmethod import IDumpMethod
-from lsassy.impacketfile import ImpacketFile
 import logging
 import random
 import string
 
-
-class CustomBuffer():
-    def __init__(self):
-        self._buffer = b""
-        self._currentOffset = 0
-        self._total_read = 0
-
-    def read(self, size):
-        if self._currentOffset >= len(self._buffer):
-            return b""
-        self._currentOffset += size
-        buff = self._buffer[self._currentOffset - size: min(self._currentOffset, len(self._buffer))]
-        self._currentOffset  = min(self._currentOffset, len(self._buffer))
-        return buff
-
-    def write(self, stream):
-        self._buffer += stream
+from lsassy.dumpmethod import IDumpMethod, CustomBuffer
+from lsassy.impacketfile import ImpacketFile
 
 
 class DumpMethod(IDumpMethod):
