@@ -143,6 +143,9 @@ Dumping methods (`-m` or `--method`)
 * dumpertdll
 * ppldump
 * ppldump_embedded
+* mirrordump
+* mirrordump_embedded
+* wer
 
 #### comsvcs method
 
@@ -154,11 +157,19 @@ This method uploads **procdump.exe** from SysInternals to dump **lsass** process
 
 #### Dumpert method
 
-This method uploads **dumpert.exe** from [outflanknl](https://github.com/outflanknl/Dumpert) to dump **lsass** process. 
+This method uploads **dumpert.exe** or **dumpert.dll** from [outflanknl](https://github.com/outflanknl/Dumpert) to dump **lsass** process using syscalls.
 
-#### Dumpertdll method
+#### Ppldump
 
-This method uploads **dumpert.dll** from [outflanknl](https://github.com/outflanknl/Dumpert) to dump **lsass** process. It will be run via rundll32 utility.
+This method uploads **ppldump.exe** from [itm4n](https://github.com/itm4n/PPLdump) to dump **lsass** process and bypass PPL.
+
+#### Mirrordump
+
+This method uploads **Mirrordump.exe** from [Ccob](https://github.com/CCob/MirrorDump) to dump **lsass** using already opened handle to lsass via an LSA plugin.
+
+#### WER
+
+This method uses WER technique used in [PowerSploit](https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Out-Minidump.ps1).
 
 #### Options
 
@@ -343,7 +354,7 @@ import logging
 import os
 import time
 
-from lsassy.dumpmethod.idumpmethod import IDumpMethod
+from lsassy.dumpmethod import IDumpMethod
 
 
 class DumpMethod(IDumpMethod):
@@ -457,6 +468,7 @@ You can check dummy class for more comments and/or informations.
 * [mpgn](https://twitter.com/mpgn_x64) for his help and ideas
 * [Cn33liz](https://twitter.com/Cneelis) for [Dumpert](https://github.com/outflanknl/Dumpert)
 * [itm4n](https://twitter.com/itm4n) for [PPLDump](https://github.com/itm4n/PPLdump)
+* [Ccob](https://twitter.com/_EthicalChaos_) for [MirrorDump](https://github.com/CCob/MirrorDump)
 * [Matt Graeber](https://twitter.com/mattifestation) for [WER Technique](https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Out-Minidump.ps1)
 * [MrUn1k0d3r](https://twitter.com/MrUn1k0d3r) for [SMB Service Modification technique](https://raw.githubusercontent.com/Mr-Un1k0d3r/SCShell/master/scshell.py)
 

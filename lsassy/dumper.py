@@ -1,6 +1,8 @@
 import logging
 import importlib
-import os
+import pkgutil
+
+from lsassy import dumpmethod, exec
 
 
 class Dumper:
@@ -31,12 +33,9 @@ class Dumper:
             return None
 
     @staticmethod
-    def list():
-        return [
-            "comsvcs",
-            "comsvcs_stealth",
-            "procdump",
-            "dumpert",
-            "dumpertdll",
-            "mirrordump",
-        ]
+    def list_dump_methods():
+        return [name for _, name, _ in pkgutil.iter_modules(dumpmethod.__path__)]
+
+    @staticmethod
+    def list_exec_methods():
+        return [name for _, name, _ in pkgutil.iter_modules(exec.__path__)]
