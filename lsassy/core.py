@@ -171,7 +171,7 @@ class Lsassy:
                     return False
 
                 file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
-                                   dump_path=dump_path,
+                                   copy=self.args.copy, dump_path=dump_path,
                                    dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
                 if file is None:
                     logging.error("Unable to dump lsass.")

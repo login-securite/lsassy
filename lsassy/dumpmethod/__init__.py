@@ -25,6 +25,7 @@ class CustomBuffer:
     def write(self, stream):
         self._buffer += stream
 
+
 class IDumpMethod:
 
     need_debug_privilege = False
@@ -38,6 +39,10 @@ class IDumpMethod:
     dump_path = "\\Windows\\Temp\\"
 
     exec_methods = ("smb", "wmi", "task", "mmc")
+
+    ext = ["csv", "db", "dbf", "log", "sav", "sql", "tar", "xml", "fnt", "fon", "otf", "ttf", "bak", "cfg",
+           "cpl", "cur", "dll", "drv", "icns", "ico", "ini", "lnk", "msi", "sys", "tmp", "doc", "docx", "odt",
+           "pdf", "rtf", "tex", "txt", "wpd", "png", "jpg"]
 
     def __init__(self, session, timeout, *args, **kwargs):
         self._session = session
@@ -83,7 +88,7 @@ class IDumpMethod:
         if executor not in executor_locations:
             return None
 
-        self._executor_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".exe"
+        self._executor_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + "." + random.choice(IDumpMethod.ext)
         self._executor_path = "\\Windows\\Temp\\"
         try:
             logging.info("Opening {}".format(executor))
@@ -105,7 +110,7 @@ class IDumpMethod:
             logging.debug("Executor copy successfully deleted")
 
     def build_exec_command(self, commands, exec_method, no_powershell=False, copy=False):
-        logging.debug("Building command - Exec Method has seDebugPrivilege: {} | seDebugPrivilege needed: {} | Powershell allowed: {}".format(exec_method.debug_privilege, self.need_debug_privilege, not no_powershell))
+        logging.debug("Building command - Exec Method has seDebugPrivilege: {} | seDebugPrivilege needed: {} | Powershell allowed: {} | Copy executor: {}".format(exec_method.debug_privilege, self.need_debug_privilege, not no_powershell, copy))
         if commands["cmd"] is not None and (not self.need_debug_privilege or exec_method.debug_privilege):
             self._executor_name = 'cmd.exe'
             if copy:
@@ -138,9 +143,7 @@ class IDumpMethod:
             else:
                 self.dump_name = dump_name
         elif self.dump_name == "":
-            ext = ["csv", "db", "dbf", "log", "sav", "sql", "tar", "xml", "fnt", "fon", "otf", "ttf", "bak", "cfg",
-                   "cpl", "cur", "dll", "drv", "icns", "ico", "ini", "lnk", "msi", "sys", "tmp", "doc", "docx", "odt",
-                   "pdf", "rtf", "tex", "txt", "wpd", "png", "jpg"]
+            ext = IDumpMethod.ext
             if not self.custom_dump_ext_support:
                 ext = [self.dump_ext]
             self.dump_name = "{}.{}".format(
