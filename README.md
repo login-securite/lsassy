@@ -146,6 +146,7 @@ Dumping methods (`-m` or `--method`)
 * mirrordump
 * mirrordump_embedded
 * wer
+* EDRSandBlast
 
 #### comsvcs method
 
@@ -471,6 +472,7 @@ You can check dummy class for more comments and/or informations.
 * [Ccob](https://twitter.com/_EthicalChaos_) for [MirrorDump](https://github.com/CCob/MirrorDump)
 * [Matt Graeber](https://twitter.com/mattifestation) for [WER Technique](https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Out-Minidump.ps1)
 * [MrUn1k0d3r](https://twitter.com/MrUn1k0d3r) for [SMB Service Modification technique](https://raw.githubusercontent.com/Mr-Un1k0d3r/SCShell/master/scshell.py)
+* [th3m4ks](https://twitter.com/th3m4ks) and [Qazeer](https://twitter.com/_Qazeer) for [EDRSandBlast](https://github.com/wavestone-cdt/EDRSandblast)
 
 ## Official Discord Channel
 
