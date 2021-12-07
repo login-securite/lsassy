@@ -1,6 +1,7 @@
 import base64
 import importlib
 import logging
+import os
 import random
 import string
 import time
@@ -24,6 +25,64 @@ class CustomBuffer:
 
     def write(self, stream):
         self._buffer += stream
+
+
+class Dependency:
+    def __init__(self, name, file=None, content=None):
+        self.name = name
+        self.file = file
+        self.path = False
+        self.remote_share = "C$"
+        self.remote_path = "\\Windows\\Temp\\"
+        self.uploaded = False
+        self.content = content
+
+    def init(self, options):
+        if self.content is not None:
+            return True
+        
+        self.path = options.get("{}_path".format(self.name), self.path)
+
+        if not self.path:
+            logging.error("Missing {}_path".format(self.name))
+            return None
+
+        if self.path.startswith('\\\\'):
+            # Share provided
+            self.remote_path = self.path
+            self.file = ""
+            return True
+        if not os.path.exists(self.path):
+            logging.error("{} does not exist.".format(self.path))
+            return None
+
+        return True
+
+    def upload(self, session):
+        # Upload dependency
+
+        if self.content is None:
+            logging.debug('Copy {} to {}'.format(self.path, self.remote_path))
+            with open(self.path, 'rb') as p:
+                try:
+                    session.smb_session.putFile(self.remote_share, self.remote_path + self.file, p.read)
+                    logging.success("{} successfully uploaded".format(self.name))
+                    self.uploaded = True
+                    return True
+                except Exception as e:
+                    logging.error("{} upload error".format(self.name), exc_info=True)
+                    return None
+        else:
+            if not ImpacketFile.create_file(session, self.remote_share, self.remote_path, self.file, self.content):
+                logging.error("{} upload error".format(self.name), exc_info=True)
+                return None
+            logging.success("{} successfully uploaded".format(self.name))
+            self.uploaded = True
+            return True
+
+    def clean(self, session, timeout):
+        if self.uploaded:
+            ImpacketFile.delete(session, self.remote_path + self.file, timeout=timeout)
 
 
 class IDumpMethod:
@@ -74,8 +133,18 @@ class IDumpMethod:
     def prepare(self, options):
         return True
 
+    def prepare_dependencies(self, options, dependencies):
+        if None in (d.init(options) for d in dependencies):
+            return None
+        if None in (d.upload(self._session) for d in dependencies):
+            return None
+        return True
+
     def clean(self):
         return True
+
+    def clean_dependencies(self, dependencies):
+        [d.clean(self._session, self._timeout) for d in dependencies]
 
     def exec_method(self):
         return self.need_debug_privilege
