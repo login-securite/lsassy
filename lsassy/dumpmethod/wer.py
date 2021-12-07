@@ -1,4 +1,5 @@
 """
+https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Out-Minidump.ps1
 From https://twitter.com/JohnLaTwC/status/1411345380407578624
 """
 

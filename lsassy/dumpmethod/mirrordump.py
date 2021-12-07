@@ -1,13 +1,14 @@
+"""
+https://github.com/CCob/MirrorDump
+"""
+
 import logging
 import os
-import time
-import base64
 import random
 import string
 
-from lsassy.impacketfile import ImpacketFile
-
 from lsassy.dumpmethod import IDumpMethod
+from lsassy.impacketfile import ImpacketFile
 
 
 class DumpMethod(IDumpMethod):
