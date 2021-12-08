@@ -19,10 +19,10 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.edrsandblast, self.RTCore64, self.ntoskrnl])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
-        cmd_command = """{}{} dump --kernelmode --driver {}{} --nt-offsets {}{} -o {}{}""".format(
-            self.edrsandblast.remote_path, self.edrsandblast.file,
-            self.RTCore64.remote_path, self.RTCore64.file,
-            self.ntoskrnl.remote_path, self.ntoskrnl.file,
+        cmd_command = """{} dump --kernelmode --driver {} --nt-offsets {} -o {}{}""".format(
+            self.edrsandblast.get_remote_path(),
+            self.RTCore64.get_remote_path(),
+            self.ntoskrnl.get_remote_path(),
             self.dump_path, self.dump_name
         )
 

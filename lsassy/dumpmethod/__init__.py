@@ -37,6 +37,9 @@ class Dependency:
         self.uploaded = False
         self.content = content
 
+    def get_remote_path(self):
+        return self.remote_path + self.file
+
     def init(self, options):
         if self.content is not None:
             return True

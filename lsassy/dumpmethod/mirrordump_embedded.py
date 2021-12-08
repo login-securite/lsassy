@@ -23,8 +23,8 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.mirrordump])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
-        cmd_command = """{}{} -f {}{} -d {}""".format(
-            self.mirrordump.remote_path, self.mirrordump.file,
+        cmd_command = """{} -f {}{} -d {}""".format(
+            self.mirrordump.get_remote_path(),
             self.dump_path, self.dump_name,
             ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".dll"
         )

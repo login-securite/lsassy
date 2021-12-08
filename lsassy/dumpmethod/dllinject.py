@@ -21,8 +21,8 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.loader, self.dll])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
-        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} %J""".format(
-            self.loader.remote_path, self.loader.file
+        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {} %J""".format(
+            self.loader.get_remote_path()
         )
         pwsh_command = """{}{} (Get-Process lsass).Id""".format(
             self.loader.remote_path, self.loader.file

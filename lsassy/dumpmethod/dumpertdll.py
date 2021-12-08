@@ -24,7 +24,7 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.dumpertdll])
 
     def get_commands(self):
-        cmd_command = """rundll32.exe {}{},Dump""".format(self.dumpertdll.remote_path, self.dumpertdll.file)
+        cmd_command = """rundll32.exe {},Dump""".format(self.dumpertdll.get_remote_path())
         pwsh_command = cmd_command
         return {
             "cmd": cmd_command,

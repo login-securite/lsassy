@@ -24,9 +24,8 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.dumpert])
 
     def get_commands(self):
-        cmd_command = """{}{}""".format(self.dumpert.remote_path, self.dumpert.file)
-        pwsh_command = cmd_command
+        cmd_command = """{}""".format(self.dumpert.get_remote_path())
         return {
             "cmd": cmd_command,
-            "pwsh": pwsh_command
+            "pwsh": cmd_command
         }
