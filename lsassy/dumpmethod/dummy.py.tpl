@@ -11,11 +11,22 @@ class DumpMethod(IDumpMethod):
     """
 
     """
-    If your dumping method cannot produce a dumpfile with a custom dumpfile name, you must set this setting to False
-    and uncomment 'dump_name' to provide expected dumpfile name on remote system.
+    If seDebugPrivilege is needed, this should be set to True
     """
+    need_debug_privilege = False     # Default: False
+
+    """
+    If your dumping method cannot produce a dumpfile with a custom dumpfile path, name or extension, you must set these
+    settings to False and uncomment 'dump_name', 'dump_path' and/or 'dump_ext' to provide expected dumpfile info on
+    remote system.
+    """
+    custom_dump_path_support = True  # Default: True
     custom_dump_name_support = True  # Default: True
+    custom_dump_ext_support = True   # Default: True
+
     # dump_name              = ""    # Default: Random dumpfile name
+    # dump_path              = ""    # Default: "\\Windows\\Temp\\"
+    # dump_ext               = ""    # Default: Random dumpfile extension
 
     """
     If your dumping method cannot produce a dumpfile in a custom directory, you must set this setting to False
@@ -23,7 +34,6 @@ class DumpMethod(IDumpMethod):
     """
     custom_dump_path_support = True  # Default: True
     # dump_share             = ""    # Default: "C$"
-    # dump_path              = ""    # Default: "\\Windows\\Temp\\"
 
     def __init__(self, session, timeout):
         """
@@ -34,9 +44,12 @@ class DumpMethod(IDumpMethod):
         super().__init__(session, timeout)
 
         """
-        You can set custom variable in this section for later use
+        You can set custom variable in this section for later use. You can also use the Dependency class if you need
+        to upload some files/tools on the remote host. First argument is a name for our dependency (can be arbitrary),
+        and second argument is default executable/file name on local user's disk.
         """
-        # self.tool = "/opt/tools/tool.exe"
+        # self.var = "some variable"
+        # self.tool = Dependency("mytool", "MyTool.exe")
 
     def get_commands(self):
         """
@@ -55,16 +68,16 @@ class DumpMethod(IDumpMethod):
         """
         * Optional *
         Called before executing dump command. Can be useful to upload necessary tools for dumping lsass.
-        See procdump.py for example
+        See procdump.py for example. self.prepare_dependencies() can be used.
         :param options: Dictionary containing all unexpected parameters provided in get_dump_file()
         """
-        # self.tool = options.get("tool", self.tool)
-        # Upload self.tool to remote server
+        # return self.prepare_dependencies(options, [self.tool])
 
     def clean(self):
         """
         * Optional *
-        Called after executing dump command. Can be useful to remove uploaded tools.
+        Called after executing dump command. Can be useful to remove uploaded tools. self.clean_dependencies()
+        can be used.
         See procdump.py for example
         """
-        # Delete self.tool on remote server
+        # self.clean_dependencies(options, [self.tool])
