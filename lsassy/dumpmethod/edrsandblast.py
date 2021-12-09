@@ -541,7 +541,7 @@ class DumpMethod(IDumpMethod):
             output = self.run(["r2", "-v"], capture_output=True).stdout.decode()
         except Exception as e:
             if "No such file or directory" in str(e):
-                logging.warning("'r2' command is not in path")
+                logging.warning("'r2' command is not in path. Automatic offsets extraction is not possible.")
             else:
                 logging.warning("Unexpected error while running Radare2")
             return None
@@ -553,11 +553,10 @@ class DumpMethod(IDumpMethod):
         try:
             self.run(["cabextract", "-v"], check=True, capture_output=True)
         except (subprocess.CalledProcessError, FileNotFoundError):
-            logging.error('radare2 needs cabextract to be installed to work with PDB')
+            logging.error("Radare2 needs 'cabextract' package to be installed to work with PDB")
             return None
         if "R2_CURL" not in os.environ:
-            logging.warning(
-                "Radare2 may have trouble to download PDB files. If offsets are reported as 0, export R2_CURL=1 prior to running the module.")
+            logging.warning("Radare2 may have trouble to download PDB files. If offsets are reported as 0, export R2_CURL=1 prior to running the module.")
 
         output_content = 'ntoskrnlVersion,PspCreateProcessNotifyRoutineOffset,PspCreateThreadNotifyRoutineOffset,PspLoadImageNotifyRoutineOffset,_PS_PROTECTIONOffset,EtwThreatIntProvRegHandleOffset,EtwRegEntry_GuidEntryOffset,EtwGuidEntry_ProviderEnableInfoOffset\n'
 
