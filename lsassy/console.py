@@ -30,7 +30,7 @@ def main():
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
     group_dump.add_argument('--timeout', action='store', type=int, default=5,
                             help='Max time to wait for lsass dump (Default 5s)')
-    group_dump.add_argument('--parse-only', action='store_true', help='Parse remote dump without dumping')
+    group_dump.add_argument('--parse-only', action='store_true', help='Parse dump without dumping')
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('-u', '--username', action='store', help='Username')

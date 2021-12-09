@@ -69,7 +69,7 @@ class Dependency:
             with open(self.path, 'rb') as p:
                 try:
                     session.smb_session.putFile(self.remote_share, self.remote_path + self.file, p.read)
-                    logging.success("{} successfully uploaded".format(self.name))
+                    logging.success("{} uploaded".format(self.name))
                     self.uploaded = True
                     return True
                 except Exception as e:
@@ -79,7 +79,7 @@ class Dependency:
             if not ImpacketFile.create_file(session, self.remote_share, self.remote_path, self.file, self.content):
                 logging.error("{} upload error".format(self.name), exc_info=True)
                 return None
-            logging.success("{} successfully uploaded".format(self.name))
+            logging.success("{} uploaded".format(self.name))
             self.uploaded = True
             return True
 
@@ -179,7 +179,7 @@ class IDumpMethod:
     def executor_clean(self):
         if self._executor_copied:
             ImpacketFile.delete(self._session, self._executor_path + self._executor_name, timeout=self._timeout)
-            logging.debug("Executor copy successfully deleted")
+            logging.debug("Executor copy deleted")
 
     def build_exec_command(self, commands, exec_method, no_powershell=False, copy=False):
         logging.debug("Building command - Exec Method has seDebugPrivilege: {} | seDebugPrivilege needed: {} | Powershell allowed: {} | Copy executor: {}".format(exec_method.debug_privilege, self.need_debug_privilege, not no_powershell, copy))
@@ -277,7 +277,7 @@ class IDumpMethod:
                 if self._file_handle is None:
                     logging.error("Failed to dump lsass using {}".format(e))
                     continue
-                logging.success("Lsass dumped successfully in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
+                logging.success("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
                 return self._file_handle
             except Exception:
                 logging.error("Execution method {} has failed".format(exec_method.__module__), exc_info=True)
@@ -294,7 +294,7 @@ class IDumpMethod:
             else:
                 try:
                     self._session.smb_session.deleteFile(self.dump_share, self.dump_path + "/" + self.dump_name)
-                    logging.debug("Lsass dump successfully deleted")
+                    logging.debug("Lsass dump deleted")
                 except Exception as e:
                     if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
                         return True
