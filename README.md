@@ -148,6 +148,7 @@ Dumping methods (`-m` or `--method`)
 * wer
 * EDRSandBlast
 * nanodump
+* rdrleakdiag
 
 #### comsvcs method
 
@@ -449,6 +450,7 @@ You can check dummy class for more comments and/or informations.
 * [MrUn1k0d3r](https://twitter.com/MrUn1k0d3r) for [SMB Service Modification technique](https://raw.githubusercontent.com/Mr-Un1k0d3r/SCShell/master/scshell.py)
 * [th3m4ks](https://twitter.com/th3m4ks) and [Qazeer](https://twitter.com/_Qazeer) for [EDRSandBlast](https://github.com/wavestone-cdt/EDRSandblast)
 * [s4ntiago_p](https://twitter.com/s4ntiago_p) for [nanodump](https://github.com/helpsystems/nanodump)
+* [0gtweet](https://twitter.com/0gtweet) for [Rdrleakdiag technique](https://twitter.com/0gtweet/status/1299071304805560321)
 
 ## Official Discord Channel
 
