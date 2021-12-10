@@ -1,8 +1,9 @@
-from lsassy import __version__
-import sys
 import argparse
+import sys
 
+from lsassy import __version__
 from lsassy.core import ThreadPool
+from lsassy.dumper import Dumper
 
 
 def main():
@@ -17,18 +18,19 @@ def main():
 
     group_dump = parser.add_argument_group('dump')
     group_dump.add_argument('-m', '--dump-method', action='store', default="comsvcs",
-                            help="Dumping method")
+                            help="Dumping method ({})".format(', '.join(Dumper.list_dump_methods())))
     group_dump.add_argument('--dump-path', action='store',
                             help='Path to store lsass dumpfile (Default: \\Windows\\Temp)')
     group_dump.add_argument('--dump-name', action='store', help='Name given to lsass dumpfile (Default: Random)')
     group_dump.add_argument('-e', '--exec', action='store',
-                            help='List of execution methods, comma separated (Default: smb,wmi,task,mmc)')
-    group_dump.add_argument('--no-powershell', action='store_true', help='Disable powershell')
+                            help='List of execution methods, comma separated (From {})'.format(', '.join(Dumper.list_exec_methods())))
+    group_dump.add_argument('--no-powershell', action='store_true', help='Disable PowerShell')
+    group_dump.add_argument('--copy', action='store_true', help='Copies cmd or powershell with random name before using it')
     group_dump.add_argument('-O', '--options', action='store',
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
     group_dump.add_argument('--timeout', action='store', type=int, default=5,
                             help='Max time to wait for lsass dump (Default 5s)')
-    group_dump.add_argument('--parse-only', action='store_true', help='Parse remote dump without dumping')
+    group_dump.add_argument('--parse-only', action='store_true', help='Parse dump without dumping')
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('-u', '--username', action='store', help='Username')

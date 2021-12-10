@@ -171,7 +171,7 @@ class Lsassy:
                     return False
 
                 file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
-                                   dump_path=dump_path,
+                                   copy=self.args.copy, dump_path=dump_path,
                                    dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
                 if file is None:
                     logging.error("Unable to dump lsass.")
@@ -192,7 +192,7 @@ class Lsassy:
 
             if not parse_only:
                 ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
-                logging.success("Lsass dump successfully deleted")
+                logging.success("Lsass dump deleted")
             else:
                 logging.debug("Not deleting lsass dump as --parse-only was provided")
 
@@ -233,12 +233,12 @@ class Lsassy:
             if not parse_only:
                 try:
                     if ImpacketFile.delete(session, file_path=file.get_file_path(), timeout=self.args.timeout):
-                        logging.debug("Lsass dump successfully deleted")
+                        logging.debug("Lsass dump deleted")
                 except Exception as e:
                     try:
                         logging.debug("Couldn't delete lsass dump using file. Trying dump object...")
                         if ImpacketFile.delete(session, file_path=dumper.dump_path + dumper.dump_name, timeout=self.args.timeout):
-                            logging.debug("Lsass dump successfully deleted")
+                            logging.debug("Lsass dump deleted")
                     except Exception as e:
                         logging.debug("Potential issue while deleting lsass dump: {}".format(str(e)))
 
