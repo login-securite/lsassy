@@ -36,6 +36,7 @@ class Dependency:
         self.remote_path = "\\Windows\\Temp\\"
         self.uploaded = False
         self.content = content
+        self.share_mode = False
 
     def get_remote_path(self):
         return self.remote_path + self.file
@@ -54,6 +55,7 @@ class Dependency:
             # Share provided
             self.remote_path = self.path
             self.file = ""
+            self.share_mode = True
             return True
         if not os.path.exists(self.path):
             logging.error("{} does not exist.".format(self.path))
@@ -63,6 +65,9 @@ class Dependency:
 
     def upload(self, session):
         # Upload dependency
+
+        if self.share_mode:
+            return True
 
         if self.content is None:
             logging.debug('Copy {} to {}'.format(self.path, self.remote_path))
