@@ -1,8 +1,8 @@
 import logging
-import os
-import ntpath
-from lsassy.credential import Credential
+
 from pypykatz.pypykatz import pypykatz
+
+from lsassy.credential import Credential
 
 
 class Parser:
@@ -57,5 +57,16 @@ class Parser:
             if cred.credtype == 'kerberos':
                 for ticket in cred.tickets:
                     tickets.append(ticket)
+
+        for ticket in tickets:
+            if ticket.ServiceName is not None and ticket.ServiceName[0] == 'krbtgt':
+                if ticket.EClientName is not None and ticket.DomainName is not None:
+                    if ticket.TargetDomainName is not None and ticket.TargetDomainName != ticket.DomainName:
+                        target_domain = ticket.TargetDomainName
+                    else:
+                        target_domain = ticket.DomainName
+                    credentials.append(
+                        Credential(ssp="kerberos", domain=ticket.DomainName, username=ticket.EClientName[0],
+                                   password="TGT for {}".format(target_domain)))
 
         return credentials, tickets
