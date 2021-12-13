@@ -536,6 +536,11 @@ class DumpMethod(IDumpMethod):
             for symbol_name, get_offset in symbols:
                 symbol_value = get_offset(all_symbols_info, symbol_name)
                 symbols_values.append(symbol_value)
+            if "R2_CURL" not in os.environ and all(val == 0 for val in symbols_values):
+                logging.warning("Radare2 may have trouble to download PDB files. R2_CURL=1 environement variable has been set. Trying again.")
+                os.environ["R2_CURL"] = "1"
+                self.extractOffsets(input_file)
+
             return f'{imageVersion},{",".join(hex(val).replace("0x", "") for val in symbols_values)}\n'
         except Exception as e:
             return None
@@ -559,9 +564,7 @@ class DumpMethod(IDumpMethod):
         except (subprocess.CalledProcessError, FileNotFoundError):
             logging.error("Radare2 needs 'cabextract' package to be installed to work with PDB")
             return None
-        if "R2_CURL" not in os.environ:
-            logging.warning("Radare2 may have trouble to download PDB files. If offsets are reported as 0, export R2_CURL=1 prior to running the module.")
-
+        
         output_content = 'ntoskrnlVersion,PspCreateProcessNotifyRoutineOffset,PspCreateThreadNotifyRoutineOffset,PspLoadImageNotifyRoutineOffset,_PS_PROTECTIONOffset,EtwThreatIntProvRegHandleOffset,EtwRegEntry_GuidEntryOffset,EtwGuidEntry_ProviderEnableInfoOffset\n'
 
         ret = self.extractOffsets(ntoskrnl_path)
