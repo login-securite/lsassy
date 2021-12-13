@@ -1,8 +1,7 @@
-import logging
-from pathlib import Path
-import os
-
 import importlib
+import logging
+import os
+from pathlib import Path
 
 
 class Writer:
@@ -35,6 +34,7 @@ class Writer:
         :param output_file: Output file
         :param quiet: If set, doesn't display on stdout
         :param users_only: If set, only returns users account, else returns users and computers accounts
+        :param kerberos_dir: If set, saves Kerberos ticket to specified directory
         :return: Success status
         """
         output = self.get_output(out_format, users_only)
