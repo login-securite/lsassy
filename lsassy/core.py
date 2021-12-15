@@ -206,6 +206,7 @@ class Lsassy:
                     output_file=self.args.outfile,
                     quiet=self.args.quiet,
                     users_only=self.args.users,
+                    tickets=not self.args.no_tickets,
                     kerberos_dir=kerberos_dir
                 )
 

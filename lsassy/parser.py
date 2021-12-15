@@ -45,7 +45,9 @@ class Parser:
                         NThash = NThash.hex()
                     if SHA1 is not None:
                         SHA1 = SHA1.hex()
-                    if username and (password or NThash or LMHash):
+                    if username and (password
+                                     or (NThash and NThash != "00000000000000000000000000000000")
+                                     or (LMHash and LMHash != "00000000000000000000000000000000")):
                         credentials.append(
                             Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash,
                                        nthash=NThash, sha1=SHA1))

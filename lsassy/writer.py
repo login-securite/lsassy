@@ -12,7 +12,7 @@ class Writer:
         self._credentials = credentials
         self._tickets = tickets
 
-    def get_output(self, out_format, users_only=False):
+    def get_output(self, out_format, users_only=False, tickets=False):
         """
         Get credentials output in given format
         :param out_format: Format from output package
@@ -20,14 +20,14 @@ class Writer:
         :return: Output string
         """
         try:
-            output_method = importlib.import_module("lsassy.output.{}_output".format(out_format.lower()), "Output").Output(self._credentials, users_only)
+            output_method = importlib.import_module("lsassy.output.{}_output".format(out_format.lower()), "Output").Output(self._credentials, users_only, tickets)
         except ModuleNotFoundError:
             logging.error("Output module '{}' doesn't exist".format(out_format.lower()), exc_info=True)
             return None
 
         return output_method.get_output()
 
-    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None):
+    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, tickets=False, kerberos_dir=None):
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
@@ -37,7 +37,7 @@ class Writer:
         :param kerberos_dir: If set, saves Kerberos ticket to specified directory
         :return: Success status
         """
-        output = self.get_output(out_format, users_only)
+        output = self.get_output(out_format, users_only, tickets)
         if output is None:
             logging.error("An error occurred while writing credentials", exc_info=True)
             return None
