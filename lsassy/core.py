@@ -1,17 +1,17 @@
 import logging
-import signal
 import queue
-import time
-
+import signal
 import threading
+import time
 from queue import Queue
+
 from lsassy import logger
-from lsassy.utils import get_targets
-from lsassy.parser import Parser
-from lsassy.session import Session
-from lsassy.writer import Writer
 from lsassy.dumper import Dumper
 from lsassy.impacketfile import ImpacketFile
+from lsassy.parser import Parser
+from lsassy.session import Session
+from lsassy.utils import get_targets
+from lsassy.writer import Writer
 
 lock = threading.RLock()
 
@@ -161,7 +161,7 @@ class Lsassy:
             )
 
             if session.smb_session is None:
-                logging.error("Couldn't connect to remote host")
+                logging.warning("Couldn't connect to remote host")
                 return False
 
             if not parse_only:

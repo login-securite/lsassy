@@ -56,11 +56,18 @@ class Writer:
                 f.write(output + "\n")
             logging.success("Credentials saved to {}".format(output_file))
 
-        if kerberos_dir is not None:
+        if kerberos_dir is None:
+            if os.name == 'nt':
+                abs_dir = '%LocalAppData%\\lsassy'
+            else:
+                abs_dir = os.path.expanduser('~') + '/.config/lsassy'
+        else:
             if len(self._tickets) == 0 and not quiet:
                 logging.warning("No kerberos tickets found")
                 return True
             abs_dir = os.path.abspath(kerberos_dir)
+
+        if len(self._tickets) > 0:
             if not os.path.exists(abs_dir):
                 try:
                     os.makedirs(abs_dir)
@@ -74,4 +81,5 @@ class Writer:
                     logging.success("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
                 else:
                     logging.success("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
+
         return True

@@ -1,17 +1,15 @@
-import logging
-
-
 class Credential:
     """
     Credential class to hold extracted credentials from remote hosts
     """
-    def __init__(self, username="", password="", domain="", lmhash="", nthash="", sha1="", ssp=""):
+    def __init__(self, username, password=None, domain=None, lmhash=None, nthash=None, sha1=None, ticket=None, ssp=None):
         self.username = username
         self.password = password
         self.domain = domain
         self.lmhash = lmhash
         self.nthash = nthash
         self.sha1 = sha1
+        self.ticket = ticket
         self.ssp = ssp
 
     def get_username(self):
@@ -58,5 +56,6 @@ class Credential:
             "lmhash": self.lmhash,
             "nthash": self.nthash,
             "sha1": self.sha1,
+            "ticket": self.ticket,
             "ssp": self.ssp
         }

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from pypykatz.pypykatz import pypykatz
 
@@ -65,8 +66,14 @@ class Parser:
                         target_domain = ticket.TargetDomainName
                     else:
                         target_domain = ticket.DomainName
-                    credentials.append(
-                        Credential(ssp="kerberos", domain=ticket.DomainName, username=ticket.EClientName[0],
-                                   password="TGT for {}".format(target_domain)))
+                    # Keep only valid tickets
+                    if ticket.EndTime > datetime.now(ticket.EndTime.tzinfo):
+
+                        credentials.append(Credential(
+                            ssp="kerberos",
+                            domain=ticket.DomainName,
+                            username=ticket.EClientName[0],
+                            ticket={'file': list(ticket.kirbi_data)[0], 'domain': target_domain, 'endtime': ticket.EndTime}
+                        ))
 
         return credentials, tickets

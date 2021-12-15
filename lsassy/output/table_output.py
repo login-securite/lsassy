@@ -22,11 +22,12 @@ class Output(IOutput):
         table.add_column("Username")
         table.add_column("Password")
         table.add_column("Hash")
+        table.add_column("TGT")
         table.add_column("Sha1")
         credentials = []
         for cred in self._credentials:
-            if [cred["domain"], cred["username"], cred["password"], cred["lmhash"], cred["nthash"], cred["sha1"]] not in credentials:
-                credentials.append([cred["domain"], cred["username"], cred["password"], cred["lmhash"], cred["nthash"], cred["sha1"]])
+            if [cred["domain"], cred["username"], cred["password"], cred["lmhash"], cred["nthash"], cred["sha1"], cred["ticket"]] not in credentials:
+                credentials.append([cred["domain"], cred["username"], cred["password"], cred["lmhash"], cred["nthash"], cred["sha1"], cred["ticket"]])
                 table.add_row(
                     "{}{}".format(
                         "{}\\".format(cred["domain"]) if cred["domain"] is not None else "",
@@ -34,7 +35,8 @@ class Output(IOutput):
                     ),
                     cred["password"] if cred["password"] is not None else "",
                     ':'.join(h for h in [cred["lmhash"], cred["nthash"]] if h is not None),
-                    cred["sha1"] if cred["sha1"] is not None else "")
+                    cred["sha1"] if cred["sha1"] is not None else "",
+                    "{} - {}".format(cred["ticket"]["domain"], cred["ticket"]["endtime"].strftime("%Y-%m-%d %H:%M")) if cred["ticket"] is not None else "")
         console = Console()
         console.print(table, no_wrap=True)
         return ""
