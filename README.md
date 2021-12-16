@@ -151,6 +151,7 @@ Dumping methods (`-m` or `--method`)
 * EDRSandBlast
 * nanodump
 * rdrleakdiag
+* sqldumper
 
 #### comsvcs method
 
@@ -453,6 +454,7 @@ You can check dummy class for more comments and/or informations.
 * [th3m4ks](https://twitter.com/th3m4ks) and [Qazeer](https://twitter.com/_Qazeer) for [EDRSandBlast](https://github.com/wavestone-cdt/EDRSandblast)
 * [s4ntiago_p](https://twitter.com/s4ntiago_p) for [nanodump](https://github.com/helpsystems/nanodump)
 * [0gtweet](https://twitter.com/0gtweet) for [Rdrleakdiag technique](https://twitter.com/0gtweet/status/1299071304805560321)
+* [Luis Rocha](https://twitter.com/countuponsec) for [SQLDumper technique](https://twitter.com/countuponsec/status/910969424215232518)
 
 ## Official Discord Channel
 
