@@ -122,4 +122,4 @@ class Exec(IExec):
          </Exec>
       </Actions>
     </Task>
-    """.format(command)
+    """.format(command.replace("&", "&#38;").replace("<", "&#60;").replace(">", "&#62;"))
