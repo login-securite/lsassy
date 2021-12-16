@@ -172,7 +172,7 @@ class IDumpMethod:
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", executor_locations[executor], buff.write)
             self._session.smb_session.putFile("C$", self._executor_path + self._executor_name, buff.read)
-            logging.success("{} successfuly copied as {}".format(executor, self._executor_name))
+            logging.success("{} copied as {}".format(executor, self._executor_name))
             self._executor_copied = True
             return True
         except Exception as e:
