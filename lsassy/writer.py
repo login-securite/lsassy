@@ -4,6 +4,8 @@ import os
 
 import importlib
 
+from sqlalchemy import null
+
 
 class Writer:
     """
@@ -13,10 +15,11 @@ class Writer:
         self._credentials = credentials
         self._tickets = tickets
 
-    def get_output(self, out_format, users_only=False):
+    def get_output(self, out_format, file_format, users_only=False):
         """
         Get credentials output in given format
         :param out_format: Format from output package
+        :param file_format: Format pf the putput file
         :param users_only: If set, only returns users account, else returns users and computers accounts
         :return: Output string
         """
@@ -28,7 +31,7 @@ class Writer:
 
         return output_method.get_output()
 
-    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None):
+    def write(self, out_format="pretty", file_format=null, output_file=None, quiet=False, users_only=False, kerberos_dir=None):
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
@@ -38,6 +41,13 @@ class Writer:
         :return: Success status
         """
         output = self.get_output(out_format, users_only)
+        
+        if file_format is null:
+            file_content = output
+            
+        else:
+            file_content = self.get_output(file_format, users_only)
+        
         if output is None:
             logging.error("An error occurred while writing credentials", exc_info=True)
             return None
@@ -53,7 +63,7 @@ class Writer:
                 return None
 
             with open(output_file, 'a+') as f:
-                f.write(output + "\n")
+                f.write(file_content + "\n")
             logging.success("Credentials saved to {}".format(output_file))
 
         if kerberos_dir is not None:

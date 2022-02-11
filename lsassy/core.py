@@ -203,6 +203,7 @@ class Lsassy:
             with lock:
                 Writer(credentials, tickets).write(
                     self.args.format,
+                    self.args.file_format,
                     output_file=self.args.outfile,
                     quiet=self.args.quiet,
                     users_only=self.args.users,
