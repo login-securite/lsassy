@@ -15,7 +15,7 @@ class Writer:
         self._credentials = credentials
         self._tickets = tickets
 
-    def get_output(self, out_format, file_format, users_only=False):
+    def get_output(self, out_format, users_only=False):
         """
         Get credentials output in given format
         :param out_format: Format from output package
@@ -31,7 +31,7 @@ class Writer:
 
         return output_method.get_output()
 
-    def write(self, out_format="pretty", file_format=null, output_file=None, quiet=False, users_only=False, kerberos_dir=None):
+    def write(self, file_format, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None):
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
