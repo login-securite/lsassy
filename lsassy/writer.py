@@ -43,9 +43,12 @@ class Writer:
         output = self.get_output(out_format, users_only)
         
         if file_format is null:
+            
+            print("content set to output")
             file_content = output
             
         else:
+            print("created file output")
             file_content = self.get_output(file_format, users_only)
         
         if output is None:
