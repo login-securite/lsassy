@@ -105,9 +105,6 @@ class Lsassy:
         """
         Main method to dump credentials on a remote host
         """
-        print(self.args.file_format)
-        print(self.args.format)
-        
         session, file, dumper, method = None, None, None, None
 
         # Credential parsing

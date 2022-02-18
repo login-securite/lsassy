@@ -35,6 +35,5 @@ class Output(IOutput):
                     cred["password"] if cred["password"] is not None else "",
                     ':'.join(h for h in [cred["lmhash"], cred["nthash"]] if h is not None),
                     cred["sha1"] if cred["sha1"] is not None else "")
-        # console = Console()
-        # console.print(table, no_wrap=True)
+
         return table

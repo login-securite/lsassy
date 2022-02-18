@@ -20,7 +20,6 @@ class Writer:
         """
         Get credentials output in given format
         :param out_format: Format from output package
-        :param file_format: Format pf the putput file
         :param users_only: If set, only returns users account, else returns users and computers accounts
         :return: Output string
         """
@@ -37,7 +36,7 @@ class Writer:
         Displays content to stdout and/or a file
         :param out_format: Output format
         :param output_file: Output file
-        :file_format: File Logs Format
+        :param file_format: File Logs Format
         :param quiet: If set, doesn't display on stdout
         :param users_only: If set, only returns users account, else returns users and computers accounts
         :return: Success status
