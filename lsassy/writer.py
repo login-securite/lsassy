@@ -5,6 +5,7 @@ import os
 import importlib
 
 from sqlalchemy import null
+from rich.console import Console
 
 
 class Writer:
@@ -36,6 +37,7 @@ class Writer:
         Displays content to stdout and/or a file
         :param out_format: Output format
         :param output_file: Output file
+        :file_format: File Logs Format
         :param quiet: If set, doesn't display on stdout
         :param users_only: If set, only returns users account, else returns users and computers accounts
         :return: Success status
@@ -48,6 +50,8 @@ class Writer:
             
         else:
             file_content = self.get_output(file_format, users_only)
+            console = Console()
+            console.print(file_content, no_wrap=True)
         
         if output is None:
             logging.error("An error occurred while writing credentials", exc_info=True)
