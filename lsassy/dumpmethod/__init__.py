@@ -36,6 +36,7 @@ class Dependency:
         self.remote_path = "\\Windows\\Temp\\"
         self.uploaded = False
         self.content = content
+        self.share_mode = False
 
     def get_remote_path(self):
         return self.remote_path + self.file
@@ -54,6 +55,7 @@ class Dependency:
             # Share provided
             self.remote_path = self.path
             self.file = ""
+            self.share_mode = True
             return True
         if not os.path.exists(self.path):
             logging.error("{} does not exist.".format(self.path))
@@ -63,6 +65,9 @@ class Dependency:
 
     def upload(self, session):
         # Upload dependency
+
+        if self.share_mode:
+            return True
 
         if self.content is None:
             logging.debug('Copy {} to {}'.format(self.path, self.remote_path))
@@ -167,7 +172,7 @@ class IDumpMethod:
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", executor_locations[executor], buff.write)
             self._session.smb_session.putFile("C$", self._executor_path + self._executor_name, buff.read)
-            logging.success("{} successfuly copied as {}".format(executor, self._executor_name))
+            logging.success("{} copied as {}".format(executor, self._executor_name))
             self._executor_copied = True
             return True
         except Exception as e:

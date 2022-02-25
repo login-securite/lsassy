@@ -12,6 +12,7 @@ import random
 import string
 
 from impacket.dcerpc.v5 import transport, scmr
+
 from lsassy.exec import IExec
 
 
@@ -86,7 +87,8 @@ class Exec(IExec):
             self._scmr.bind(scmr.MSRPC_UUID_SCMR)
             resp = scmr.hROpenSCManagerW(self._scmr)
             _scHandle = resp['lpScHandle']
-            resp = scmr.hRCreateServiceW(self._scmr, _scHandle, self._serviceName, self._serviceName, lpBinaryPathName=command,
+            resp = scmr.hRCreateServiceW(self._scmr, _scHandle, self._serviceName, self._serviceName,
+                                         lpBinaryPathName="%COMSPEC% /Q /c {}".format(command),
                                          dwStartType=scmr.SERVICE_DEMAND_START)
             logging.debug("Service %s created" % self._serviceName)
             self._service = resp['lpServiceHandle']

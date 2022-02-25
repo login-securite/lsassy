@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.1.1&x2=0)](https://pypi.org/project/lsassy/)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.1.2&x2=0)](https://pypi.org/project/lsassy/)
 [![PyPI Statistics](https://img.shields.io/pypi/dm/lsassy.svg)](https://pypistats.org/packages/lsassy)
 [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests)
 [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
@@ -151,6 +151,7 @@ Dumping methods (`-m` or `--method`)
 * EDRSandBlast
 * nanodump
 * rdrleakdiag
+* sqldumper
 
 #### comsvcs method
 
@@ -453,6 +454,7 @@ You can check dummy class for more comments and/or informations.
 * [th3m4ks](https://twitter.com/th3m4ks) and [Qazeer](https://twitter.com/_Qazeer) for [EDRSandBlast](https://github.com/wavestone-cdt/EDRSandblast)
 * [s4ntiago_p](https://twitter.com/s4ntiago_p) for [nanodump](https://github.com/helpsystems/nanodump)
 * [0gtweet](https://twitter.com/0gtweet) for [Rdrleakdiag technique](https://twitter.com/0gtweet/status/1299071304805560321)
+* [Luis Rocha](https://twitter.com/countuponsec) for [SQLDumper technique](https://twitter.com/countuponsec/status/910969424215232518)
 
 ## Official Discord Channel
 

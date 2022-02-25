@@ -59,6 +59,7 @@ def main():
                            help='File format (Default same value as --format)')
     
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
+    group_out.add_argument('--no-tickets', action='store_true', help='Do not display valid TGT')
 
     parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
     parser.add_argument('--threads', default=10, type=int, action='store', help='Threads number')

@@ -1,8 +1,7 @@
-import logging
-from pathlib import Path
-import os
-
 import importlib
+import logging
+import os
+from pathlib import Path
 
 from sqlalchemy import null
 from rich.console import Console
@@ -16,7 +15,7 @@ class Writer:
         self._credentials = credentials
         self._tickets = tickets
 
-    def get_output(self, out_format, users_only=False):
+    def get_output(self, out_format, users_only=False, tickets=False):
         """
         Get credentials output in given format
         :param out_format: Format from output package
@@ -24,14 +23,15 @@ class Writer:
         :return: Output string
         """
         try:
-            output_method = importlib.import_module("lsassy.output.{}_output".format(out_format.lower()), "Output").Output(self._credentials, users_only)
+            output_method = importlib.import_module("lsassy.output.{}_output".format(out_format.lower()), "Output").Output(self._credentials, users_only, tickets)
         except ModuleNotFoundError:
             logging.error("Output module '{}' doesn't exist".format(out_format.lower()), exc_info=True)
             return None
 
         return output_method.get_output()
 
-    def write(self, file_format, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None):
+    def write(self, file_format, out_format="pretty", output_file=None, quiet=False, users_only=False, tickets=False, kerberos_dir=None):
+
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
@@ -39,19 +39,21 @@ class Writer:
         :param file_format: File Logs Format
         :param quiet: If set, doesn't display on stdout
         :param users_only: If set, only returns users account, else returns users and computers accounts
+        :param kerberos_dir: If set, saves Kerberos ticket to specified directory
         :return: Success status
         """
-        output = self.get_output(out_format, users_only)
+
+        output = self.get_output(out_format, users_only, tickets)
         
         if file_format is null:
             file_format = out_format
             file_content = output
             
         else:
-            file_content = self.get_output(file_format, users_only)
+            file_content = self.get_output(file_format, users_only, tickets)
             console = Console()
             console.print(file_content, no_wrap=True)
-        
+
         if output is None:
             logging.error("An error occurred while writing credentials", exc_info=True)
             return None
@@ -70,11 +72,18 @@ class Writer:
                 f.write(file_content + "\n")
             logging.success("Credentials saved to {}".format(output_file))
 
-        if kerberos_dir is not None:
+        if kerberos_dir is None:
+            if os.name == 'nt':
+                abs_dir = '%LocalAppData%\\lsassy'
+            else:
+                abs_dir = os.path.expanduser('~') + '/.config/lsassy'
+        else:
             if len(self._tickets) == 0 and not quiet:
                 logging.warning("No kerberos tickets found")
                 return True
             abs_dir = os.path.abspath(kerberos_dir)
+
+        if len(self._tickets) > 0:
             if not os.path.exists(abs_dir):
                 try:
                     os.makedirs(abs_dir)
@@ -88,4 +97,5 @@ class Writer:
                     logging.success("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
                 else:
                     logging.success("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
+
         return True

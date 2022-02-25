@@ -1,8 +1,9 @@
 import logging
-import os
-import ntpath
-from lsassy.credential import Credential
+from datetime import datetime
+
 from pypykatz.pypykatz import pypykatz
+
+from lsassy.credential import Credential
 
 
 class Parser:
@@ -44,7 +45,9 @@ class Parser:
                         NThash = NThash.hex()
                     if SHA1 is not None:
                         SHA1 = SHA1.hex()
-                    if username and (password or NThash or LMHash):
+                    if username and (password
+                                     or (NThash and NThash != "00000000000000000000000000000000")
+                                     or (LMHash and LMHash != "00000000000000000000000000000000")):
                         credentials.append(
                             Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash,
                                        nthash=NThash, sha1=SHA1))
@@ -57,5 +60,22 @@ class Parser:
             if cred.credtype == 'kerberos':
                 for ticket in cred.tickets:
                     tickets.append(ticket)
+
+        for ticket in tickets:
+            if ticket.ServiceName is not None and ticket.ServiceName[0] == 'krbtgt':
+                if ticket.EClientName is not None and ticket.DomainName is not None:
+                    if ticket.TargetDomainName is not None and ticket.TargetDomainName != ticket.DomainName:
+                        target_domain = ticket.TargetDomainName
+                    else:
+                        target_domain = ticket.DomainName
+                    # Keep only valid tickets
+                    if ticket.EndTime > datetime.now(ticket.EndTime.tzinfo):
+
+                        credentials.append(Credential(
+                            ssp="kerberos",
+                            domain=ticket.DomainName,
+                            username=ticket.EClientName[0],
+                            ticket={'file': list(ticket.kirbi_data)[0], 'domain': target_domain, 'endtime': ticket.EndTime}
+                        ))
 
         return credentials, tickets
