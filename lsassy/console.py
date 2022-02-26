@@ -55,6 +55,9 @@ def main():
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
     group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "table"], action='store', default="pretty",
                            help='Output format (Default pretty)')
+    group_out.add_argument('-ff', '--file-format', choices=["pretty", "json", "grep", "table"], action='store',
+                           help='File format (Default same value as --format)')
+    
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
     group_out.add_argument('--no-tickets', action='store_true', help='Do not display valid TGT')
 

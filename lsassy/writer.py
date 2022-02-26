@@ -3,6 +3,9 @@ import logging
 import os
 from pathlib import Path
 
+from sqlalchemy import null
+from rich.console import Console
+
 
 class Writer:
     """
@@ -27,17 +30,30 @@ class Writer:
 
         return output_method.get_output()
 
-    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, tickets=False, kerberos_dir=None):
+    def write(self, file_format, out_format="pretty", output_file=None, quiet=False, users_only=False, tickets=False, kerberos_dir=None):
+
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
         :param output_file: Output file
+        :param file_format: File Logs Format
         :param quiet: If set, doesn't display on stdout
         :param users_only: If set, only returns users account, else returns users and computers accounts
         :param kerberos_dir: If set, saves Kerberos ticket to specified directory
         :return: Success status
         """
+
         output = self.get_output(out_format, users_only, tickets)
+        
+        if file_format is null:
+            file_format = out_format
+            file_content = output
+            
+        else:
+            file_content = self.get_output(file_format, users_only, tickets)
+            console = Console()
+            console.print(file_content, no_wrap=True)
+
         if output is None:
             logging.error("An error occurred while writing credentials", exc_info=True)
             return None
@@ -53,7 +69,7 @@ class Writer:
                 return None
 
             with open(output_file, 'a+') as f:
-                f.write(output + "\n")
+                f.write(file_content + "\n")
             logging.success("Credentials saved to {}".format(output_file))
 
         if kerberos_dir is None:
