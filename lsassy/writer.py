@@ -3,7 +3,6 @@ import logging
 import os
 from pathlib import Path
 
-from sqlalchemy import null
 from rich.console import Console
 
 
@@ -45,7 +44,7 @@ class Writer:
 
         output = self.get_output(out_format, users_only, tickets)
         
-        if file_format is null:
+        if file_format is None:
             file_format = out_format
             file_content = output
             
