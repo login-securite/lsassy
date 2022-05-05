@@ -12,8 +12,8 @@ from lsassy.dumpmethod import IDumpMethod, Dependency
 
 
 class DumpMethod(IDumpMethod):
-    def __init__(self, session, timeout):
-        super().__init__(session, timeout)
+    def __init__(self, session, timeout, time_between_commands):
+        super().__init__(session, timeout, time_between_commands)
         self.edrsandblast = Dependency("edrsandblast", "EDRSandBlast.exe")
         self.RTCore64 = Dependency("RTCore64", "RTCore64.sys")
         self.ntoskrnl = Dependency("ntoskrnl", "NtoskrnlOffsets.csv")

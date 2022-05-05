@@ -165,14 +165,14 @@ class Lsassy:
                 return False
 
             if not parse_only:
-                dumper = Dumper(session, self.args.timeout).load(self.args.dump_method)
+                dumper = Dumper(session, self.args.timeout, self.args.time_between_commands).load(self.args.dump_method)
                 if dumper is None:
                     logging.error("Unable to load dump module")
                     return False
 
                 file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
                                    copy=self.args.copy, dump_path=dump_path,
-                                   dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
+                                   dump_name=self.args.dump_name, **options)
                 if file is None:
                     logging.error("Unable to dump lsass.")
                     return False

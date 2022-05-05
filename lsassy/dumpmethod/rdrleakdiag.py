@@ -2,8 +2,8 @@ from lsassy.dumpmethod import IDumpMethod
 
 
 class DumpMethod(IDumpMethod):
-    def __init__(self, session, timeout):
-        super().__init__(session, timeout)
+    def __init__(self, session, timeout, time_between_commands):
+        super().__init__(session, timeout, time_between_commands)
         self.waiting_time = 5
 
     def prepare(self, options):

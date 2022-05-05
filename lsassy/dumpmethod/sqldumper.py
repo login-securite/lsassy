@@ -2,8 +2,8 @@ from lsassy.dumpmethod import IDumpMethod, Dependency
 
 
 class DumpMethod(IDumpMethod):
-    def __init__(self, session, timeout):
-        super().__init__(session, timeout)
+    def __init__(self, session, timeout, time_between_commands):
+        super().__init__(session, timeout, time_between_commands)
         self.sqldumper = Dependency("sqldumper", "SQLDumper.exe")
 
     def prepare(self, options):
