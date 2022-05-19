@@ -20,6 +20,7 @@ class Parser:
         """
         credentials = []
         tickets = []
+        masterkeys = []
         try:
             pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize = 60*1024)
         except Exception as e:
@@ -27,9 +28,8 @@ class Parser:
             return None
 
         ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds',
-                'tspkg_creds']
+                'tspkg_creds', 'dpapi_creds']
         for luid in pypy_parse.logon_sessions:
-
             for ssp in ssps:
                 for cred in getattr(pypy_parse.logon_sessions[luid], ssp, []):
                     domain = getattr(cred, "domainname", None)
@@ -53,9 +53,14 @@ class Parser:
                 for ticket in kcred.tickets:
                     tickets.append(ticket)
 
+            for dpapicred in pypy_parse.logon_sessions[luid].dpapi_creds:
+                m = "{%s}:%s" % (dpapicred.key_guid,dpapicred.sha1_masterkey)
+                if m not in masterkeys:
+                    masterkeys.append(m)
+
         for cred in pypy_parse.orphaned_creds:
             if cred.credtype == 'kerberos':
                 for ticket in cred.tickets:
                     tickets.append(ticket)
 
-        return credentials, tickets
+        return credentials, tickets, masterkeys

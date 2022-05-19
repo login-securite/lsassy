@@ -9,9 +9,10 @@ class Writer:
     """
     Class used to write output results either on screen and/or in a file
     """
-    def __init__(self, credentials, tickets):
+    def __init__(self, credentials, tickets, masterkeys):
         self._credentials = credentials
         self._tickets = tickets
+        self._masterkeys = masterkeys
 
     def get_output(self, out_format, users_only=False):
         """
@@ -28,13 +29,15 @@ class Writer:
 
         return output_method.get_output()
 
-    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None):
+    def write(self, out_format="pretty", output_file=None, quiet=False, users_only=False, kerberos_dir=None, masterkeys_file=None):
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
         :param output_file: Output file
         :param quiet: If set, doesn't display on stdout
         :param users_only: If set, only returns users account, else returns users and computers accounts
+        :param kerberos_dir: Output dir for kerberos tickets
+        :param masterkeys_file: Output file for DPAPI masterkeys
         :return: Success status
         """
         output = self.get_output(out_format, users_only)
@@ -57,8 +60,22 @@ class Writer:
             logging.success("Credentials saved to {}".format(output_file))
 
         if kerberos_dir is not None:
-            if len(self._tickets) == 0 and not quiet:
-                logging.warning("No kerberos tickets found")
+            self.write_tickets(kerberos_dir, quiet)
+
+        if masterkeys_file is not None:
+            self.write_masterkeys(masterkeys_file, quiet)
+        return True
+
+    def write_tickets(self, kerberos_dir=None, quiet=False):
+        """
+        Output masterkeys to file
+        :param kerberos_dir: Output dir
+        :param quiet: If set, doesn't display on stdout
+        """
+        if kerberos_dir is not None:
+            if len(self._tickets) == 0:
+                if not quiet:
+                    logging.warning("No kerberos tickets found")
                 return True
             abs_dir = os.path.abspath(kerberos_dir)
             if not os.path.exists(abs_dir):
@@ -74,4 +91,27 @@ class Writer:
                     logging.success("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
                 else:
                     logging.success("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
+        return True
+    
+    def write_masterkeys(self, masterkeys_file=None, quiet=False):
+        """
+        Output masterkeys to file
+        :param masterkeys_file: Output file
+        :param quiet: If set, doesn't display on stdout
+        """
+        if masterkeys_file is not None:
+            path = Path(masterkeys_file).parent
+            if not os.path.isdir(path):
+                if not quiet:
+                    logging.error("Directory {} does not exist".format(path))
+                return None
+            if len(self._masterkeys) == 0:
+                if not quiet:
+                    logging.warning("No masterkey found")
+                return True
+            with open(masterkeys_file,'a+') as file:
+                for mk in self._masterkeys:
+                    file.write(mk+'\n')
+            if not quiet:
+                logging.success("Masterkeys saved to {}".format(masterkeys_file))
         return True
