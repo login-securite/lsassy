@@ -1,3 +1,4 @@
+from doctest import master
 import logging
 from datetime import datetime
 
@@ -21,6 +22,7 @@ class Parser:
         """
         credentials = []
         tickets = []
+        masterkeys = []
         try:
             pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize = 60*1024)
         except Exception as e:
@@ -28,9 +30,8 @@ class Parser:
             return None
 
         ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds',
-                'tspkg_creds']
+                'tspkg_creds', 'dpapi_creds']
         for luid in pypy_parse.logon_sessions:
-
             for ssp in ssps:
                 for cred in getattr(pypy_parse.logon_sessions[luid], ssp, []):
                     domain = getattr(cred, "domainname", None)
@@ -56,6 +57,14 @@ class Parser:
                 for ticket in kcred.tickets:
                     tickets.append(ticket)
 
+            for dpapicred in pypy_parse.logon_sessions[luid].dpapi_creds:
+                m = "{%s}:%s" % (dpapicred.key_guid,dpapicred.sha1_masterkey)
+                if m not in masterkeys:
+                    masterkeys.append(m)
+                    credentials.append(
+                        Credential(ssp='dpapi', domain='', username='', masterkey=m)
+                    )
+
         for cred in pypy_parse.orphaned_creds:
             if cred.credtype == 'kerberos':
                 for ticket in cred.tickets:
@@ -78,4 +87,4 @@ class Parser:
                             ticket={'file': list(ticket.kirbi_data)[0], 'domain': target_domain, 'endtime': ticket.EndTime}
                         ))
 
-        return credentials, tickets
+        return credentials, tickets, masterkeys
