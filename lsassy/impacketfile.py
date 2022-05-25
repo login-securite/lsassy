@@ -135,7 +135,7 @@ class ImpacketFile:
         t = time.time()
         while True:
             try:
-                self._fid = self._session.smb_session.openFile(self._tid, self._fpath)
+                self._fid = self._session.smb_session.openFile(self._tid, self._fpath, desiredAccess=FILE_READ_DATA)
                 logging.info("{} handle acquired".format(self._fpath))
                 break
             except Exception as e:

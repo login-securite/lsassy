@@ -35,13 +35,13 @@ class DumpMethod(IDumpMethod):
     custom_dump_path_support = True  # Default: True
     # dump_share             = ""    # Default: "C$"
 
-    def __init__(self, session, timeout):
+    def __init__(self, session, timeout, time_between_commands):
         """
         * Optional *
         Initiates self._session and self._file in super().
         Do not remove "super().__init__(session)" call if keeping __init__
         """
-        super().__init__(session, timeout)
+        super().__init__(session, timeout, time_between_commands)
 
         """
         You can set custom variable in this section for later use. You can also use the Dependency class if you need

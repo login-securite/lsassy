@@ -1,17 +1,17 @@
 import logging
-import signal
 import queue
-import time
-
+import signal
 import threading
+import time
 from queue import Queue
+
 from lsassy import logger
-from lsassy.utils import get_targets
-from lsassy.parser import Parser
-from lsassy.session import Session
-from lsassy.writer import Writer
 from lsassy.dumper import Dumper
 from lsassy.impacketfile import ImpacketFile
+from lsassy.parser import Parser
+from lsassy.session import Session
+from lsassy.utils import get_targets
+from lsassy.writer import Writer
 
 lock = threading.RLock()
 
@@ -162,18 +162,18 @@ class Lsassy:
             )
 
             if session.smb_session is None:
-                logging.error("Couldn't connect to remote host")
+                logging.warning("Couldn't connect to remote host")
                 return False
 
             if not parse_only:
-                dumper = Dumper(session, self.args.timeout).load(self.args.dump_method)
+                dumper = Dumper(session, self.args.timeout, self.args.time_between_commands).load(self.args.dump_method)
                 if dumper is None:
                     logging.error("Unable to load dump module")
                     return False
 
                 file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
                                    copy=self.args.copy, dump_path=dump_path,
-                                   dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
+                                   dump_name=self.args.dump_name, **options)
                 if file is None:
                     logging.error("Unable to dump lsass.")
                     return False
@@ -203,10 +203,13 @@ class Lsassy:
 
             with lock:
                 Writer(credentials, tickets, masterkeys).write(
+                    self.args.file_format,
                     self.args.format,
                     output_file=self.args.outfile,
                     quiet=self.args.quiet,
                     users_only=self.args.users,
+                    tickets=not self.args.no_tickets,
+                    masterkeys=not self.args.no_masterkeys,
                     kerberos_dir=kerberos_dir,
                     masterkeys_file=masterkeys_file
                 )
