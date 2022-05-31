@@ -33,6 +33,7 @@ def main():
     group_dump.add_argument('--time-between-commands', action='store', type=int, default=7,
                             help='Time to wait between dump methods commands (Default 7s)')
     group_dump.add_argument('--parse-only', action='store_true', help='Parse dump without dumping')
+    group_dump.add_argument('--keep-dump', action='store_true', help='Parse dump without dumping')
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('-u', '--username', action='store', help='Username')

@@ -137,6 +137,7 @@ class Lsassy:
                 dump_path += "\\"
 
         parse_only = self.args.parse_only
+        keep_dump = self.args.keep_dump
         kerberos_dir = self.args.kerberos_dir
         masterkeys_file = self.args.masterkeys_file
 
@@ -191,7 +192,7 @@ class Lsassy:
             credentials, tickets, masterkeys = Parser(file).parse()
             file.close()
 
-            if not parse_only:
+            if not parse_only and not keep_dump:
                 ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
                 logging.success("Lsass dump deleted")
             else:
@@ -235,7 +236,7 @@ class Lsassy:
             except Exception as e:
                 logging.debug("Potential issue while closing file: {}".format(str(e)))
 
-            if not parse_only:
+            if not parse_only and not keep_dump:
                 try:
                     if ImpacketFile.delete(session, file_path=file.get_file_path(), timeout=self.args.timeout):
                         logging.debug("Lsass dump deleted")
