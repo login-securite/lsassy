@@ -138,6 +138,7 @@ class Lsassy:
 
         parse_only = self.args.parse_only
         kerberos_dir = self.args.kerberos_dir
+        masterkeys_file = self.args.masterkeys_file
 
         if parse_only and (dump_path is None or self.args.dump_name is None):
             logging.error("--dump-path and --dump-name required for --parse-only option")
@@ -187,7 +188,7 @@ class Lsassy:
                     logging.error("Unable to open lsass dump.")
                     return False
 
-            credentials, tickets = Parser(file).parse()
+            credentials, tickets, masterkeys = Parser(file).parse()
             file.close()
 
             if not parse_only:
@@ -201,14 +202,16 @@ class Lsassy:
                 return False
 
             with lock:
-                Writer(credentials, tickets).write(
+                Writer(credentials, tickets, masterkeys).write(
                     self.args.file_format,
                     self.args.format,
                     output_file=self.args.outfile,
                     quiet=self.args.quiet,
                     users_only=self.args.users,
                     tickets=not self.args.no_tickets,
-                    kerberos_dir=kerberos_dir
+                    masterkeys=not self.args.no_masterkeys,
+                    kerberos_dir=kerberos_dir,
+                    masterkeys_file=masterkeys_file
                 )
 
         except KeyboardInterrupt:

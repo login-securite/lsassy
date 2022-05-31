@@ -54,6 +54,7 @@ def main():
 
     group_out = parser.add_argument_group('output')
     group_out.add_argument('-K', '--kerberos-dir', action='store', help='Save kerberos tickets to a directory')
+    group_out.add_argument('-M', '--masterkeys-file', action='store', help='Save masterkeys in format {GUID}:SHA1 to a file')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
     group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "table"], action='store', default="pretty",
                            help='Output format (Default pretty)')
@@ -62,6 +63,7 @@ def main():
     
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
     group_out.add_argument('--no-tickets', action='store_true', help='Do not display valid TGT')
+    group_out.add_argument('--no-masterkeys', action='store_true', help='Do not display valid masterkeys')
 
     parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
     parser.add_argument('--threads', default=10, type=int, action='store', help='Threads number')

@@ -19,14 +19,17 @@ class Output(IOutput):
                     if cred["ticket"] is not None:
                         cred["password"] = "Domain: {} - End time: {} ({})".format(cred["ticket"]["domain"], cred["ticket"]["endtime"].strftime("%Y-%m-%d %H:%M"), cred['ticket']['file'])
                         cred_type = "TGT"
+                    elif cred["masterkey"] is not None:
+                        cred["password"] = "{}".format(cred["masterkey"])
+                        cred_type = "DPAPI Masterkey"
                     else:
                         cred["password"] = ':'.join(h for h in [cred["lmhash"], cred["nthash"]] if h is not None)
                         cred_type = "NT"
                 if [cred["domain"], cred["username"], cred["password"]] not in credentials:
                     credentials.append([cred["domain"], cred["username"], cred["password"]])
                     output.append(
-                        "{}\\{}{}{}{}{}".format(
-                            cred["domain"],
+                        "{}{}{}{}{}{}".format(
+                            ('{}\\'.format(cred["domain"]) if cred["domain"] is not None and cred["domain"] != "" else " "),
                             cred["username"],
                             " " * (max_size - len(cred["domain"]) - len(cred["username"]) + 2),
                             logger.highlight("[{}] ".format(cred_type)),
