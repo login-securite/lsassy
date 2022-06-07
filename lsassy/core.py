@@ -5,7 +5,7 @@ import threading
 import time
 from queue import Queue
 
-from lsassy import logger
+from lsassy import logger, __version__
 from lsassy.dumper import Dumper
 from lsassy.impacketfile import ImpacketFile
 from lsassy.parser import Parser
@@ -69,8 +69,12 @@ class ThreadPool:
             logging.getLogger().setLevel(logging.INFO)
         elif self.arguments.v >= 2:
             logging.getLogger().setLevel(logging.DEBUG)
+            threading.current_thread().name = "[DEBUG]"
+            logging.info("lsassy v {}".format(__version__))
         else:
             logging.getLogger().setLevel(logging.ERROR)
+
+        threading.current_thread().name = "[Core]"
         try:
             # Turn-on the worker threads
             for i in range(self.max_threads):
