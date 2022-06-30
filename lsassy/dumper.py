@@ -12,10 +12,11 @@ class Dumper:
     This class looks for provided dump module name in `dumpmethod` package and returns an instance of this dump method.
     Returns None if doesn't exist.
     """
-    def __init__(self, session, timeout):
+    def __init__(self, session, timeout, time_between_commands):
 
         self._session = session
         self._timeout = timeout
+        self._time_between_commands = time_between_commands
 
     def load(self, dump_module):
         """
@@ -24,7 +25,7 @@ class Dumper:
         :return: instance of dump module
         """
         try:
-            return importlib.import_module("lsassy.dumpmethod.{}".format(dump_module.lower()), "DumpMethod").DumpMethod(self._session, self._timeout)
+            return importlib.import_module("lsassy.dumpmethod.{}".format(dump_module.lower()), "DumpMethod").DumpMethod(self._session, self._timeout, self._time_between_commands)
         except ModuleNotFoundError:
             logging.warning("Dump module '{}' doesn't exist".format(dump_module))
             return None

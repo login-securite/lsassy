@@ -139,7 +139,7 @@ class Exec(IExec):
                 scmr.SERVICE_NO_CHANGE,
                 scmr.SERVICE_DEMAND_START,
                 scmr.SERVICE_ERROR_IGNORE,
-                command,
+                "%COMSPEC% /Q /c {}".format(command),
                 NULL,
                 NULL,
                 NULL,

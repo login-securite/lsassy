@@ -5,8 +5,8 @@ class DumpMethod(IDumpMethod):
     custom_dump_ext_support = False
     dump_ext = "dmp"
 
-    def __init__(self, session, timeout):
-        super().__init__(session, timeout)
+    def __init__(self, session, timeout, time_between_commands):
+        super().__init__(session, timeout, time_between_commands)
         self.procdump = Dependency("procdump", "procdump.exe")
 
     def prepare(self, options):

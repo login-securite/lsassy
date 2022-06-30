@@ -8,10 +8,11 @@ class LsassyFormatter(logging.Formatter):
     Custom formatting. Inspired by impacket "Logger" class
     """
 
-    def __init__(self):
+    def __init__(self, no_color=False):
         logging.Formatter.__init__(self, '%(bullet)s %(threadName)s %(message)s', None)
-        if os.name == 'nt':
-            self.BLUE, self.WHITE, self.YELLOW, self.RED, self.NC = '', '', '', '', ''
+        self.no_color = no_color
+        if self.no_color:
+            self.BLUE, self.WHITE, self.YELLOW, self.RED, self.GREEN, self.NC = '', '', '', '', '', ''
         else:
             self.BLUE = '\033[1;34m'
             self.WHITE = '\033[1;37m'
@@ -49,18 +50,21 @@ def highlight(msg):
     :param msg: Message to highlight
     :return: Highlighted message
     """
+    if logging.no_color:
+        return msg
     return "\033[1;33m{}\033[0m".format(msg)
 
 
-def init(quiet=False):
+def init(quiet=False, no_color=False):
     """
     StreamHandler and formatter added to root logger
     """
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(LsassyFormatter())
+    handler.setFormatter(LsassyFormatter(no_color))
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
 
     logging.addLevelName(25, 'SUCCESS')
     setattr(logging, 'success', lambda message, *args: logging.getLogger()._log(25, message, args))
+    setattr(logging, 'no_color', no_color)
     logging.getLogger().disabled = quiet

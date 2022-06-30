@@ -30,7 +30,10 @@ def main():
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
     group_dump.add_argument('--timeout', action='store', type=int, default=5,
                             help='Max time to wait for lsass dump (Default 5s)')
+    group_dump.add_argument('--time-between-commands', action='store', type=int, default=7,
+                            help='Time to wait between dump methods commands (Default 7s)')
     group_dump.add_argument('--parse-only', action='store_true', help='Parse dump without dumping')
+    group_dump.add_argument('--keep-dump', action='store_true', help='Parse dump without dumping')
 
     group_auth = parser.add_argument_group('authentication')
     group_auth.add_argument('-u', '--username', action='store', help='Username')
@@ -52,10 +55,18 @@ def main():
 
     group_out = parser.add_argument_group('output')
     group_out.add_argument('-K', '--kerberos-dir', action='store', help='Save kerberos tickets to a directory')
+    group_out.add_argument('-M', '--masterkeys-file', action='store', help='Save masterkeys in format {GUID}:SHA1 to a file')
     group_out.add_argument('-o', '--outfile', action='store', help='Output credentials to file')
     group_out.add_argument('-f', '--format', choices=["pretty", "json", "grep", "table"], action='store', default="pretty",
                            help='Output format (Default pretty)')
+    group_out.add_argument('-ff', '--file-format', choices=["pretty", "json", "grep", "table"], action='store',
+                           help='File format (Default same value as --format)')
+    group_out.add_argument('-nc', '--no-color', action='store_true', help='No colors in output')
+    
+
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
+    group_out.add_argument('--no-tickets', action='store_true', help='Do not display valid TGT')
+    group_out.add_argument('--no-masterkeys', action='store_true', help='Do not display valid masterkeys')
 
     parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
     parser.add_argument('--threads', default=10, type=int, action='store', help='Threads number')
