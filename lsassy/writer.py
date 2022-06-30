@@ -3,8 +3,6 @@ import logging
 import os
 from pathlib import Path
 
-from rich.console import Console
-
 
 class Writer:
     """
@@ -51,8 +49,6 @@ class Writer:
 
         else:
             file_content = self.get_output(file_format, users_only, tickets, masterkeys)
-            console = Console()
-            console.print(file_content, no_wrap=True)
 
         if output is None:
             logging.error("An error occurred while writing credentials", exc_info=True)
