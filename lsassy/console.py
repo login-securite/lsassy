@@ -61,7 +61,9 @@ def main():
                            help='Output format (Default pretty)')
     group_out.add_argument('-ff', '--file-format', choices=["pretty", "json", "grep", "table"], action='store',
                            help='File format (Default same value as --format)')
+    group_out.add_argument('-nc', '--no-color', action='store_true', help='No colors in output')
     
+
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
     group_out.add_argument('--no-tickets', action='store_true', help='Do not display valid TGT')
     group_out.add_argument('--no-masterkeys', action='store_true', help='Do not display valid masterkeys')

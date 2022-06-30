@@ -62,7 +62,7 @@ class ThreadPool:
         return any(thread.is_alive() for thread in self.threads)
 
     def run(self):
-        logger.init()
+        logger.init(no_color=self.arguments.no_color)
         threading.current_thread().name = "[Core]"
 
         if self.arguments.v == 1:
