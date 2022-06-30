@@ -50,7 +50,7 @@ def highlight(msg):
     :param msg: Message to highlight
     :return: Highlighted message
     """
-    if logging.getFormatter().no_color:
+    if logging.no_color:
         return msg
     return "\033[1;33m{}\033[0m".format(msg)
 
@@ -66,4 +66,5 @@ def init(quiet=False, no_color=False):
 
     logging.addLevelName(25, 'SUCCESS')
     setattr(logging, 'success', lambda message, *args: logging.getLogger()._log(25, message, args))
+    setattr(logging, 'no_color', no_color)
     logging.getLogger().disabled = quiet
