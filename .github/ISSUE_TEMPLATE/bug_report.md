@@ -11,7 +11,7 @@ assignees: Hackndo
 These comment won't show up when you submit the issue.
 Before submitting an issue, check that you're using the latest version
 Send as much details as possible.
- * For standalone lsassy, please use the -d debug flag
+ * For standalone lsassy, please use the -vv verbose level
  * For CME module, please use CrackMapExec --verbose flag
 -->
 
