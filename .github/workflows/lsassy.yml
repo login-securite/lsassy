@@ -1,0 +1,39 @@
+name: lsassy Tests & Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: lsassy actions on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 4
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        python-version: ['3.9']
+    steps:
+    - name: Checking out
+      uses: actions/checkout@v2
+
+    - name: Setup on ${{ matrix.os }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9
+        architecture: x64
+
+    - name: Building binary with pyinstaller
+      run: |
+        pip install pyinstaller -r requirements.txt
+        pyinstaller ./lsassy/console.py --onefile --clean -n lsassy --additional-hooks-dir=hooks
+
+    - name: Uploading lsassy binary for ${{ matrix.os }}
+      uses: actions/upload-artifact@master
+      with:
+        name: lsassy-${{ matrix.os }}
+        path: |
+          dist/lsassy
+          dist/lsassy.exe

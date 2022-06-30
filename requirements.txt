@@ -1,0 +1,4 @@
+impacket
+netaddr
+pypykatz>=0.4.8
+rich
