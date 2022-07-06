@@ -66,7 +66,7 @@ def main():
 
     group_out.add_argument('--users', action='store_true', help='Only display user accounts (No computer accounts)')
     group_out.add_argument('--no-tickets', action='store_true', help='Do not display valid TGT')
-    group_out.add_argument('--no-masterkeys', action='store_true', help='Do not display valid masterkeys')
+    group_out.add_argument('--masterkeys', action='store_true', help='Display valid masterkeys')
 
     parser.add_argument('-v', action='count', default=0, help='Verbosity level (-v or -vv)')
     parser.add_argument('--threads', default=10, type=int, action='store', help='Threads number')

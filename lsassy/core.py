@@ -214,7 +214,7 @@ class Lsassy:
                     quiet=self.args.quiet,
                     users_only=self.args.users,
                     tickets=not self.args.no_tickets,
-                    masterkeys=not self.args.no_masterkeys,
+                    masterkeys=self.args.masterkeys,
                     kerberos_dir=kerberos_dir,
                     masterkeys_file=masterkeys_file
                 )

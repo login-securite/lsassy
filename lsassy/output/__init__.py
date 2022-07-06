@@ -27,7 +27,7 @@ class IOutput:
         :param masterkeys: If set, also returns valid DPAPI masterkeys
         :return: List of credentials dict
         """
-        return [cred.get_object() for cred in credentials if (tickets or cred.ticket is None) and masterkeys and not (users_only and cred.get_username().endswith("$"))]
+        return [cred.get_object() for cred in credentials if (tickets or cred.ticket is None) and (masterkeys or cred.masterkey is None) and not (users_only and cred.get_username().endswith("$"))]
 
     def get_output(self):
         """
