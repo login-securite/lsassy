@@ -12,6 +12,11 @@ class DumpMethod(IDumpMethod):
 
     def __init__(self, session, timeout, time_between_commands):
         super().__init__(session, timeout, time_between_commands)
+
+        # If default, set to 7. Otherwise, keep custom time
+        if self._time_between_commands == 1:
+            self._time_between_commands = 7
+
         self.comsvcs_copied = False
         self.comsvcs_copy_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".dll"
         self.comsvcs_copy_path = "\\Windows\\Temp\\"

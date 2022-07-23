@@ -30,8 +30,8 @@ def main():
                             help='Dump module options (Example procdump_path=/opt/procdump.exe,procdump=procdump.exe')
     group_dump.add_argument('--timeout', action='store', type=int, default=5,
                             help='Max time to wait for lsass dump (Default 5s)')
-    group_dump.add_argument('--time-between-commands', action='store', type=int, default=7,
-                            help='Time to wait between dump methods commands (Default 7s)')
+    group_dump.add_argument('--time-between-commands', action='store', type=int, default=1,
+                            help='Time to wait between dump methods commands (Default 1s)')
     group_dump.add_argument('--parse-only', action='store_true', help='Parse dump without dumping')
     group_dump.add_argument('--keep-dump', action='store_true', help='Parse dump without dumping')
 
