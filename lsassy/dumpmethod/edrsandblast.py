@@ -21,19 +21,27 @@ class DumpMethod(IDumpMethod):
         self.tmp_ntoskrnl = "lsassy_" + ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32)) + ".exe"
 
     def prepare(self, options):
-        with open('/tmp/{}'.format(self.tmp_ntoskrnl), 'wb') as p:
+        if os.name == 'nt':
+                tmp_dir = 'C:\\Windows\\Temp\\'
+            else:
+                tmp_dir = '/tmp/'
+        with open('{}{}'.format(tmp_dir, self.tmp_ntoskrnl), 'wb') as p:
             try:
                 self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
-                logging.success("ntoskrnl.exe downloaded to /tmp/{}".format(self.tmp_ntoskrnl))
+                logging.success("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
             except Exception as e:
                 logging.error("ntoskrnl.exe download error", exc_info=True)
+                try:
+                    os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
+                except Exception as e:
+                    return None
                 return None
-        self.ntoskrnl.content = self.get_offsets("/tmp/{}".format(self.tmp_ntoskrnl))
+        self.ntoskrnl.content = self.get_offsets("{}{}".format(tmp_dir, self.tmp_ntoskrnl))
 
         if self.ntoskrnl.content is not None:
             logging.success("ntoskrnl offsets extracted")
             logging.debug(self.ntoskrnl.content.split("\n")[1])
-        os.remove('/tmp/{}'.format(self.tmp_ntoskrnl))
+        os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
 
         return self.prepare_dependencies(options, [self.edrsandblast, self.RTCore64, self.ntoskrnl])
 
