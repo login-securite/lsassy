@@ -59,6 +59,9 @@ def init(quiet=False, no_color=False):
     """
     StreamHandler and formatter added to root logger
     """
+    if (logging.getLogger().hasHandlers()):
+        logging.getLogger().handlers.clear()
+    
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(LsassyFormatter(no_color))
     logging.getLogger().addHandler(handler)
