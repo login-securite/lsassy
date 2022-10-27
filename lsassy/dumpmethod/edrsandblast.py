@@ -22,9 +22,9 @@ class DumpMethod(IDumpMethod):
 
     def prepare(self, options):
         if os.name == 'nt':
-                tmp_dir = 'C:\\Windows\\Temp\\'
-            else:
-                tmp_dir = '/tmp/'
+            tmp_dir = 'C:\\Windows\\Temp\\'
+        else:
+            tmp_dir = '/tmp/'
         with open('{}{}'.format(tmp_dir, self.tmp_ntoskrnl), 'wb') as p:
             try:
                 self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
