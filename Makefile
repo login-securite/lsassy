@@ -8,12 +8,12 @@ clean:
 	find . -name '__pycache__' -exec rm -rf  {} +
 
 publish: clean
-	python3.7 setup.py sdist bdist_wheel
-	python3.7 -m twine upload dist/*
+	python setup.py sdist bdist_wheel
+	python -m twine upload dist/*
 
 testpublish: clean
-	python3.7 setup.py sdist bdist_wheel
-	python3.7 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	python setup.py sdist bdist_wheel
+	python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 linux: clean
 	python setup.py install
@@ -24,12 +24,12 @@ windows: clean
 	pyinstaller ./lsassy/console.py --onefile --clean -n lsassy_windows_amd64 --additional-hooks-dir=hooks
 
 rebuild: clean
-	python3.7 setup.py install
+	python setup.py install
 
 build: clean
-	python3.7 setup.py install
+	python setup.py install
 
 install: build
 
 test:
-	python3.7 setup.py test
+	python setup.py test
