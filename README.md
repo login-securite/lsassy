@@ -151,6 +151,7 @@ Dumping methods (`-m` or `--method`)
 * EDRSandBlast
 * nanodump
 * rdrleakdiag
+* silentprocessexit
 * sqldumper
 
 #### comsvcs method
