@@ -1,6 +1,6 @@
 # lsassy
 
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.1.3&x2=0)](https://pypi.org/project/lsassy/)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=3.1.4&x2=0)](https://pypi.org/project/lsassy/)
 [![PyPI Statistics](https://img.shields.io/pypi/dm/lsassy.svg)](https://pypistats.org/packages/lsassy)
 [![Tests](https://github.com/hackndo/lsassy/workflows/Tests/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=Tests)
 [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
@@ -483,6 +483,7 @@ You can check dummy class for more comments and/or informations.
 * [s4ntiago_p](https://twitter.com/s4ntiago_p) for [nanodump](https://github.com/helpsystems/nanodump)
 * [0gtweet](https://twitter.com/0gtweet) for [Rdrleakdiag technique](https://twitter.com/0gtweet/status/1299071304805560321)
 * [Luis Rocha](https://twitter.com/countuponsec) for [SQLDumper technique](https://twitter.com/countuponsec/status/910969424215232518)
+* [Asaf Gilboa](https://mobile.twitter.com/asaf_gilboa) for [LsassSilentProcessExit technique](https://github.com/deepinstinct/LsassSilentProcessExit)
 
 ## Official Discord Channel
 
