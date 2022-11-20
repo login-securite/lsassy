@@ -12,7 +12,7 @@ class Dumper:
     This class looks for provided dump module name in `dumpmethod` package and returns an instance of this dump method.
     Returns None if doesn't exist.
     """
-    def __init__(self, session, timeout, time_between_commands):
+    def __init__(self, session, timeout, time_between_commands=1):
 
         self._session = session
         self._timeout = timeout
