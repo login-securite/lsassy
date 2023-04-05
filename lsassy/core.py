@@ -199,7 +199,7 @@ class Lsassy:
 
             if not parse_only and not keep_dump:
                 ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
-                logging.success("Lsass dump deleted")
+                self.logger.info("Lsass dump deleted")
             else:
                 self.logger.debug("Not deleting lsass dump as --parse-only was provided")
 

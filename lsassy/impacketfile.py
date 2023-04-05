@@ -102,7 +102,7 @@ class ImpacketFile:
                     return None
                 self.logger.debug("Trying to reconnect ...")
                 if session.login():
-                    logging.success("Reconnected after unexpected disconnection for proper cleanup")
+                    self.logger.info("Reconnected after unexpected disconnection for proper cleanup")
             except Exception as e:
                 if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
                     return True

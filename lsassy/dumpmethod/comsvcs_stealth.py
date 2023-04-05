@@ -56,7 +56,7 @@ class DumpMethod(IDumpMethod):
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", "\\Windows\\System32\\comsvcs.dll", buff.write)
             self._session.smb_session.putFile("C$", self.comsvcs_copy_path + self.comsvcs_copy_name, buff.read)
-            logging.success("Comsvcs.dll copied")
+            self.logger.info("Comsvcs.dll copied")
             self.comsvcs_copied = True
             return True
         except Exception as e:
