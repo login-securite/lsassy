@@ -1,5 +1,5 @@
 from impacket.smbconnection import SMBConnection
-from lsassy import logger
+from lsassy.logger import lsassy_logger
 
 
 class Session:
@@ -20,7 +20,7 @@ class Session:
         self.dc_ip = ""
         self.kerberos = False
         self.timeout = 5
-        self.logger = logger.LsassyLogger()
+        
 
     def get_session(self, address, target_ip="", port=445, username="", password="", lmhash="", nthash="", domain="", aesKey="", dc_ip="", kerberos=False, timeout=5):
         """
@@ -41,33 +41,33 @@ class Session:
         try:
             self.smb_session = SMBConnection(address, target_ip, None, sess_port=port, timeout=timeout)
         except Exception:
-            self.logger.warning("Network error", exc_info=True)
+            lsassy_logger.warning("Network error", exc_info=True)
             self.smb_session = None
             return None
-        self.logger.info(f"smb_session: {self.smb_session}")
+        lsassy_logger.info(f"smb_session: {self.smb_session}")
 
         try:
             if kerberos is True:
                 self.smb_session.kerberosLogin(username, password, domain, lmhash, nthash, aesKey, dc_ip)
             else:
                 self.smb_session.login(username, password, domain, lmhash, nthash)
-            self.logger.info("SMB session opened")
+            lsassy_logger.info("SMB session opened")
         except Exception as e:
             if "KDC_ERR_S_PRINCIPAL_UNKNOWN" in str(e):
-                self.logger.error("Connection error (Use FQDN for kerberos authentication)", exc_info=True)
+                lsassy_logger.error("Connection error (Use FQDN for kerberos authentication)", exc_info=True)
             else:
-                self.logger.error("Connection error", exc_info=True)
+                lsassy_logger.error("Connection error", exc_info=True)
             self.smb_session = None
             return None
 
         try:
-            self.logger.debug(f"Connecting to C$")
+            lsassy_logger.debug(f"Connecting to C$")
             self.smb_session.connectTree("C$")
         except Exception:
             if username:
-                self.logger.error("User '{}' can not access admin shares on {}".format(username, address))
+                lsassy_logger.error("User '{}' can not access admin shares on {}".format(username, address))
             else:
-                self.logger.error("Can not access admin shares on {}".format(address))
+                lsassy_logger.error("Can not access admin shares on {}".format(address))
             self.smb_session = None
             return None
 
@@ -84,7 +84,7 @@ class Session:
         self.kerberos = kerberos
         self.timeout = timeout
 
-        print("Authentication successful")
+        lsassy_logger.info("Authentication successful")
         return True
 
     def login(self):

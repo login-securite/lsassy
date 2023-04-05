@@ -3,14 +3,14 @@ import sys
 
 
 class LsassyLogger(logging.LoggerAdapter):
-    def __init__(self, disabled=False, no_color=False):
+    def __init__(self):
         super().__init__(self)
-        self.no_color = no_color
         self.logger = logging.getLogger("lsassy")
-        self.logger.setLevel(logging.INFO)
-        self._disabled = disabled
+        self.logger.propagate = False
+        self.no_color = None
+        self._disabled = False
 
-        formatter = LsassyFormatter(no_color).formatter
+        formatter = LsassyFormatter()
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
@@ -28,10 +28,10 @@ class LsassyLogger(logging.LoggerAdapter):
             frame = sys._getframe(1)
         self._disabled = disabled
 
-    def highlight(self, msg):
+    def lsassy_highlight(self, msg):
         """
         Highlight in yellow provided message
-        :param msg: Message to highlight
+        :param msg: Message to lsassy_highlight
         :return: Highlighted message
         """
         if self.no_color:
@@ -45,16 +45,27 @@ class LsassyFormatter(logging.Formatter):
     """
     def __init__(self, no_color=False):
         self.formatter = logging.Formatter.__init__(self, '%(bullet)s %(threadName)s %(message)s', None)
-        self.no_color = no_color
-        if self.no_color:
-            self.BLUE, self.WHITE, self.YELLOW, self.RED, self.GREEN, self.NC = '', '', '', '', '', ''
-        else:
+        self._no_color = no_color
+        if not self._no_color:
             self.BLUE = '\033[1;34m'
             self.WHITE = '\033[1;37m'
             self.YELLOW = '\033[1;33m'
             self.RED = '\033[1;31m'
             self.GREEN = '\033[1;32m'
             self.NC = '\033[0m'
+
+    @property
+    def no_color(self):
+        try:
+            return self._no_color
+        except AttributeError:
+            return False
+
+    @no_color.setter
+    def no_color(self, no_color):
+        if no_color:
+            self.BLUE, self.WHITE, self.YELLOW, self.RED, self.GREEN, self.NC = '', '', '', '', '', ''
+        self._no_color = no_color
 
     def format(self, record):
         """
@@ -77,3 +88,6 @@ class LsassyFormatter(logging.Formatter):
             record.exc_info = None
 
         return logging.Formatter.format(self, record)
+
+
+lsassy_logger = LsassyLogger()

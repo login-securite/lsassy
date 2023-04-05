@@ -12,7 +12,7 @@ from impacket.dcerpc.v5.dcomrt import DCOMConnection
 from impacket.dcerpc.v5.dtypes import NULL
 
 from lsassy.exec import IExec
-from lsassy import logger
+from lsassy.logger import lsassy_logger
 
 
 class Exec(IExec):
@@ -68,11 +68,11 @@ class Exec(IExec):
             self.iWbemServices.disconnect()
             self.dcom.disconnect()
         except KeyboardInterrupt as e:
-            self.logger.debug("WMI Execution stopped because of keyboard interruption")
+            lsassy_logger.debug("WMI Execution stopped because of keyboard interruption")
             self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            self.logger.debug("Error : {}".format(e), exc_info=True)
+            lsassy_logger.debug("Error : {}".format(e), exc_info=True)
             self.clean()
             raise Exception(e)
         return True

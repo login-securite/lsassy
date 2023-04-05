@@ -1,7 +1,8 @@
 import importlib
 import pkgutil
 
-from lsassy import dumpmethod, exec, logger
+from lsassy import dumpmethod, exec
+from lsassy.logger import lsassy_logger
 
 
 class Dumper:
@@ -15,7 +16,6 @@ class Dumper:
         self._session = session
         self._timeout = timeout
         self._time_between_commands = time_between_commands
-        self.logger = logger.LsassyLogger()
 
     def load(self, dump_module):
         """
@@ -26,10 +26,10 @@ class Dumper:
         try:
             return importlib.import_module("lsassy.dumpmethod.{}".format(dump_module.lower()), "DumpMethod").DumpMethod(self._session, self._timeout, self._time_between_commands)
         except ModuleNotFoundError:
-            self.logger.warning("Dump module '{}' doesn't exist".format(dump_module))
+            lsassy_logger.warning("Dump module '{}' doesn't exist".format(dump_module))
             return None
         except Exception:
-            self.logger.warning("Unknown error while loading '{}'".format(dump_module), exc_info=True)
+            lsassy_logger.warning("Unknown error while loading '{}'".format(dump_module), exc_info=True)
             return None
 
     @staticmethod

@@ -7,7 +7,7 @@ import string
 import subprocess
 
 from lsassy.dumpmethod import IDumpMethod, Dependency
-from lsassy import logger
+from lsassy.logger import lsassy_logger
 
 
 class DumpMethod(IDumpMethod):
@@ -18,7 +18,7 @@ class DumpMethod(IDumpMethod):
         self.ntoskrnl = Dependency("ntoskrnl", "NtoskrnlOffsets.csv")
 
         self.tmp_ntoskrnl = "lsassy_" + ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32)) + ".exe"
-        self.logger = logger.LsassyLogger()
+        
 
     def prepare(self, options):
         if os.name == 'nt':
@@ -30,7 +30,7 @@ class DumpMethod(IDumpMethod):
                 self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
                 print("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
             except Exception as e:
-                self.logger.error("ntoskrnl.exe download error", exc_info=True)
+                lsassy_logger.error("ntoskrnl.exe download error", exc_info=True)
                 try:
                     os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
                 except Exception as e:
@@ -40,7 +40,7 @@ class DumpMethod(IDumpMethod):
 
         if self.ntoskrnl.content is not None:
             print("ntoskrnl offsets extracted")
-            self.logger.debug(self.ntoskrnl.content.split("\n")[1])
+            lsassy_logger.debug(self.ntoskrnl.content.split("\n")[1])
         os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
 
         return self.prepare_dependencies(options, [self.edrsandblast, self.RTCore64, self.ntoskrnl])
@@ -520,7 +520,7 @@ class DumpMethod(IDumpMethod):
         try:
             full_version = self.get_file_version(input_file)
             if not full_version:
-                self.logger.error(f'[!] ERROR : failed to extract version from {input_file}.')
+                lsassy_logger.error(f'[!] ERROR : failed to extract version from {input_file}.')
                 return None
 
             # Checks if the image version is already present in the CSV
@@ -545,7 +545,7 @@ class DumpMethod(IDumpMethod):
                 symbol_value = get_offset(all_symbols_info, symbol_name)
                 symbols_values.append(symbol_value)
             if "R2_CURL" not in os.environ and all(val == 0 for val in symbols_values):
-                self.logger.warning("Radare2 may have trouble to download PDB files. R2_CURL=1 environement variable has been set. Trying again.")
+                lsassy_logger.warning("Radare2 may have trouble to download PDB files. R2_CURL=1 environement variable has been set. Trying again.")
                 os.environ["R2_CURL"] = "1"
                 self.extractOffsets(input_file)
 
@@ -558,19 +558,19 @@ class DumpMethod(IDumpMethod):
             output = self.run(["r2", "-v"], capture_output=True).stdout.decode()
         except Exception as e:
             if "No such file or directory" in str(e):
-                self.logger.warning("'r2' command is not in path. Automatic offsets extraction is not possible.")
+                lsassy_logger.warning("'r2' command is not in path. Automatic offsets extraction is not possible.")
             else:
-                self.logger.warning("Unexpected error while running Radare2")
+                lsassy_logger.warning("Unexpected error while running Radare2")
             return None
         ma, me, mi = map(int, output.splitlines()[0].split(" ")[1].split("."))
         if (ma, me, mi) < (5, 0, 0):
-            self.logger.error("This feature has been tested with radare2 5.0.0 (works) and 4.3.1 (does NOT work)")
+            lsassy_logger.error("This feature has been tested with radare2 5.0.0 (works) and 4.3.1 (does NOT work)")
             return None
 
         try:
             self.run(["cabextract", "-v"], check=True, capture_output=True)
         except (subprocess.CalledProcessError, FileNotFoundError):
-            self.logger.error("Radare2 needs 'cabextract' package to be installed to work with PDB")
+            lsassy_logger.error("Radare2 needs 'cabextract' package to be installed to work with PDB")
             return None
         
         output_content = 'ntoskrnlVersion,PspCreateProcessNotifyRoutineOffset,PspCreateThreadNotifyRoutineOffset,PspLoadImageNotifyRoutineOffset,_PS_PROTECTIONOffset,EtwThreatIntProvRegHandleOffset,EtwRegEntry_GuidEntryOffset,EtwGuidEntry_ProviderEnableInfoOffset\n'

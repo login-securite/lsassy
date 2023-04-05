@@ -1,7 +1,7 @@
 from datetime import datetime
 from pypykatz.pypykatz import pypykatz
 from lsassy.credential import Credential
-from lsassy import logger
+from lsassy.logger import lsassy_logger
 
 
 class Parser:
@@ -11,7 +11,7 @@ class Parser:
 
     def __init__(self, dumpfile):
         self._dumpfile = dumpfile
-        self.logger = logger.LsassyLogger()
+        
 
     def parse(self):
         """
@@ -24,7 +24,7 @@ class Parser:
         try:
             pypy_parse = pypykatz.parse_minidump_external(self._dumpfile, chunksize = 60*1024)
         except Exception as e:
-            self.logger.error("An error occurred while parsing lsass dump", exc_info=True)
+            lsassy_logger.error("An error occurred while parsing lsass dump", exc_info=True)
             return None
 
         ssps = ['msv_creds', 'wdigest_creds', 'ssp_creds', 'livessp_creds', 'kerberos_creds', 'credman_creds',
