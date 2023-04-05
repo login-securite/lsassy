@@ -57,7 +57,7 @@ class Writer:
 
         if not quiet:
             for line in output.split("\n"):
-                self.logger.info(line)
+                logging.success(line)
 
         if output_file is not None:
             path = Path(output_file).parent
@@ -67,7 +67,7 @@ class Writer:
 
             with open(output_file, 'a+') as f:
                 f.write(file_content + "\n")
-            self.logger.info("Credentials saved to {}".format(output_file))
+            logging.success("Credentials saved to {}".format(output_file))
 
         self.write_tickets(kerberos_dir, quiet)
         self.write_masterkeys(masterkeys_file, quiet)
@@ -102,9 +102,9 @@ class Writer:
                 ticket.to_kirbi(abs_dir)
             if not quiet:
                 if len(self._tickets) > 1:
-                    self.logger.info("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
+                    logging.success("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
                 else:
-                    self.logger.info("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
+                    logging.success("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
 
         return True
     
@@ -133,5 +133,5 @@ class Writer:
             for mk in self._masterkeys:
                 file.write(mk+'\n')
         if not quiet:
-            self.logger.info("{} masterkeys saved to {}".format(len(self._masterkeys), abs_dir))
+            logging.success("{} masterkeys saved to {}".format(len(self._masterkeys), abs_dir))
         return True

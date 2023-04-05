@@ -84,7 +84,7 @@ class Session:
         self.kerberos = kerberos
         self.timeout = timeout
 
-        self.logger.info("Authentication successful")
+        logging.success("Authentication successful")
         return True
 
     def login(self):
