@@ -7,13 +7,12 @@
 # Based on Impacket wmiexec implementation by @agsolino
 # https://github.com/SecureAuthCorp/impacket/blob/master/examples/wmiexec.py
 
-import logging
-
 from impacket.dcerpc.v5.dcom import wmi
 from impacket.dcerpc.v5.dcomrt import DCOMConnection
 from impacket.dcerpc.v5.dtypes import NULL
 
 from lsassy.exec import IExec
+from lsassy import logger
 
 
 class Exec(IExec):
@@ -69,11 +68,11 @@ class Exec(IExec):
             self.iWbemServices.disconnect()
             self.dcom.disconnect()
         except KeyboardInterrupt as e:
-            logging.debug("WMI Execution stopped because of keyboard interruption")
+            self.logger.debug("WMI Execution stopped because of keyboard interruption")
             self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:
-            logging.debug("Error : {}".format(e), exc_info=True)
+            self.logger.debug("Error : {}".format(e), exc_info=True)
             self.clean()
             raise Exception(e)
         return True

@@ -1,5 +1,5 @@
-import logging
 from impacket.smbconnection import SMBConnection
+from lsassy import logger
 
 
 class Session:
@@ -20,6 +20,7 @@ class Session:
         self.dc_ip = ""
         self.kerberos = False
         self.timeout = 5
+        self.logger = logger.LsassyLogger()
 
     def get_session(self, address, target_ip="", port=445, username="", password="", lmhash="", nthash="", domain="", aesKey="", dc_ip="", kerberos=False, timeout=5):
         """
@@ -40,31 +41,33 @@ class Session:
         try:
             self.smb_session = SMBConnection(address, target_ip, None, sess_port=port, timeout=timeout)
         except Exception:
-            logging.warning("Network error", exc_info=True)
+            self.logger.warning("Network error", exc_info=True)
             self.smb_session = None
             return None
+        self.logger.info(f"smb_session: {self.smb_session}")
 
         try:
             if kerberos is True:
                 self.smb_session.kerberosLogin(username, password, domain, lmhash, nthash, aesKey, dc_ip)
             else:
                 self.smb_session.login(username, password, domain, lmhash, nthash)
-            logging.info("SMB session opened")
+            self.logger.info("SMB session opened")
         except Exception as e:
             if "KDC_ERR_S_PRINCIPAL_UNKNOWN" in str(e):
-                logging.error("Connexion error (Use FQDN for kerberos authentication)", exc_info=True)
+                self.logger.error("Connection error (Use FQDN for kerberos authentication)", exc_info=True)
             else:
-                logging.warning("Connexion error", exc_info=True)
+                self.logger.error("Connection error", exc_info=True)
             self.smb_session = None
             return None
 
         try:
+            self.logger.debug(f"Connecting to C$")
             self.smb_session.connectTree("C$")
         except Exception:
             if username:
-                logging.error("User '{}' can not access admin shares on {}".format(username, address))
+                self.logger.error("User '{}' can not access admin shares on {}".format(username, address))
             else:
-                logging.error("Can not access admin shares on {}".format(address))
+                self.logger.error("Can not access admin shares on {}".format(address))
             self.smb_session = None
             return None
 

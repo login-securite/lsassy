@@ -1,7 +1,7 @@
 import importlib
-import logging
 import os
 from pathlib import Path
+from lsassy import logger
 
 
 class Writer:
@@ -12,6 +12,7 @@ class Writer:
         self._credentials = credentials
         self._tickets = tickets
         self._masterkeys = masterkeys
+        self.logger = logger.LsassyLogger()
 
     def get_output(self, out_format, users_only=False, tickets=False, masterkeys=False):
         """
@@ -23,7 +24,7 @@ class Writer:
         try:
             output_method = importlib.import_module("lsassy.output.{}_output".format(out_format.lower()), "Output").Output(self._credentials, users_only, tickets, masterkeys)
         except ModuleNotFoundError:
-            logging.error("Output module '{}' doesn't exist".format(out_format.lower()), exc_info=True)
+            self.logger.error("Output module '{}' doesn't exist".format(out_format.lower()), exc_info=True)
             return None
 
         return output_method.get_output()
@@ -51,7 +52,7 @@ class Writer:
             file_content = self.get_output(file_format, users_only, tickets, masterkeys)
 
         if output is None:
-            logging.error("An error occurred while writing credentials", exc_info=True)
+            self.logger.error("An error occurred while writing credentials", exc_info=True)
             return None
 
         if not quiet:
@@ -61,7 +62,7 @@ class Writer:
         if output_file is not None:
             path = Path(output_file).parent
             if not os.path.isdir(path):
-                logging.error("Directory {} does not exist".format(path))
+                self.logger.error("Directory {} does not exist".format(path))
                 return None
 
             with open(output_file, 'a+') as f:
@@ -86,7 +87,7 @@ class Writer:
                 abs_dir = os.path.expanduser('~') + '/.config/lsassy/tickets'
         else:
             if len(self._tickets) == 0 and not quiet:
-                logging.warning("No kerberos tickets found")
+                self.logger.warning("No kerberos tickets found")
                 return True
             abs_dir = os.path.abspath(kerberos_dir)
 
@@ -95,7 +96,7 @@ class Writer:
                 try:
                     os.makedirs(abs_dir)
                 except Exception as e:
-                    logging.warning("Cannot create %s for saving kerberos tickets" % abs_dir, exc_info=True)
+                    self.logger.warning("Cannot create %s for saving kerberos tickets" % abs_dir, exc_info=True)
                     return True
             for ticket in self._tickets:
                 ticket.to_kirbi(abs_dir)
@@ -120,13 +121,13 @@ class Writer:
                 abs_dir = os.path.expanduser('~') + '/.config/lsassy/masterkeys.txt'
         else:
             if len(self._masterkeys) == 0 and not quiet:
-                logging.warning("No DPAPI masterkey found")
+                self.logger.warning("No DPAPI masterkey found")
                 return True
             abs_dir = os.path.abspath(masterkeys_file)
 
         if len(self._masterkeys) == 0:
             if not quiet:
-                logging.warning("No masterkey found")
+                self.logger.warning("No masterkey found")
             return True
         with open(abs_dir,'a+') as file:
             for mk in self._masterkeys:
