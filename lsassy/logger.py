@@ -8,16 +8,25 @@ class LsassyLogger(logging.LoggerAdapter):
         self.no_color = no_color
         self.logger = logging.getLogger("lsassy")
         self.logger.setLevel(logging.INFO)
-        self.logger.disabled = disabled
+        self._disabled = disabled
 
         formatter = LsassyFormatter(no_color).formatter
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-        # logging.addLevelName(25, 'SUCCESS')
-        # setattr(logging, 'success', lambda message, *args: logging.getLogger()._log(25, message, args))
-        # setattr(logging, 'no_color', no_color)
+    @property
+    def disabled(self):
+        try:
+            return self._disabled
+        except AttributeError:
+            return False
+
+    @disabled.setter
+    def disabled(self, disabled):
+        if disabled:
+            frame = sys._getframe(1)
+        self._disabled = disabled
 
 
 class LsassyFormatter(logging.Formatter):
