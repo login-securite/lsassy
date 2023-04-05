@@ -1,4 +1,3 @@
-from lsassy import logger
 from lsassy.output import IOutput
 
 
@@ -32,8 +31,8 @@ class Output(IOutput):
                             ('{}\\'.format(cred["domain"]) if cred["domain"] is not None and cred["domain"] != "" else " "),
                             cred["username"],
                             " " * (max_size - len(cred["domain"]) - len(cred["username"]) + 2),
-                            logger.highlight("[{}] ".format(cred_type)),
-                            logger.highlight(cred["password"]),
-                            " | {}".format(logger.highlight("[{}] {}".format("SHA1", cred["sha1"]))) if cred["sha1"] else "")
+                            self.logger.highlight("[{}] ".format(cred_type)),
+                            self.logger.highlight(cred["password"]),
+                            " | {}".format(self.logger.highlight("[{}] {}".format("SHA1", cred["sha1"]))) if cred["sha1"] else "")
                     )
         return "\n".join(output)

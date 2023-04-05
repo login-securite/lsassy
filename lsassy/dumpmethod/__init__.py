@@ -75,7 +75,7 @@ class Dependency:
             with open(self.path, 'rb') as p:
                 try:
                     session.smb_session.putFile(self.remote_share, self.remote_path + self.file, p.read)
-                    logging.success("{} uploaded".format(self.name))
+                    print("{} uploaded".format(self.name))
                     self.uploaded = True
                     return True
                 except Exception as e:
@@ -85,7 +85,7 @@ class Dependency:
             if not ImpacketFile.create_file(session, self.remote_share, self.remote_path, self.file, self.content):
                 self.logger.error("{} upload error".format(self.name), exc_info=True)
                 return None
-            logging.success("{} uploaded".format(self.name))
+            print("{} uploaded".format(self.name))
             self.uploaded = True
             return True
 
@@ -178,7 +178,7 @@ class IDumpMethod:
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", executor_locations[executor], buff.write)
             self._session.smb_session.putFile("C$", self._executor_path + self._executor_name, buff.read)
-            logging.success("{} copied as {}".format(executor, self._executor_name))
+            print("{} copied as {}".format(executor, self._executor_name))
             self._executor_copied = True
             return True
         except Exception as e:
@@ -299,7 +299,7 @@ class IDumpMethod:
             if self._file_handle is None:
                 self.logger.error("Failed to dump lsass using {}".format(e))
                 continue
-            logging.success("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
+            print("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
             return self._file_handle
             
         self.logger.error("All execution methods have failed")

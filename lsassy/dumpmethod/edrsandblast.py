@@ -28,7 +28,7 @@ class DumpMethod(IDumpMethod):
         with open('{}{}'.format(tmp_dir, self.tmp_ntoskrnl), 'wb') as p:
             try:
                 self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
-                logging.success("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
+                print("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
             except Exception as e:
                 self.logger.error("ntoskrnl.exe download error", exc_info=True)
                 try:
@@ -39,7 +39,7 @@ class DumpMethod(IDumpMethod):
         self.ntoskrnl.content = self.get_offsets("{}{}".format(tmp_dir, self.tmp_ntoskrnl))
 
         if self.ntoskrnl.content is not None:
-            logging.success("ntoskrnl offsets extracted")
+            print("ntoskrnl offsets extracted")
             self.logger.debug(self.ntoskrnl.content.split("\n")[1])
         os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
 

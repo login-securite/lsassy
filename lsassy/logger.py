@@ -28,12 +28,21 @@ class LsassyLogger(logging.LoggerAdapter):
             frame = sys._getframe(1)
         self._disabled = disabled
 
+    def highlight(self, msg):
+        """
+        Highlight in yellow provided message
+        :param msg: Message to highlight
+        :return: Highlighted message
+        """
+        if self.no_color:
+            return msg
+        return "\033[1;33m{}\033[0m".format(msg)
+
 
 class LsassyFormatter(logging.Formatter):
     """
     Custom formatting. Inspired by impacket "Logger" class
     """
-
     def __init__(self, no_color=False):
         self.formatter = logging.Formatter.__init__(self, '%(bullet)s %(threadName)s %(message)s', None)
         self.no_color = no_color
@@ -46,16 +55,6 @@ class LsassyFormatter(logging.Formatter):
             self.RED = '\033[1;31m'
             self.GREEN = '\033[1;32m'
             self.NC = '\033[0m'
-
-    def highlight(self, msg):
-        """
-        Highlight in yellow provided message
-        :param msg: Message to highlight
-        :return: Highlighted message
-        """
-        if self.no_color:
-            return msg
-        return "\033[1;33m{}\033[0m".format(msg)
 
     def format(self, record):
         """

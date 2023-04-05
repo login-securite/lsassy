@@ -106,6 +106,8 @@ class Lsassy:
         self.args = arguments
         self.thread_id = thread_id
 
+        self.logger = logger.LsassyLogger()
+
     def run(self):
         """
         Main method to dump credentials on a remote host
@@ -198,8 +200,9 @@ class Lsassy:
             file.close()
 
             if not parse_only and not keep_dump:
-                ImpacketFile.delete(session, file.get_file_path(), timeout=self.args.timeout)
-                logging.success("Lsass dump deleted")
+                impacket_file = ImpacketFile(session)
+                impacket_file.delete(session, file.get_file_path(), timeout=self.args.timeout)
+                print("Lsass dump deleted")
             else:
                 self.logger.debug("Not deleting lsass dump as --parse-only was provided")
 
