@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lsassy"
-version = "3.1.6"
+version = "3.1.7"
 description = "Tool to remotely extract credentials"
 readme = "README.md"
 homepage = "https://github.com/hackndo/lsassy"
@@ -11,7 +11,7 @@ authors = ["pixis <hackndo@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.7"
 netaddr = "^0.8.0"
-pypykatz = "^0.6.2"
+pypykatz = "^0.6.3"
 impacket = "^0.10.0"
 rich = "^10.6.0"
 
