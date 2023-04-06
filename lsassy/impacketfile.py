@@ -35,10 +35,6 @@ class ImpacketFile:
             "size": 0,
             "buffer": ""
         }
-        # we set this here, but we also do it in each function that references the logger
-        # because often users just call ImpacketFile.delete etc directly, which doesnt intialize
-        # the logger
-        
 
     def get_connection(self):
         """
