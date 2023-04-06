@@ -15,19 +15,6 @@ class LsassyLogger(logging.LoggerAdapter):
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-    @property
-    def disabled(self):
-        try:
-            return self._disabled
-        except AttributeError:
-            return False
-
-    @disabled.setter
-    def disabled(self, disabled):
-        if disabled:
-            frame = sys._getframe(1)
-        self._disabled = disabled
-
     def lsassy_highlight(self, msg):
         """
         Highlight in yellow provided message
