@@ -8,7 +8,6 @@ class LsassyLogger(logging.LoggerAdapter):
         self.logger = logging.getLogger("lsassy")
         self.logger.propagate = False
         self.no_color = None
-        self._disabled = False
 
         formatter = LsassyFormatter()
         handler = logging.StreamHandler(sys.stdout)
