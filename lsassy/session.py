@@ -44,7 +44,7 @@ class Session:
             lsassy_logger.warning("Network error", exc_info=True)
             self.smb_session = None
             return None
-        lsassy_logger.info(f"smb_session: {self.smb_session}")
+        lsassy_logger.debug(f"smb_session: {self.smb_session}")
 
         try:
             if kerberos is True:
