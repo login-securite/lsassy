@@ -1,7 +1,7 @@
-import logging
 import time
 
 from impacket.smb3structs import *
+from lsassy.logger import lsassy_logger
 
 
 class ImpacketFile:
@@ -44,25 +44,28 @@ class ImpacketFile:
         return self._session
 
     def _open_share(self):
+        
+
         try:
             self._tid = self._session.smb_session.connectTree(self._share_name)
         except Exception as e:
-            logging.warning("ConnectTree error with '{}'".format(self._share_name), exc_info=True)
+            lsassy_logger.warning("ConnectTree error with '{}'".format(self._share_name), exc_info=True)
             return None
         return self
 
-    @staticmethod
-    def create_file(session, share, path, file, content):
+    def create_file(self, session, share, path, file, content):
+        
+
         path = path.replace("\\", "/")
         try:
             share, fpath = share, path + "/" + file
         except Exception as e:
-            logging.warning("Parsing error with '{}'".format(path), exc_info=True)
+            lsassy_logger.warning("Parsing error with '{}'".format(path), exc_info=True)
             return None
         try:
             tid = session.smb_session.connectTree(share)
         except Exception as e:
-            logging.warning("ConnectTree error with '{}'".format(share), exc_info=True)
+            lsassy_logger.warning("ConnectTree error with '{}'".format(share), exc_info=True)
             return None
 
         fid = None
@@ -80,7 +83,7 @@ class ImpacketFile:
                 rnd += 1
         finally:
             if fid is not None:
-                logging.debug("File {}{} created!".format(share, fpath))
+                lsassy_logger.debug("File {}{} created!".format(share, fpath))
                 session.smb_session._SMBConnection.close(tid, fid)
                 session.smb_session._SMBConnection.disconnectTree(tid)
                 return True
@@ -94,23 +97,26 @@ class ImpacketFile:
         while True:
             try:
                 session.smb_session.deleteFile("C$", file_path)
-                logging.debug("File {}{} deleted".format("C$", file_path))
+                lsassy_logger.debug("File {}{} deleted".format("C$", file_path))
                 return True
             except BrokenPipeError:
                 if time.time() - t > timeout:
-                    logging.warning("File wasn't removed `{}{}`, connection lost".format("C$", file_path),
-                                    exc_info=True)
+                    lsassy_logger.warning(
+                        "File wasn't removed `{}{}`, connection lost".format("C$", file_path),
+                        exc_info=True
+                    )
                     return None
-                logging.debug("Trying to reconnect ...")
+                lsassy_logger.debug("Trying to reconnect ...")
                 if session.login():
-                    logging.success("Reconnected after unexpected disconnection for proper cleanup")
+                    print("Reconnected after unexpected disconnection for proper cleanup")
             except Exception as e:
                 if "STATUS_OBJECT_NAME_NOT_FOUND" in str(e) or "STATUS_NO_SUCH_FILE" in str(e):
+                    lsassy_logger.debug(f"Object or File not found for deletion: {e}")
                     return True
                 if time.time() - t > timeout:
-                    logging.warning("File wasn't removed `{}{}`".format("C$", file_path), exc_info=True)
+                    lsassy_logger.warning("File wasn't removed `{}{}`".format("C$", file_path), exc_info=True)
                     return None
-                logging.debug("Unable to delete file `{}{}`. Retrying...".format("C$", file_path))
+                lsassy_logger.debug("Unable to delete file `{}{}`. Retrying...".format("C$", file_path))
                 time.sleep(0.5)
 
     def open(self, share, path, file, timeout=3):
@@ -126,7 +132,7 @@ class ImpacketFile:
         try:
             self._share_name, self._fpath = share, path + "/" + file
         except Exception as e:
-            logging.warning("Parsing error with '{}'".format(path), exc_info=True)
+            lsassy_logger.warning("Parsing error with '{}'".format(path), exc_info=True)
             return None
 
         if self._open_share() is None:
@@ -136,13 +142,13 @@ class ImpacketFile:
         while True:
             try:
                 self._fid = self._session.smb_session.openFile(self._tid, self._fpath, desiredAccess=FILE_READ_DATA)
-                logging.info("{} handle acquired".format(self._fpath))
+                lsassy_logger.info("{} handle acquired".format(self._fpath))
                 break
             except Exception as e:
                 if time.time() - t > timeout:
-                    logging.warning("Unable to open remote file {}".format( self._fpath), exc_info=True)
+                    lsassy_logger.warning("Unable to open remote file {}".format( self._fpath), exc_info=True)
                     return None
-                logging.debug("Unable to open remote file {}. Retrying...".format(self._fpath))
+                lsassy_logger.debug("Unable to open remote file {}. Retrying...".format(self._fpath))
                 time.sleep(0.5)
 
         self._fileInfo = self._session.smb_session.queryInfo(self._tid, self._fid)

@@ -4,6 +4,8 @@ import sys
 from lsassy import __version__
 from lsassy.core import ThreadPool
 from lsassy.dumper import Dumper
+from lsassy.logger import lsassy_logger
+import logging
 
 
 def main():
@@ -81,6 +83,14 @@ def main():
         sys.exit(1)
 
     args = parser.parse_args()
+
+    if args.v == 1:
+        lsassy_logger.setLevel(logging.INFO)
+    elif args.v >= 2:
+        lsassy_logger.setLevel(logging.DEBUG)
+        lsassy_logger.info("lsassy v {}".format(__version__))
+    else:
+        lsassy_logger.setLevel(logging.ERROR)
 
     ThreadPool(args.target, args).run()
 

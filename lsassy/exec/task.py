@@ -7,7 +7,6 @@
 # Based on Impacket atexec implementation by @agsolino
 # https://github.com/SecureAuthCorp/impacket/blob/master/examples/atexec.py
 
-import logging
 import random
 import string
 import time
@@ -17,6 +16,7 @@ from impacket.dcerpc.v5.dtypes import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_GSS_NEGOTIATE, RPC_C_AUTHN_LEVEL_PKT_PRIVACY
 
 from lsassy.exec import IExec
+from lsassy.logger import lsassy_logger
 
 
 class Exec(IExec):
@@ -52,7 +52,7 @@ class Exec(IExec):
             self._dce.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
             self._dce.bind(tsch.MSRPC_UUID_TSCHS)
             xml = self.gen_xml(command)
-            logging.debug("Register random task {}".format(self._taskname))
+            lsassy_logger.debug("Register random task {}".format(self._taskname))
             tsch.hSchRpcRegisterTask(self._dce, '\\%s' % self._taskname, xml, tsch.TASK_CREATE, NULL, tsch.TASK_LOGON_NONE)
             tsch.hSchRpcRun(self._dce, '\\%s' % self._taskname)
             done = False
@@ -79,7 +79,7 @@ class Exec(IExec):
             tsch.hSchRpcStopInstance(self._dce, resp['pGuids'][0])
         tsch.hSchRpcDelete(self._dce, '\\%s' % self._taskname)
         self._dce.disconnect()
-        logging.debug("Task %s has been removed" % self._taskname)
+        lsassy_logger.debug("Task %s has been removed" % self._taskname)
             
     def gen_xml(self, command):
 
