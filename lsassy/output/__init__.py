@@ -2,9 +2,9 @@ class IOutput:
     """
     Ouput interface
     """
-
     def __init__(self, credentials, users_only=False, tickets=False, masterkeys=False):
         self._credentials = self.get_credentials(credentials, users_only, tickets, masterkeys)
+        
 
     @staticmethod
     def _decode(data):

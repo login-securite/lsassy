@@ -1,8 +1,8 @@
-import logging
 import importlib
 import pkgutil
 
 from lsassy import dumpmethod, exec
+from lsassy.logger import lsassy_logger
 
 
 class Dumper:
@@ -12,8 +12,7 @@ class Dumper:
     This class looks for provided dump module name in `dumpmethod` package and returns an instance of this dump method.
     Returns None if doesn't exist.
     """
-    def __init__(self, session, timeout, time_between_commands=1):
-
+    def __init__(self, session, timeout, time_between_commands):
         self._session = session
         self._timeout = timeout
         self._time_between_commands = time_between_commands
@@ -27,10 +26,10 @@ class Dumper:
         try:
             return importlib.import_module("lsassy.dumpmethod.{}".format(dump_module.lower()), "DumpMethod").DumpMethod(self._session, self._timeout, self._time_between_commands)
         except ModuleNotFoundError:
-            logging.warning("Dump module '{}' doesn't exist".format(dump_module))
+            lsassy_logger.warning("Dump module '{}' doesn't exist".format(dump_module))
             return None
         except Exception:
-            logging.warning("Unknown error while loading '{}'".format(dump_module), exc_info=True)
+            lsassy_logger.warning("Unknown error while loading '{}'".format(dump_module), exc_info=True)
             return None
 
     @staticmethod
