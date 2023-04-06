@@ -28,7 +28,7 @@ class DumpMethod(IDumpMethod):
         with open('{}{}'.format(tmp_dir, self.tmp_ntoskrnl), 'wb') as p:
             try:
                 self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
-                print("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
+                lsassy_logger.info("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
             except Exception as e:
                 lsassy_logger.error("ntoskrnl.exe download error", exc_info=True)
                 try:
