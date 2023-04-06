@@ -39,7 +39,7 @@ class DumpMethod(IDumpMethod):
         self.ntoskrnl.content = self.get_offsets("{}{}".format(tmp_dir, self.tmp_ntoskrnl))
 
         if self.ntoskrnl.content is not None:
-            print("ntoskrnl offsets extracted")
+            lsassy_logger.info("ntoskrnl offsets extracted")
             lsassy_logger.debug(self.ntoskrnl.content.split("\n")[1])
         os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
 
