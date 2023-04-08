@@ -4,7 +4,7 @@ import sys
 from lsassy import __version__
 from lsassy.core import ThreadPool
 from lsassy.dumper import Dumper
-from lsassy.logger import lsassy_logger
+from lsassy.logger import lsassy_logger, LsassyLogger
 import logging
 
 
@@ -83,6 +83,9 @@ def main():
         sys.exit(1)
 
     args = parser.parse_args()
+
+    # Handle no_color parameter with logger
+    lsassy_logger.set_no_color(no_color=args.no_color)
 
     if args.v == 1:
         lsassy_logger.setLevel(logging.INFO)

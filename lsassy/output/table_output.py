@@ -40,5 +40,8 @@ class Output(IOutput):
                     cred["sha1"] if cred["sha1"] is not None else "",
                     "{} - {}".format(cred["ticket"]["domain"], cred["ticket"]["endtime"].strftime("%Y-%m-%d %H:%M")) if cred["ticket"] is not None else "",
                     "{}".format(cred["masterkey"]) if cred["masterkey"] is not None else "")
-        return table
+        console = Console()
+        with console.capture() as capture:
+            console.print(table)
+        return capture.get()
 
