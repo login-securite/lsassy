@@ -45,9 +45,7 @@ class Writer:
         output = self.get_output(out_format, users_only, tickets, masterkeys)
         
         if file_format is None:
-            file_format = out_format
             file_content = output
-
         else:
             file_content = self.get_output(file_format, users_only, tickets, masterkeys)
 
