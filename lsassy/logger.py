@@ -4,7 +4,7 @@ import sys
 
 class LsassyLogger(logging.LoggerAdapter):
     def __init__(self):
-        super().__init__(self)
+        super().__init__(self, extra=None)
         self.logger = logging.getLogger("lsassy")
         self.logger.propagate = False
         self.no_color = None
