@@ -495,6 +495,6 @@ You can check dummy class for more comments and/or informations.
 
 ## Star History
 
-<a href="https://github.com/xtekky/gpt4free/stargazers">
+<a href="https://github.com/hackndo/lsassy/stargazers">
 <img width="500" alt="Star History Chart" src="https://api.star-history.com/svg?repos=hackndo/lsassy&type=Date">
 </a> 
