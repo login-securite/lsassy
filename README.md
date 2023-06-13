@@ -492,3 +492,7 @@ You can check dummy class for more comments and/or informations.
 ## Known bugs
 
 * Compiled versions don't include table_output because of some weird error with rich library
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=hackndo/lsassy&type=Date)](https://star-history.com/#hackndo/lsassy&Date)
