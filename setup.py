@@ -19,7 +19,7 @@ setup(
     description="Python library to extract credentials from lsass remotely",
     long_description=README,
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=["assets"]),
+    packages=find_packages(exclude=["assets", "tests*"]),
     include_package_data=True,
     url="https://github.com/Hackndo/lsassy/",
     zip_safe = True,
