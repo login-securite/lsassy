@@ -133,6 +133,10 @@ class Lsassy:
                 dump_path += "\\"
 
         parse_only = self.args.parse_only
+        dump_only = self.args.dump_only
+        if parse_only and dump_only:
+            lsassy_logger.error("Incompatible options dump_only and parse_only")
+            return Falses
         keep_dump = self.args.keep_dump
         kerberos_dir = self.args.kerberos_dir
         masterkeys_file = self.args.masterkeys_file
@@ -185,7 +189,8 @@ class Lsassy:
                     lsassy_logger.error("Unable to open lsass dump.")
                     return False
 
-            credentials, tickets, masterkeys = Parser(file).parse()
+            if not dump_only:
+                credentials, tickets, masterkeys = Parser(file).parse()
             file.close()
 
             if not parse_only and not keep_dump:
@@ -194,22 +199,23 @@ class Lsassy:
             else:
                 lsassy_logger.debug("Not deleting lsass dump as --parse-only was provided")
 
-            if credentials is None:
+            if not dump_only and credentials is None:
                 lsassy_logger.error("Unable to extract credentials from lsass. Cleaning.")
                 return False
 
-            with lock:
-                Writer(credentials, tickets, masterkeys).write(
-                    self.args.file_format,
-                    self.args.format,
-                    output_file=self.args.outfile,
-                    quiet=self.args.quiet,
-                    users_only=self.args.users,
-                    tickets=not self.args.no_tickets,
-                    masterkeys=self.args.masterkeys,
-                    kerberos_dir=kerberos_dir,
-                    masterkeys_file=masterkeys_file
-                )
+            if not dump_only:
+                with lock:
+                    Writer(credentials, tickets, masterkeys).write(
+                        self.args.file_format,
+                        self.args.format,
+                        output_file=self.args.outfile,
+                        quiet=self.args.quiet,
+                        users_only=self.args.users,
+                        tickets=not self.args.no_tickets,
+                        masterkeys=self.args.masterkeys,
+                        kerberos_dir=kerberos_dir,
+                        masterkeys_file=masterkeys_file
+                    )
 
         except KeyboardInterrupt:
             pass
