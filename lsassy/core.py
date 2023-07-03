@@ -136,7 +136,7 @@ class Lsassy:
         dump_only = self.args.dump_only
         if parse_only and dump_only:
             lsassy_logger.error("Incompatible options dump_only and parse_only")
-            return Falses
+            return False
         keep_dump = self.args.keep_dump
         kerberos_dir = self.args.kerberos_dir
         masterkeys_file = self.args.masterkeys_file
