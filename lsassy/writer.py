@@ -97,7 +97,10 @@ class Writer:
                     lsassy_logger.warning("Cannot create %s for saving kerberos tickets" % abs_dir, exc_info=True)
                     return True
             for ticket in self._tickets:
-                ticket.to_kirbi(abs_dir)
+                for filename in ticket.kirbi_data:
+                    # Trick to add expiration date in ticket filename "YEAR MONTH DAY HOUR MINUTE SECOND"
+                    with open(os.path.join(abs_dir, filename.split(".kirbi")[0] + '_' + ticket.EndTime.strftime('%Y%m%d%H%M%S') + ".kirbi"), 'wb') as f:
+                        f.write(ticket.kirbi_data[filename].dump())
             if not quiet:
                 if len(self._tickets) > 1:
                     print("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
