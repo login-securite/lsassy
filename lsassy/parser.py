@@ -82,7 +82,8 @@ class Parser:
                             ssp="kerberos",
                             domain=ticket.DomainName,
                             username=ticket.EClientName[0],
-                            ticket={'file': list(ticket.kirbi_data)[0], 'domain': target_domain, 'endtime': ticket.EndTime}
+                            ticket={'file': list(ticket.kirbi_data)[0].split(".kirbi")[0] + '_' + ticket.EndTime.strftime('%Y%m%d%H%M%S') + ".kirbi", 'domain': target_domain, 'endtime': ticket.EndTime}
                         ))
+                        
 
         return credentials, tickets, masterkeys
