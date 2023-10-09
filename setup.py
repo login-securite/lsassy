@@ -44,5 +44,5 @@ setup(
             'lsassy = lsassy.console:main',
         ],
     },
-    test_suite='tests.tests'
+    test_suite='tests.test_lsassy'
 )
