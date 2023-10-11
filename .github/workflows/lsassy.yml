@@ -7,7 +7,38 @@ on:
     branches: [ master ]
 
 jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Create new user
+        run: |
+          net user pixis P4ssw0rd /add
+      - name: Add to local admin
+        run: |
+          net localgroup Administrators pixis /add
+      - name: Update registry key
+        run: |
+          REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Lsassy Tests
+        run: |
+          python -m unittest discover tests
+
   build:
+    needs: test
     name: lsassy actions on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -20,7 +51,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Setup on ${{ matrix.os }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.9
         architecture: x64
