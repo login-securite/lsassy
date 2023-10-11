@@ -67,9 +67,21 @@ class Writer:
                 f.write(file_content + "\n")
             print("Credentials saved to {}".format(output_file))
 
-        self.write_tickets(kerberos_dir, quiet)
-        self.write_masterkeys(masterkeys_file, quiet)
+        if os.name == 'nt':
+            output_dir = '%LocalAppData%\\lsassy'
+        else:
+            output_dir = os.path.expanduser('~') + '/.config/lsassy'
 
+        if not os.path.exists(output_dir):
+            try:
+                os.makedirs(output_dir)
+                self.write_tickets(kerberos_dir, quiet)
+                self.write_masterkeys(masterkeys_file, quiet)
+            except Exception:
+                return output
+        else:
+            self.write_tickets(kerberos_dir, quiet)
+            self.write_masterkeys(masterkeys_file, quiet)
         return output
 
     def write_tickets(self, kerberos_dir=None, quiet=False):
