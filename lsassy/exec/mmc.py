@@ -173,3 +173,4 @@ class Exec(IExec):
         dispParams['rgvarg'].append(arg1)
         dispParams['rgvarg'].append(arg0)
         self.__executeShellCommand[0].Invoke(self.__executeShellCommand[1], 0x409, DISPATCH_METHOD, dispParams, 0, [], [])
+        return True
