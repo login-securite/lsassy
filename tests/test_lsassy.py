@@ -1,4 +1,5 @@
 import unittest
+import logging
 from argparse import Namespace
 
 from lsassy.core import ThreadPool
@@ -6,6 +7,7 @@ from lsassy.dumper import Dumper
 from lsassy.parser import Parser
 from lsassy.session import Session
 from lsassy.writer import Writer
+from lsassy.logger import lsassy_logger
 
 USERNAME = "pixis"
 PASSWORD = 'P4ssw0rd'
@@ -102,6 +104,7 @@ class TestExecMethods(unittest.TestCase):
             username=USERNAME,
             password=PASSWORD
         )
+        lsassy_logger.setLevel(logging.DEBUG)
 
     def dump_lsass(self, exec):
         dumper = Dumper(self.session, 5, 1).load("comsvcs")
