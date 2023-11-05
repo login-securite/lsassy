@@ -18,7 +18,7 @@ This tool uses [impacket](https://github.com/SecureAuthCorp/impacket) project to
 | [Advanced usage](#advanced-usage)            | Advanced lsassy usage with params explaination          |
 | [Add dump method](#add-dump-method)          | How to add a custom lsass dump method                   |
 | [Acknowledgments](#acknowledgments)          | Kudos to these people and tools                         |
-| [Official Discord](#official-discord-channel)| Official Discord channel                                |
+| [Official Discord](#official-discord)        | Official Discord server                                 |
 
 ## Warning
 
@@ -485,9 +485,9 @@ You can check dummy class for more comments and/or informations.
 * [Luis Rocha](https://twitter.com/countuponsec) for [SQLDumper technique](https://twitter.com/countuponsec/status/910969424215232518)
 * [Asaf Gilboa](https://mobile.twitter.com/asaf_gilboa) for [LsassSilentProcessExit technique](https://github.com/deepinstinct/LsassSilentProcessExit)
 
-## Official Discord Channel
+## Official Discord
 
-[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)](https://discord.gg/sEkn3aa)
+[https://discord.hackndo.com](https://discord.hackndo.com)
 
 ## Known bugs
 
