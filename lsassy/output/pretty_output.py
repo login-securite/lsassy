@@ -11,7 +11,7 @@ class Output(IOutput):
         if len(self._credentials) == 0:
             return "No credentials found"
         else:
-            max_size = max(len(c["domain"]) + len(c["username"]) for c in self._credentials)
+            max_size = max(len(c["hostname"]) + len(c["domain"]) + len(c["username"]) for c in self._credentials)
             credentials = []
             for cred in self._credentials:
                 cred_type = "PWD"
@@ -28,7 +28,8 @@ class Output(IOutput):
                 if [cred["domain"], cred["username"], cred["password"]] not in credentials:
                     credentials.append([cred["domain"], cred["username"], cred["password"]])
                     output.append(
-                        "{}{}{}{}{}{}".format(
+                        "{} - {}{}{}{}{}{}".format(
+                            cred["hostname"],
                             ('{}\\'.format(cred["domain"]) if cred["domain"] is not None and cred["domain"] != "" else " "),
                             cred["username"],
                             " " * (max_size - len(cred["domain"]) - len(cred["username"]) + 2),

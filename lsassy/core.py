@@ -190,7 +190,7 @@ class Lsassy:
                     return False
 
             if not dump_only:
-                credentials, tickets, masterkeys = Parser(file).parse()
+                credentials, tickets, masterkeys = Parser(self.target, file).parse()
             file.close()
 
             if not parse_only and not keep_dump:

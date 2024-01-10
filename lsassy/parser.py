@@ -9,7 +9,8 @@ class Parser:
     Parse remote lsass dump file using impacketfile and pypykatz
     """
 
-    def __init__(self, dumpfile):
+    def __init__(self, target, dumpfile):
+        self._target = target
         self._dumpfile = dumpfile
         
 
@@ -48,7 +49,7 @@ class Parser:
                                      or (NThash and NThash != "00000000000000000000000000000000")
                                      or (LMHash and LMHash != "00000000000000000000000000000000")):
                         credentials.append(
-                            Credential(ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash,
+                            Credential(hostname=self._target, ssp=ssp, domain=domain, username=username, password=password, lmhash=LMHash,
                                        nthash=NThash, sha1=SHA1))
 
             for kcred in pypy_parse.logon_sessions[luid].kerberos_creds:
@@ -60,7 +61,7 @@ class Parser:
                 if m not in masterkeys:
                     masterkeys.append(m)
                     credentials.append(
-                        Credential(ssp='dpapi', domain='', username='', masterkey=m)
+                        Credential(hostname=self._target, ssp='dpapi', domain='', username='', masterkey=m)
                     )
 
         for cred in pypy_parse.orphaned_creds:
@@ -79,6 +80,7 @@ class Parser:
                     if ticket.EndTime > datetime.now(ticket.EndTime.tzinfo):
 
                         credentials.append(Credential(
+                            hostname=self._target,
                             ssp="kerberos",
                             domain=ticket.DomainName,
                             username=ticket.EClientName[0],

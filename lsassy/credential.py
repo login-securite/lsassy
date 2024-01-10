@@ -2,7 +2,8 @@ class Credential:
     """
     Credential class to hold extracted credentials from remote hosts
     """
-    def __init__(self, username, password=None, domain=None, lmhash=None, nthash=None, sha1=None, ticket=None, ssp=None, masterkey=None):
+    def __init__(self, hostname, username, password=None, domain=None, lmhash=None, nthash=None, sha1=None, ticket=None, ssp=None, masterkey=None):
+        self.hostname = hostname
         self.username = username
         self.password = password
         self.domain = domain
@@ -12,6 +13,13 @@ class Credential:
         self.ticket = ticket
         self.ssp = ssp
         self.masterkey = masterkey
+
+    def get_hostname(self):
+        """
+        Get hostname where credential was found
+        :return: hostname
+        """
+        return self.hostname
 
     def get_username(self):
         """
@@ -51,6 +59,7 @@ class Credential:
         :return: dict with credentials information
         """
         return {
+            "hostname": self.hostname,
             "username": self.username,
             "password": self.password,
             "domain": self.domain,
