@@ -199,7 +199,7 @@ class TestWriter(unittest.TestCase):
         file = dumper.dump(exec_methods=["smb"])
         self.assertIsNotNone(file)
 
-        credentials, tickets, masterkeys = Parser(file).parse()
+        credentials, tickets, masterkeys = Parser(HOSTNAME, file).parse()
         file.close()
         self.assertTrue(len(credentials) > 0)
 
