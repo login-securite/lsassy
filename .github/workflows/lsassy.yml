@@ -39,6 +39,7 @@ jobs:
           python -m unittest discover tests
 
   build:
+    if: github.event.pull_request.merged == true
     needs: test
     name: lsassy actions on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

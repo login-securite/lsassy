@@ -84,6 +84,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertIsNotNone(file)
 
         credentials, tickets, masterkeys = Parser(HOSTNAME, file).parse()
+
         file.close()
         self.assertTrue(len(credentials) > 0)
 
@@ -122,7 +123,8 @@ class TestExecMethods(unittest.TestCase):
     @TODO To fix
     def test_mmc(self):
         self.dump_lsass("mmc")
-    
+
+    @TODO To fix
     def test_wmi(self):
         self.dump_lsass("wmi")
     """
@@ -199,6 +201,7 @@ class TestWriter(unittest.TestCase):
         self.assertIsNotNone(file)
 
         credentials, tickets, masterkeys = Parser(HOSTNAME, file).parse()
+
         file.close()
         self.assertTrue(len(credentials) > 0)
 

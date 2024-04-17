@@ -85,7 +85,6 @@ class Dependency:
             if not ImpacketFile.create_file(None, session, self.remote_share, self.remote_path, self.file, self.content):
                 lsassy_logger.error("{} upload error".format(self.name), exc_info=True)
                 return None
-            print("{} uploaded".format(self.name))
             self.uploaded = True
             return True
 

@@ -53,7 +53,8 @@ class ImpacketFile:
             return None
         return self
 
-    def create_file(self, session, share, path, file, content):
+    @staticmethod
+    def create_file(session, share, path, file, content):
         
 
         path = path.replace("\\", "/")
