@@ -1,5 +1,5 @@
 # lsassy
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=v3.1.9&x2=0)](https://pypi.org/project/lsassy)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=v3.1.10&x2=0)](https://pypi.org/project/lsassy)
 [![PyPI Statistics](https://img.shields.io/pypi/dm/lsassy.svg)](https://pypistats.org/packages/lsassy)
 [![Tests](https://github.com/hackndo/lsassy/actions/workflows/lsassy.yml/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=lsassy)
 [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
