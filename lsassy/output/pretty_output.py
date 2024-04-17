@@ -25,7 +25,7 @@ class Output(IOutput):
         # Step 3: Calculate the maximum size for padding.
         # This ensures proper alignment in the output.
         max_size = max(
-            len(c.get("domain") or "") + len(c.get("username") or "")
+            len(c.get("hostname") or "") + len(c.get("domain") or "") + len(c.get("username") or "")
             for c in self._credentials
             if c is not None
         )
@@ -105,6 +105,7 @@ class Output(IOutput):
         Returns:
             str: A formatted string representing a single line of the output.
         """
+        hostname = cred.get("hostname") or ""
         domain = "{}\\".format(cred.get("domain")) if cred.get("domain") else " "
         username = cred.get("username") or ""
         padding = " " * (max_size - len(domain) - len(username) + 2)
@@ -118,7 +119,8 @@ class Output(IOutput):
             else ""
         )
 
-        output_line = "{}{}{}{}{}{}".format(
+        output_line = "{} - {}{}{}{}{}{}".format(
+            hostname,
             domain,
             username,
             padding,

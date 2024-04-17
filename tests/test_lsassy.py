@@ -1,5 +1,4 @@
 import unittest
-import logging
 from argparse import Namespace
 
 from lsassy.core import ThreadPool
@@ -7,7 +6,6 @@ from lsassy.dumper import Dumper
 from lsassy.parser import Parser
 from lsassy.session import Session
 from lsassy.writer import Writer
-from lsassy.logger import lsassy_logger
 
 USERNAME = "pixis"
 PASSWORD = 'P4ssw0rd'
@@ -85,7 +83,8 @@ class TestWorkflow(unittest.TestCase):
         file = dumper.dump(exec_methods=["smb"])
         self.assertIsNotNone(file)
 
-        credentials, tickets, masterkeys = Parser(file).parse()
+        credentials, tickets, masterkeys = Parser(HOSTNAME, file).parse()
+
         file.close()
         self.assertTrue(len(credentials) > 0)
 
@@ -104,7 +103,6 @@ class TestExecMethods(unittest.TestCase):
             username=USERNAME,
             password=PASSWORD
         )
-        lsassy_logger.setLevel(logging.DEBUG)
 
     def dump_lsass(self, exec):
         dumper = Dumper(self.session, 5, 1).load("comsvcs")
@@ -123,14 +121,10 @@ class TestExecMethods(unittest.TestCase):
 
     """
     @TODO To fix
-    
     def test_mmc(self):
         self.dump_lsass("mmc")
-    """
 
-    """
     @TODO To fix
-    
     def test_wmi(self):
         self.dump_lsass("wmi")
     """
@@ -206,7 +200,8 @@ class TestWriter(unittest.TestCase):
         file = dumper.dump(exec_methods=["smb"])
         self.assertIsNotNone(file)
 
-        credentials, tickets, masterkeys = Parser(file).parse()
+        credentials, tickets, masterkeys = Parser(HOSTNAME, file).parse()
+
         file.close()
         self.assertTrue(len(credentials) > 0)
 
