@@ -45,7 +45,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: ['3.9']
     steps:
     - name: Checking out
