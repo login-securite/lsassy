@@ -140,6 +140,7 @@ class Exec(IExec):
         except Exception as e:
             lsassy_logger.debug("Error : {}".format(e), exc_info=True)
             self.clean()
+            raise Exception(e)
 
         dispParams = DISPPARAMS(None, False)
         dispParams['rgdispidNamedArgs'] = NULL
@@ -173,4 +174,5 @@ class Exec(IExec):
         dispParams['rgvarg'].append(arg1)
         dispParams['rgvarg'].append(arg0)
         self.__executeShellCommand[0].Invoke(self.__executeShellCommand[1], 0x409, DISPATCH_METHOD, dispParams, 0, [], [])
+        self.clean()
         return True
