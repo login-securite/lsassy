@@ -1,5 +1,6 @@
-from netaddr import IPAddress, IPRange, IPNetwork, AddrFormatError
 import os
+
+from netaddr import AddrFormatError, IPAddress, IPNetwork, IPRange
 
 
 def is_valid_ip(ip):
@@ -39,8 +40,8 @@ def parse_targets(target):
     :param target: Targets
     :return: List of IP addresses
     """
-    if '-' in target:
-        ip_range = target.split('-')
+    if "-" in target:
+        ip_range = target.split("-")
         try:
             t = IPRange(ip_range[0], ip_range[1])
         except AddrFormatError:
@@ -51,7 +52,7 @@ def parse_targets(target):
                 start_ip_words[-1] = ip_range[1]
                 start_ip_words = [str(v) for v in start_ip_words]
 
-                end_ip = IPAddress('.'.join(start_ip_words))
+                end_ip = IPAddress(".".join(start_ip_words))
 
                 t = IPRange(start_ip, end_ip)
             except AddrFormatError:
@@ -76,7 +77,7 @@ def get_targets(targets):
     ret_targets = []
     for target in targets:
         if os.path.exists(target):
-            with open(target, 'r') as target_file:
+            with open(target, "r") as target_file:
                 for target_entry in target_file:
                     ret_targets += parse_targets(target_entry)
         else:

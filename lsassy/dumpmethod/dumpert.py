@@ -2,7 +2,7 @@
 https://github.com/outflanknl/Dumpert
 """
 
-from lsassy.dumpmethod import IDumpMethod, Dependency
+from lsassy.dumpmethod import Dependency, IDumpMethod
 
 
 class DumpMethod(IDumpMethod):
@@ -25,7 +25,4 @@ class DumpMethod(IDumpMethod):
 
     def get_commands(self):
         cmd_command = """{}""".format(self.dumpert.get_remote_path())
-        return {
-            "cmd": cmd_command,
-            "pwsh": cmd_command
-        }
+        return {"cmd": cmd_command, "pwsh": cmd_command}

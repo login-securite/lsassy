@@ -2,7 +2,20 @@ class Credential:
     """
     Credential class to hold extracted credentials from remote hosts
     """
-    def __init__(self, hostname, username, password=None, domain=None, lmhash=None, nthash=None, sha1=None, ticket=None, ssp=None, masterkey=None):
+
+    def __init__(
+        self,
+        hostname,
+        username,
+        password=None,
+        domain=None,
+        lmhash=None,
+        nthash=None,
+        sha1=None,
+        ticket=None,
+        ssp=None,
+        masterkey=None,
+    ):
         self.hostname = hostname
         self.username = username
         self.password = password
@@ -49,7 +62,7 @@ class Credential:
         Can be either string, bytes, None
         """
         try:
-            return data.decode('utf-8', 'backslashreplace')
+            return data.decode("utf-8", "backslashreplace")
         except Exception:
             return data
 

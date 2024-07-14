@@ -9,6 +9,7 @@ class Output(IOutput):
     """
     Return output in pretty colorful format
     """
+
     def get_output(self):
         table = Table(
             show_header=True,
@@ -16,7 +17,7 @@ class Output(IOutput):
             border_style="grey35",
             caption_style="",
             caption_justify="left",
-            box=box.SQUARE
+            box=box.SQUARE,
         )
 
         table.add_column("Username")
@@ -27,21 +28,53 @@ class Output(IOutput):
         table.add_column("Masterkeys")
         credentials = []
         for cred in self._credentials:
-            if [cred["domain"], cred["username"], cred["password"], cred["lmhash"], cred["nthash"], cred["sha1"], cred["ticket"],  cred["masterkey"]] not in credentials:
-                credentials.append([cred["domain"], cred["username"], cred["password"], cred["lmhash"], cred["nthash"], cred["sha1"], cred["ticket"],  cred["masterkey"]])
+            if [
+                cred["domain"],
+                cred["username"],
+                cred["password"],
+                cred["lmhash"],
+                cred["nthash"],
+                cred["sha1"],
+                cred["ticket"],
+                cred["masterkey"],
+            ] not in credentials:
+                credentials.append(
+                    [
+                        cred["domain"],
+                        cred["username"],
+                        cred["password"],
+                        cred["lmhash"],
+                        cred["nthash"],
+                        cred["sha1"],
+                        cred["ticket"],
+                        cred["masterkey"],
+                    ]
+                )
                 table.add_row(
                     "{}{}".format(
-                        "{}\\".format(cred["domain"]) if cred["domain"] is not None and cred["domain"] != "" else "",
-                        cred["username"] if cred["username"] is not None and cred["username"] != "" else ""
+                        "{}\\".format(cred["domain"])
+                        if cred["domain"] is not None and cred["domain"] != ""
+                        else "",
+                        cred["username"]
+                        if cred["username"] is not None and cred["username"] != ""
+                        else "",
                     ),
                     cred["password"] if cred["password"] is not None else "",
-                    ':'.join(h for h in [cred["lmhash"], cred["nthash"]] if h is not None),
-
+                    ":".join(
+                        h for h in [cred["lmhash"], cred["nthash"]] if h is not None
+                    ),
                     cred["sha1"] if cred["sha1"] is not None else "",
-                    "{} - {}".format(cred["ticket"]["domain"], cred["ticket"]["endtime"].strftime("%Y-%m-%d %H:%M")) if cred["ticket"] is not None else "",
-                    "{}".format(cred["masterkey"]) if cred["masterkey"] is not None else "")
+                    "{} - {}".format(
+                        cred["ticket"]["domain"],
+                        cred["ticket"]["endtime"].strftime("%Y-%m-%d %H:%M"),
+                    )
+                    if cred["ticket"] is not None
+                    else "",
+                    "{}".format(cred["masterkey"])
+                    if cred["masterkey"] is not None
+                    else "",
+                )
         console = Console()
         with console.capture() as capture:
             console.print(table)
         return capture.get()
-

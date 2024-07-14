@@ -21,6 +21,7 @@ class Exec(IExec):
 
     This execution method does not provide debug privilege
     """
+
     debug_privilege = False
 
     def __init__(self, session):
@@ -45,19 +46,25 @@ class Exec(IExec):
                 self.session.aesKey,
                 oxidResolver=True,
                 doKerberos=self.session.kerberos,
-                kdcHost=self.session.dc_ip
+                kdcHost=self.session.dc_ip,
             )
-            iInterface = self.dcom.CoCreateInstanceEx(wmi.CLSID_WbemLevel1Login, wmi.IID_IWbemLevel1Login)
+            iInterface = self.dcom.CoCreateInstanceEx(
+                wmi.CLSID_WbemLevel1Login, wmi.IID_IWbemLevel1Login
+            )
             iWbemLevel1Login = wmi.IWbemLevel1Login(iInterface)
-            self.iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
+            self.iWbemServices = iWbemLevel1Login.NTLMLogin(
+                "//./root/cimv2", NULL, NULL
+            )
             iWbemLevel1Login.RemRelease()
-            self.win32Process, _ = self.iWbemServices.GetObject('Win32_Process')
+            self.win32Process, _ = self.iWbemServices.GetObject("Win32_Process")
         except KeyboardInterrupt as e:
             self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:
             self.clean()
-            raise Exception("WMIEXEC not supported on host %s : %s" % (self.session.address, e))
+            raise Exception(
+                "WMIEXEC not supported on host %s : %s" % (self.session.address, e)
+            )
 
     def exec(self, command):
         if not super().exec(command):
@@ -68,7 +75,9 @@ class Exec(IExec):
             self.iWbemServices.disconnect()
             self.dcom.disconnect()
         except KeyboardInterrupt as e:
-            lsassy_logger.debug("WMI Execution stopped because of keyboard interruption")
+            lsassy_logger.debug(
+                "WMI Execution stopped because of keyboard interruption"
+            )
             self.clean()
             raise KeyboardInterrupt(e)
         except Exception as e:

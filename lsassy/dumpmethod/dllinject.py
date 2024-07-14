@@ -1,4 +1,4 @@
-from lsassy.dumpmethod import IDumpMethod, Dependency
+from lsassy.dumpmethod import Dependency, IDumpMethod
 
 
 class DumpMethod(IDumpMethod):
@@ -27,7 +27,4 @@ class DumpMethod(IDumpMethod):
         pwsh_command = """{}{} (Get-Process lsass).Id""".format(
             self.loader.remote_path, self.loader.file
         )
-        return {
-            "cmd": cmd_command,
-            "pwsh": pwsh_command
-        }
+        return {"cmd": cmd_command, "pwsh": pwsh_command}

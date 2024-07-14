@@ -6,7 +6,7 @@
 
 import pathlib
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
@@ -22,15 +22,10 @@ setup(
     packages=find_packages(exclude=["assets", "tests*"]),
     include_package_data=True,
     url="https://github.com/Hackndo/lsassy/",
-    zip_safe = True,
+    zip_safe=True,
     license="MIT",
-    install_requires=[
-        'impacket',
-        'netaddr',
-        'pypykatz>=0.6.3',
-        'rich'
-    ],
-    python_requires='>=3.6',
+    install_requires=["impacket", "netaddr", "pypykatz>=0.6.3", "rich"],
+    python_requires=">=3.6",
     classifiers=(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -40,9 +35,9 @@ setup(
         "Operating System :: OS Independent",
     ),
     entry_points={
-        'console_scripts': [
-            'lsassy = lsassy.console:main',
+        "console_scripts": [
+            "lsassy = lsassy.console:main",
         ],
     },
-    test_suite='tests.test_lsassy'
+    test_suite="tests.test_lsassy",
 )

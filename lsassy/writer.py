@@ -1,6 +1,7 @@
 import importlib
 import os
 from pathlib import Path
+
 from lsassy.logger import lsassy_logger
 
 
@@ -8,11 +9,11 @@ class Writer:
     """
     Class used to write output results either on screen and/or in a file
     """
+
     def __init__(self, credentials, tickets, masterkeys):
         self._credentials = credentials
         self._tickets = tickets
         self._masterkeys = masterkeys
-        
 
     def get_output(self, out_format, users_only=False, tickets=False, masterkeys=False):
         """
@@ -22,15 +23,30 @@ class Writer:
         :return: Output string
         """
         try:
-            output_method = importlib.import_module("lsassy.output.{}_output".format(out_format.lower()), "Output").Output(self._credentials, users_only, tickets, masterkeys)
+            output_method = importlib.import_module(
+                "lsassy.output.{}_output".format(out_format.lower()), "Output"
+            ).Output(self._credentials, users_only, tickets, masterkeys)
         except ModuleNotFoundError:
-            lsassy_logger.error("Output module '{}' doesn't exist".format(out_format.lower()), exc_info=True)
+            lsassy_logger.error(
+                "Output module '{}' doesn't exist".format(out_format.lower()),
+                exc_info=True,
+            )
             return None
 
         return output_method.get_output()
 
-    def write(self, file_format, out_format="pretty", output_file=None, quiet=False, users_only=False, tickets=False, masterkeys=False, kerberos_dir=None, masterkeys_file=None):
-
+    def write(
+        self,
+        file_format,
+        out_format="pretty",
+        output_file=None,
+        quiet=False,
+        users_only=False,
+        tickets=False,
+        masterkeys=False,
+        kerberos_dir=None,
+        masterkeys_file=None,
+    ):
         """
         Displays content to stdout and/or a file
         :param out_format: Output format
@@ -43,14 +59,16 @@ class Writer:
         :return: Success status
         """
         output = self.get_output(out_format, users_only, tickets, masterkeys)
-        
+
         if file_format is None:
             file_content = output
         else:
             file_content = self.get_output(file_format, users_only, tickets, masterkeys)
 
         if output is None:
-            lsassy_logger.error("An error occurred while writing credentials", exc_info=True)
+            lsassy_logger.error(
+                "An error occurred while writing credentials", exc_info=True
+            )
             return None
 
         if not quiet:
@@ -63,14 +81,14 @@ class Writer:
                 lsassy_logger.error("Directory {} does not exist".format(path))
                 return None
 
-            with open(output_file, 'a+') as f:
+            with open(output_file, "a+") as f:
                 f.write(file_content + "\n")
             print("Credentials saved to {}".format(output_file))
 
-        if os.name == 'nt':
-            output_dir = '%LocalAppData%\\lsassy'
+        if os.name == "nt":
+            output_dir = "%LocalAppData%\\lsassy"
         else:
-            output_dir = os.path.expanduser('~') + '/.config/lsassy'
+            output_dir = os.path.expanduser("~") + "/.config/lsassy"
 
         if not os.path.exists(output_dir):
             try:
@@ -91,10 +109,10 @@ class Writer:
         :param quiet: If set, doesn't display on stdout
         """
         if kerberos_dir is None:
-            if os.name == 'nt':
-                abs_dir = '%LocalAppData%\\lsassy\\tickets'
+            if os.name == "nt":
+                abs_dir = "%LocalAppData%\\lsassy\\tickets"
             else:
-                abs_dir = os.path.expanduser('~') + '/.config/lsassy/tickets'
+                abs_dir = os.path.expanduser("~") + "/.config/lsassy/tickets"
         else:
             if len(self._tickets) == 0 and not quiet:
                 lsassy_logger.warning("No kerberos tickets found")
@@ -106,21 +124,39 @@ class Writer:
                 try:
                     os.makedirs(abs_dir)
                 except Exception as e:
-                    lsassy_logger.warning("Cannot create %s for saving kerberos tickets" % abs_dir, exc_info=True)
+                    lsassy_logger.warning(
+                        "Cannot create %s for saving kerberos tickets" % abs_dir,
+                        exc_info=True,
+                    )
                     return True
             for ticket in self._tickets:
                 for filename in ticket.kirbi_data:
                     # Trick to add expiration date in ticket filename "YEAR MONTH DAY HOUR MINUTE SECOND"
-                    with open(os.path.join(abs_dir, filename.split(".kirbi")[0] + '_' + ticket.EndTime.strftime('%Y%m%d%H%M%S') + ".kirbi"), 'wb') as f:
+                    with open(
+                        os.path.join(
+                            abs_dir,
+                            filename.split(".kirbi")[0]
+                            + "_"
+                            + ticket.EndTime.strftime("%Y%m%d%H%M%S")
+                            + ".kirbi",
+                        ),
+                        "wb",
+                    ) as f:
                         f.write(ticket.kirbi_data[filename].dump())
             if not quiet:
                 if len(self._tickets) > 1:
-                    print("%s Kerberos tickets written to %s" % (len(self._tickets),abs_dir))
+                    print(
+                        "%s Kerberos tickets written to %s"
+                        % (len(self._tickets), abs_dir)
+                    )
                 else:
-                    print("%s Kerberos ticket written to %s" % (len(self._tickets),abs_dir))
+                    print(
+                        "%s Kerberos ticket written to %s"
+                        % (len(self._tickets), abs_dir)
+                    )
 
         return True
-    
+
     def write_masterkeys(self, masterkeys_file=None, quiet=False):
         """
         Output masterkeys to file
@@ -128,10 +164,10 @@ class Writer:
         :param quiet: If set, doesn't display on stdout
         """
         if masterkeys_file is None:
-            if os.name == 'nt':
-                abs_dir = '%LocalAppData%\\lsassy\\masterkeys.txt'
+            if os.name == "nt":
+                abs_dir = "%LocalAppData%\\lsassy\\masterkeys.txt"
             else:
-                abs_dir = os.path.expanduser('~') + '/.config/lsassy/masterkeys.txt'
+                abs_dir = os.path.expanduser("~") + "/.config/lsassy/masterkeys.txt"
         else:
             if len(self._masterkeys) == 0 and not quiet:
                 lsassy_logger.warning("No DPAPI masterkey found")
@@ -142,9 +178,9 @@ class Writer:
             if not quiet:
                 lsassy_logger.warning("No masterkey found")
             return True
-        with open(abs_dir,'a+') as file:
+        with open(abs_dir, "a+") as file:
             for mk in self._masterkeys:
-                file.write(mk+'\n')
+                file.write(mk + "\n")
         if not quiet:
             print("{} masterkeys saved to {}".format(len(self._masterkeys), abs_dir))
         return True

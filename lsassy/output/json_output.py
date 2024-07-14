@@ -7,6 +7,7 @@ class Output(IOutput):
     """
     Return output in json format
     """
+
     def get_output(self):
         json_output = {}
         for cred in self._credentials:
@@ -18,7 +19,7 @@ class Output(IOutput):
                 "password": cred["password"],
                 "lmhash": cred["lmhash"],
                 "nthash": cred["nthash"],
-                "sha1": cred["sha1"]
+                "sha1": cred["sha1"],
             }
             if credential not in json_output[cred["domain"]][cred["username"]]:
                 json_output[cred["domain"]][cred["username"]].append(credential)
