@@ -1,11 +1,9 @@
-import logging
 import queue
 import signal
 import threading
 import time
 from queue import Queue
 
-from lsassy import __version__
 from lsassy.dumper import Dumper
 from lsassy.impacketfile import ImpacketFile
 from lsassy.logger import lsassy_logger
@@ -30,7 +28,7 @@ class Worker(threading.Thread):
             """
             try:
                 worker_lsassy = self.task_q.get(timeout=1)
-            except queue.Empty as e:
+            except queue.Empty:
                 time.sleep(1)
                 continue
             self.name = worker_lsassy.target
@@ -83,7 +81,7 @@ class ThreadPool:
 
             # Block until all tasks are done
             self.task_q.join()
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             lsassy_logger.error("Au revoir.")
 
 
@@ -242,7 +240,7 @@ class Lsassy:
 
         except KeyboardInterrupt:
             pass
-        except Exception as e:
+        except Exception:
             lsassy_logger.error("An unknown error has occurred.", exc_info=True)
         finally:
             lsassy_logger.debug("Cleaning...")
@@ -273,7 +271,7 @@ class Lsassy:
                         timeout=self.args.timeout,
                     ):
                         lsassy_logger.debug("Lsass dump deleted")
-                except Exception as e:
+                except Exception:
                     try:
                         lsassy_logger.debug(
                             "Couldn't delete lsass dump using file. Trying dump object..."

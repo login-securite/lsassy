@@ -123,7 +123,7 @@ class Writer:
             if not os.path.exists(abs_dir):
                 try:
                     os.makedirs(abs_dir)
-                except Exception as e:
+                except Exception:
                     lsassy_logger.warning(
                         "Cannot create %s for saving kerberos tickets" % abs_dir,
                         exc_info=True,

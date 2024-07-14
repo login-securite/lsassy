@@ -114,12 +114,12 @@ class Exec(IExec):
             self.__quit[0].Invoke(
                 self.__quit[1], 0x409, DISPATCH_METHOD, dispParams, 0, [], []
             )
-        except Exception as e:
+        except Exception:
             pass
 
         try:
             self.dcom.disconnect()
-        except Exception as e:
+        except Exception:
             pass
 
     def exec(self, command):

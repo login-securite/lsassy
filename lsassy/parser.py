@@ -27,7 +27,7 @@ class Parser:
             pypy_parse = pypykatz.parse_minidump_external(
                 self._dumpfile, chunksize=60 * 1024
             )
-        except Exception as e:
+        except Exception:
             lsassy_logger.error(
                 "An error occurred while parsing lsass dump", exc_info=True
             )

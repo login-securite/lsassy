@@ -5,7 +5,7 @@ import sys
 from lsassy import __version__
 from lsassy.core import ThreadPool
 from lsassy.dumper import Dumper
-from lsassy.logger import LsassyLogger, lsassy_logger
+from lsassy.logger import lsassy_logger
 
 
 def main():

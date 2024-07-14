@@ -83,7 +83,7 @@ class Session:
             return None
 
         try:
-            lsassy_logger.debug(f"Connecting to C$")
+            lsassy_logger.debug("Connecting to C$")
             self.smb_session.connectTree("C$")
         except Exception:
             if username:

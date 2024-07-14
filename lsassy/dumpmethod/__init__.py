@@ -81,7 +81,7 @@ class Dependency:
                     print("{} uploaded".format(self.name))
                     self.uploaded = True
                     return True
-                except Exception as e:
+                except Exception:
                     lsassy_logger.error(
                         "{} upload error".format(self.name), exc_info=True
                     )
@@ -245,7 +245,7 @@ class IDumpMethod:
             print("{} copied as {}".format(executor, self._executor_name))
             self._executor_copied = True
             return True
-        except Exception as e:
+        except Exception:
             lsassy_logger.debug(
                 "An error occurred while copying {}".format(executor), exc_info=True
             )

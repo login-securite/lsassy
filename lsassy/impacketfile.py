@@ -44,7 +44,7 @@ class ImpacketFile:
     def _open_share(self):
         try:
             self._tid = self._session.smb_session.connectTree(self._share_name)
-        except Exception as e:
+        except Exception:
             lsassy_logger.warning(
                 "ConnectTree error with '{}'".format(self._share_name), exc_info=True
             )
@@ -56,12 +56,12 @@ class ImpacketFile:
         path = path.replace("\\", "/")
         try:
             share, fpath = share, path + "/" + file
-        except Exception as e:
+        except Exception:
             lsassy_logger.warning("Parsing error with '{}'".format(path), exc_info=True)
             return None
         try:
             tid = session.smb_session.connectTree(share)
-        except Exception as e:
+        except Exception:
             lsassy_logger.warning(
                 "ConnectTree error with '{}'".format(share), exc_info=True
             )
@@ -153,7 +153,7 @@ class ImpacketFile:
         path = path.replace("\\", "/")
         try:
             self._share_name, self._fpath = share, path + "/" + file
-        except Exception as e:
+        except Exception:
             lsassy_logger.warning("Parsing error with '{}'".format(path), exc_info=True)
             return None
 
@@ -168,7 +168,7 @@ class ImpacketFile:
                 )
                 lsassy_logger.info("{} handle acquired".format(self._fpath))
                 break
-            except Exception as e:
+            except Exception:
                 if time.time() - t > timeout:
                     lsassy_logger.warning(
                         "Unable to open remote file {}".format(self._fpath),

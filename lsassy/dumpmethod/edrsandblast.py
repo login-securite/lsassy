@@ -8,7 +8,6 @@ import string
 import subprocess
 import sys
 import threading
-from concurrent.futures import ThreadPoolExecutor
 
 CSVLock = threading.Lock()
 
@@ -48,11 +47,11 @@ class DumpMethod(IDumpMethod):
                 lsassy_logger.info(
                     "ntoskrnl.exe downloaded to {}{}".format(tmp_dir, self.tmp_ntoskrnl)
                 )
-            except Exception as e:
+            except Exception:
                 lsassy_logger.error("ntoskrnl.exe download error", exc_info=True)
                 try:
                     os.remove("{}{}".format(tmp_dir, self.tmp_ntoskrnl))
-                except Exception as e:
+                except Exception:
                     return None
                 return None
         self.ntoskrnl.content = self.extractOffsets(
@@ -203,6 +202,6 @@ class DumpMethod(IDumpMethod):
             lsassy_logger.debug(f"[!] ERROR : Could not process file {input_file}.")
             lsassy_logger.debug(f"[!] Error message: {e}")
             lsassy_logger.debug(
-                f"[!] If error is of the like of \"'NoneType' object has no attribute 'group'\", kernel callbacks may not be supported by this version."
+                "[!] If error is of the like of \"'NoneType' object has no attribute 'group'\", kernel callbacks may not be supported by this version."
             )
             return None

@@ -89,9 +89,9 @@ class Exec(IExec):
     def clean(self):
         try:
             self.iWbemServices.disconnect()
-        except Exception as e:
+        except Exception:
             pass
         try:
             self.dcom.disconnect()
-        except Exception as e:
+        except Exception:
             pass
