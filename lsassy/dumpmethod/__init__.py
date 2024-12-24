@@ -37,7 +37,7 @@ class Dependency:
         self.uploaded = False
         self.content = content
         self.share_mode = False
-        
+
 
     def get_remote_path(self):
         return self.remote_path + self.file
@@ -45,7 +45,7 @@ class Dependency:
     def init(self, options):
         if self.content is not None:
             return True
-        
+
         self.path = options.get("{}_path".format(self.name), self.path)
 
         if not self.path:
@@ -121,7 +121,7 @@ class IDumpMethod:
         self._executor_copied = False
         self._timeout = timeout
         self._time_between_commands = time_between_commands
-        
+
 
     def get_exec_method(self, exec_method, no_powershell=False):
         try:
@@ -226,6 +226,10 @@ class IDumpMethod:
             if not self.custom_dump_name_support:
                 lsassy_logger.warning("A custom dump name was provided, but dump method {} doesn't support custom dump name".format(self.__module__))
                 lsassy_logger.warning("Dump file will be {}".format(self.dump_name))
+            elif not self.custom_dump_ext_support:
+                lsassy_logger.warning("A custom dump name was provided, but dump method {} doesn't support custom extension".format(self.__module__))
+                lsassy_logger.warning("Dump file will be {}.{}".format(dump_name, self.dump_ext))
+                self.dump_name = f"{dump_name}.{self.dump_ext}"
             else:
                 self.dump_name = dump_name
         elif self.dump_name == "":
@@ -303,7 +307,7 @@ class IDumpMethod:
                 continue
             lsassy_logger.info("Lsass dumped in C:{}{} ({} Bytes)".format(self.dump_path, self.dump_name, self._file_handle.size()))
             return self._file_handle
-            
+
         lsassy_logger.error("All execution methods have failed")
         self.clean()
         return None
