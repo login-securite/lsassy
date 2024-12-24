@@ -331,6 +331,10 @@ class IDumpMethod:
                     )
                 )
                 lsassy_logger.warning("Dump file will be {}".format(self.dump_name))
+            elif not self.custom_dump_ext_support:
+                lsassy_logger.warning("A custom dump name was provided, but dump method {} doesn't support custom extension".format(self.__module__))
+                lsassy_logger.warning("Dump file will be {}.{}".format(dump_name, self.dump_ext))
+                self.dump_name = f"{dump_name}.{self.dump_ext}"
             else:
                 self.dump_name = dump_name
         elif self.dump_name == "":
