@@ -8,48 +8,83 @@ from lsassy.session import Session
 from lsassy.writer import Writer
 
 USERNAME = "pixis"
-PASSWORD = 'P4ssw0rd'
+PASSWORD = "P4ssw0rd"
 HOSTNAME = "127.0.0.1"
 
 
 class TestCLI(unittest.TestCase):
     def test_threads(self):
         MAX_THREADS = 1337
-        args = Namespace(dump_method='comsvcs', dump_path=None, dump_name=None, exec='smb', no_powershell=False,
-                  copy=False, options=None, timeout=10, time_between_commands=1, parse_only=False, dump_only=False,
-                  keep_dump=False, username=USERNAME, password=PASSWORD, domain='RANDOM',
-                  port=445, no_pass=False, hashes=None, kerberos=False, dc_ip=None, aesKey=None, kerberos_dir=None,
-                  masterkeys_file=None, outfile=None, format='pretty', file_format=None, no_color=False, users=False,
-                  no_tickets=False, masterkeys=False, v=2, threads=MAX_THREADS, quiet=False, target=[HOSTNAME])
+        args = Namespace(
+            dump_method="comsvcs",
+            dump_path=None,
+            dump_name=None,
+            exec="smb",
+            no_powershell=False,
+            copy=False,
+            options=None,
+            timeout=10,
+            time_between_commands=1,
+            parse_only=False,
+            dump_only=False,
+            keep_dump=False,
+            username=USERNAME,
+            password=PASSWORD,
+            domain="RANDOM",
+            port=445,
+            no_pass=False,
+            hashes=None,
+            kerberos=False,
+            dc_ip=None,
+            aesKey=None,
+            kerberos_dir=None,
+            masterkeys_file=None,
+            outfile=None,
+            format="pretty",
+            file_format=None,
+            no_color=False,
+            users=False,
+            no_tickets=False,
+            masterkeys=False,
+            v=2,
+            threads=MAX_THREADS,
+            quiet=False,
+            target=[HOSTNAME],
+        )
         l = ThreadPool("HACKNDO", args)
-        self.assertEqual(l.max_threads, MAX_THREADS, "Max threads not taken into account")
+        self.assertEqual(
+            l.max_threads, MAX_THREADS, "Max threads not taken into account"
+        )
 
 
 class TestDumper(unittest.TestCase):
-
     def test_list_dump_methods(self):
-        self.assertEqual(Dumper.list_dump_methods(), [
-            'comsvcs',
-            'comsvcs_stealth',
-            'dllinject',
-            'dumpert',
-            'dumpertdll',
-            'edrsandblast',
-            'mirrordump',
-            'mirrordump_embedded',
-            'nanodump',
-            'nanodump_ssp_embedded',
-            'ppldump',
-            'ppldump_embedded',
-            'procdump',
-            'procdump_embedded',
-            'rawrpc',
-            'rawrpc_embedded',
-            'rdrleakdiag',
-            'silentprocessexit',
-            'sqldumper',
-            'wer'
-        ], "Error in list_dump_methods")
+        self.assertEqual(
+            Dumper.list_dump_methods(),
+            [
+                "comsvcs",
+                "comsvcs_stealth",
+                "dllinject",
+                "dumpert",
+                "dumpertdll",
+                "edrsandblast",
+                "mirrordump",
+                "mirrordump_embedded",
+                "nanodump",
+                "nanodump_ssp_embedded",
+                "ppldump",
+                "ppldump_embedded",
+                "procdump",
+                "procdump_embedded",
+                "rawrpc",
+                "rawrpc_embedded",
+                "rdrleakdiag",
+                "silentprocessexit",
+                "sqldumper",
+                "wer",
+            ],
+            "Error in list_dump_methods",
+        )
 
     def test_load(self):
         dumper = Dumper(None, 0, 0)
@@ -62,7 +97,9 @@ class TestDumper(unittest.TestCase):
             try:
                 dumper.load(dump_method).get_commands()
             except NotImplemented:
-                self.fail("get_commands() raised NotImplemented for {}".format(dump_method))
+                self.fail(
+                    "get_commands() raised NotImplemented for {}".format(dump_method)
+                )
 
 
 class TestWorkflow(unittest.TestCase):
@@ -73,7 +110,7 @@ class TestWorkflow(unittest.TestCase):
             target_ip=HOSTNAME,
             port=445,
             username=USERNAME,
-            password=PASSWORD
+            password=PASSWORD,
         )
         self.assertIsNotNone(session.smb_session)
 
@@ -93,7 +130,6 @@ class TestWorkflow(unittest.TestCase):
 
 
 class TestExecMethods(unittest.TestCase):
-
     def setUp(self) -> None:
         self.session = Session()
         self.session.get_session(
@@ -101,7 +137,7 @@ class TestExecMethods(unittest.TestCase):
             target_ip=HOSTNAME,
             port=445,
             username=USERNAME,
-            password=PASSWORD
+            password=PASSWORD,
         )
 
     def dump_lsass(self, exec):
@@ -131,7 +167,6 @@ class TestExecMethods(unittest.TestCase):
 
 
 class TestDumpMethods(unittest.TestCase):
-
     def setUp(self) -> None:
         self.session = Session()
         self.session.get_session(
@@ -139,7 +174,7 @@ class TestDumpMethods(unittest.TestCase):
             target_ip=HOSTNAME,
             port=445,
             username=USERNAME,
-            password=PASSWORD
+            password=PASSWORD,
         )
 
     def dump_lsass(self, method):
@@ -190,7 +225,7 @@ class TestWriter(unittest.TestCase):
             target_ip=HOSTNAME,
             port=445,
             username=USERNAME,
-            password=PASSWORD
+            password=PASSWORD,
         )
         self.assertIsNotNone(session.smb_session)
 
@@ -211,7 +246,7 @@ class TestWriter(unittest.TestCase):
         self.assertTrue("[NT]" in self.writer.get_output(out_format="pretty"))
 
     def test_json(self):
-        self.assertTrue("\"nthash\"" in self.writer.get_output(out_format="json"))
+        self.assertTrue('"nthash"' in self.writer.get_output(out_format="json"))
 
     def test_table(self):
         self.assertTrue("Username" in self.writer.get_output(out_format="table"))

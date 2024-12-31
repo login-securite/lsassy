@@ -1,5 +1,5 @@
-from lsassy.output import IOutput
 from lsassy.logger import lsassy_logger
+from lsassy.output import IOutput
 
 
 class Output(IOutput):
@@ -25,7 +25,9 @@ class Output(IOutput):
         # Step 3: Calculate the maximum size for padding.
         # This ensures proper alignment in the output.
         max_size = max(
-            len(c.get("hostname") or "") + len(c.get("domain") or "") + len(c.get("username") or "")
+            len(c.get("hostname") or "")
+            + len(c.get("domain") or "")
+            + len(c.get("username") or "")
             for c in self._credentials
             if c is not None
         )

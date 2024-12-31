@@ -2,9 +2,11 @@ class IOutput:
     """
     Ouput interface
     """
+
     def __init__(self, credentials, users_only=False, tickets=False, masterkeys=False):
-        self._credentials = self.get_credentials(credentials, users_only, tickets, masterkeys)
-        
+        self._credentials = self.get_credentials(
+            credentials, users_only, tickets, masterkeys
+        )
 
     @staticmethod
     def _decode(data):
@@ -13,7 +15,7 @@ class IOutput:
         Can be either string, bytes, None
         """
         try:
-            return data.decode('utf-8', 'backslashreplace')
+            return data.decode("utf-8", "backslashreplace")
         except Exception:
             return data
 
@@ -27,7 +29,13 @@ class IOutput:
         :param masterkeys: If set, also returns valid DPAPI masterkeys
         :return: List of credentials dict
         """
-        return [cred.get_object() for cred in credentials if (tickets or cred.ticket is None) and (masterkeys or cred.masterkey is None) and not (users_only and cred.get_username().endswith("$"))]
+        return [
+            cred.get_object()
+            for cred in credentials
+            if (tickets or cred.ticket is None)
+            and (masterkeys or cred.masterkey is None)
+            and not (users_only and cred.get_username().endswith("$"))
+        ]
 
     def get_output(self):
         """

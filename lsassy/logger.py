@@ -35,17 +35,27 @@ class LsassyFormatter(logging.Formatter):
     """
     Custom formatting. Inspired by impacket "Logger" class
     """
+
     def __init__(self, no_color=False):
-        self.formatter = logging.Formatter.__init__(self, '%(bullet)s %(threadName)s %(message)s', None)
+        self.formatter = logging.Formatter.__init__(
+            self, "%(bullet)s %(threadName)s %(message)s", None
+        )
         self.no_color = no_color
-        self.BLUE, self.WHITE, self.YELLOW, self.RED, self.GREEN, self.NC = '', '', '', '', '', ''
+        self.BLUE, self.WHITE, self.YELLOW, self.RED, self.GREEN, self.NC = (
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        )
         if not self.no_color:
-            self.BLUE = '\033[1;34m'
-            self.WHITE = '\033[1;37m'
-            self.YELLOW = '\033[1;33m'
-            self.RED = '\033[1;31m'
-            self.GREEN = '\033[1;32m'
-            self.NC = '\033[0m'
+            self.BLUE = "\033[1;34m"
+            self.WHITE = "\033[1;37m"
+            self.YELLOW = "\033[1;33m"
+            self.RED = "\033[1;31m"
+            self.GREEN = "\033[1;32m"
+            self.NC = "\033[0m"
 
     def format(self, record):
         """
@@ -53,18 +63,21 @@ class LsassyFormatter(logging.Formatter):
         :param record: Record to log
         """
         if record.levelno == logging.INFO:
-            record.bullet = '{}[*]{}'.format(self.BLUE, self.NC)
+            record.bullet = "{}[*]{}".format(self.BLUE, self.NC)
         elif record.levelno == logging.DEBUG:
-            record.bullet = '{}[*]{}'.format(self.WHITE, self.NC)
+            record.bullet = "{}[*]{}".format(self.WHITE, self.NC)
         elif record.levelno == logging.WARNING:
-            record.bullet = '{}[!]{}'.format(self.YELLOW, self.NC)
+            record.bullet = "{}[!]{}".format(self.YELLOW, self.NC)
         elif record.levelno == logging.ERROR:
-            record.bullet = '{}[x]{}'.format(self.RED, self.NC)
+            record.bullet = "{}[x]{}".format(self.RED, self.NC)
         else:
-            record.bullet = '{}[+]{}'.format(self.GREEN, self.NC)
+            record.bullet = "{}[+]{}".format(self.GREEN, self.NC)
 
         # Only log stacktrace when log level is DEBUG
-        if record.exc_info and logging.getLogger("lsassy").getEffectiveLevel() != logging.DEBUG:
+        if (
+            record.exc_info
+            and logging.getLogger("lsassy").getEffectiveLevel() != logging.DEBUG
+        ):
             record.exc_info = None
 
         return logging.Formatter.format(self, record)

@@ -28,7 +28,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
@@ -46,7 +46,7 @@ jobs:
       max-parallel: 4
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.9']
+        python-version: ['3.10']
     steps:
     - name: Checking out
       uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
     - name: Setup on ${{ matrix.os }}
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: '3.10'
         architecture: x64
 
     - name: Building binary with pyinstaller
