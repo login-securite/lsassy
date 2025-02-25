@@ -1,28 +1,32 @@
-[tool.poetry]
+[project]
 name = "lsassy"
 version = "3.1.13"
 description = "Python library to extract credentials from lsass remotely"
-authors = ["pixis <pixis@hackndo.com>"]
-license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10,<4.0"
+license = { text = "MIT" }
+authors = [
+    { name = "pixis", email = "pixis@hackndo.com" }
+]
+dependencies = [
+    "impacket>=0.11.0",
+    "netaddr>=1.3.0",
+    "pypykatz>=0.6.9",
+    "rich>=13.7.1"
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-impacket = "^0.11.0"
-netaddr = "^1.3.0"
-pypykatz = "^0.6.9"
-rich = "^13.7.1"
+[project.scripts]
+lsassy = "lsassy.console:main"
 
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.5.1"
-pre-commit = "^3.7.1"
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5.1",
+    "pre-commit>=3.7.1"
+]
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-lsassy = "lsassy.console:main"
 
 [tool.ruff.lint]
 extend-select = [
