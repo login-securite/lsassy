@@ -209,10 +209,30 @@ class Lsassy:
             file.close()
 
             if not parse_only and not keep_dump:
-                ImpacketFile.delete(
-                    session, file.get_file_path(), timeout=self.args.timeout
-                )
-                lsassy_logger.debug("Lsass dump deleted")
+                try:
+                    if ImpacketFile.delete(
+                        session,
+                        file_path=file.get_file_path(),
+                        timeout=self.args.timeout,
+                    ):
+                        lsassy_logger.debug("Lsass dump deleted")
+                except Exception:
+                    try:
+                        lsassy_logger.debug(
+                            "Couldn't delete lsass dump using file. Trying dump object..."
+                        )
+                        if ImpacketFile.delete(
+                            session,
+                            file_path=dumper.dump_path + dumper.dump_name,
+                            timeout=self.args.timeout,
+                        ):
+                            lsassy_logger.debug("Lsass dump deleted")
+                    except Exception as e:
+                        lsassy_logger.debug(
+                            "Potential issue while deleting lsass dump: {}".format(
+                                str(e)
+                            )
+                        )
             else:
                 lsassy_logger.debug(
                     "Not deleting lsass dump as --parse-only was provided"
@@ -262,32 +282,6 @@ class Lsassy:
                 lsassy_logger.debug(
                     "Potential issue while closing file: {}".format(str(e))
                 )
-
-            if not parse_only and not keep_dump:
-                try:
-                    if ImpacketFile.delete(
-                        session,
-                        file_path=file.get_file_path(),
-                        timeout=self.args.timeout,
-                    ):
-                        lsassy_logger.debug("Lsass dump deleted")
-                except Exception:
-                    try:
-                        lsassy_logger.debug(
-                            "Couldn't delete lsass dump using file. Trying dump object..."
-                        )
-                        if ImpacketFile.delete(
-                            session,
-                            file_path=dumper.dump_path + dumper.dump_name,
-                            timeout=self.args.timeout,
-                        ):
-                            lsassy_logger.debug("Lsass dump deleted")
-                    except Exception as e:
-                        lsassy_logger.debug(
-                            "Potential issue while deleting lsass dump: {}".format(
-                                str(e)
-                            )
-                        )
 
             try:
                 session.smb_session.close()
