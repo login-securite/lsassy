@@ -1,6 +1,6 @@
 [project]
 name = "lsassy"
-version = "3.1.13"
+version = "3.1.14"
 description = "Python library to extract credentials from lsass remotely"
 readme = "README.md"
 requires-python = ">=3.10,<4.0"

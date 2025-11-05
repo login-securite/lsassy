@@ -1,6 +1,8 @@
 import importlib
 import os
 from pathlib import Path
+from minikerberos.common.ccache import CCACHE
+from minikerberos.common.kirbi import Kirbi
 
 from lsassy.logger import lsassy_logger
 
@@ -138,11 +140,11 @@ class Writer:
                             filename.split(".kirbi")[0]
                             + "_"
                             + ticket.EndTime.strftime("%Y%m%d%H%M%S")
-                            + ".kirbi",
+                            + ".ccache",
                         ),
                         "wb",
                     ) as f:
-                        f.write(ticket.kirbi_data[filename].dump())
+                        f.write(CCACHE.from_kirbi(Kirbi(ticket.kirbi_data[filename])).to_bytes())
             if not quiet:
                 if len(self._tickets) > 1:
                     print(
