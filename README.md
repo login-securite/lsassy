@@ -215,7 +215,7 @@ lsassy -d hackn.lab -u pixis -p P4ssw0rd dc01.hackn.lab --keep-dump
 
 ### Kerberos tickets harvesting
 
-Kerberos tickets will be extracted and saved to `$HOME/.config/lsassy/tickets` in `kirbi` format. You can specify output directory using `-K [directory]` or `--kerberos-dir [directory]` parameter. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
+Kerberos tickets will be extracted and saved to `$HOME/.config/lsassy/tickets` in `ccache` format. You can specify output directory using `-K [directory]` or `--kerberos-dir [directory]` parameter. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
 
 ```bash
 lsassy -d hackn.lab -u pixis -p P4ssw0rd dc01.hackn.lab -K '/tmp/kerberos_tickets'

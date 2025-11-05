@@ -123,7 +123,7 @@ class Parser:
                                     ]
                                     + "_"
                                     + ticket.EndTime.strftime("%Y%m%d%H%M%S")
-                                    + ".kirbi",
+                                    + ".ccache",
                                     "domain": target_domain,
                                     "endtime": ticket.EndTime,
                                 },
