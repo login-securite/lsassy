@@ -1,5 +1,5 @@
 # lsassy
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=v3.1.14&x2=0)](https://pypi.org/project/lsassy)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=v3.1.15&x2=0)](https://pypi.org/project/lsassy)
 [![PyPI Statistics](https://img.shields.io/pypi/dm/lsassy.svg)](https://pypistats.org/packages/lsassy)
 [![Tests](https://github.com/hackndo/lsassy/actions/workflows/lsassy.yml/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=lsassy)
 [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
@@ -215,7 +215,7 @@ lsassy -d hackn.lab -u pixis -p P4ssw0rd dc01.hackn.lab --keep-dump
 
 ### Kerberos tickets harvesting
 
-Kerberos tickets will be extracted and saved to `$HOME/.config/lsassy/tickets` in `kirbi` format. You can specify output directory using `-K [directory]` or `--kerberos-dir [directory]` parameter. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
+Kerberos tickets will be extracted and saved to `$HOME/.config/lsassy/tickets` in `ccache` format. You can specify output directory using `-K [directory]` or `--kerberos-dir [directory]` parameter. If this directory doesn't exist, the tool will attempt to create it before outputing tickets.
 
 ```bash
 lsassy -d hackn.lab -u pixis -p P4ssw0rd dc01.hackn.lab -K '/tmp/kerberos_tickets'
