@@ -95,9 +95,23 @@ class Exec(IExec):
         return True
 
     def clean(self):
-        resp = tsch.hSchRpcEnumInstances(self._dce, "\\%s" % self._taskname)
-        if len(resp["pGuids"]) != 0:
-            tsch.hSchRpcStopInstance(self._dce, resp["pGuids"][0])
+        max_wait = 20 
+        wait_interval = 5
+        elapsed = 0
+        
+        while elapsed < max_wait:
+            resp = tsch.hSchRpcEnumInstances(self._dce, "\\%s" % self._taskname)
+            
+            if len(resp["pGuids"]) == 0:
+                lsassy_logger.debug("Task %s has finished" % self._taskname)
+                break
+            
+            lsassy_logger.debug("Task %s still running, waiting..." % self._taskname)
+            time.sleep(wait_interval)
+            elapsed += wait_interval
+        else:
+            lsassy_logger.warning("Task %s did not finish within timeout, deleting anyway" % self._taskname)
+        
         tsch.hSchRpcDelete(self._dce, "\\%s" % self._taskname)
         self._dce.disconnect()
         lsassy_logger.debug("Task %s has been removed" % self._taskname)
