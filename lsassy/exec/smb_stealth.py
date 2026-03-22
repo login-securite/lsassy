@@ -121,7 +121,7 @@ class Exec(IExec):
             stringbinding = r"ncacn_np:%s[\pipe\svcctl]" % self.session.address
             lsassy_logger.debug("StringBinding %s" % stringbinding)
             self._rpctransport = transport.DCERPCTransportFactory(stringbinding)
-            self._rpctransport.set_dport(445)
+            self._rpctransport.set_dport(self.session.port)
             self._rpctransport.setRemoteHost(self.session.address)
             if hasattr(self._rpctransport, "set_credentials"):
                 # This method exists only for selected protocol sequences.
