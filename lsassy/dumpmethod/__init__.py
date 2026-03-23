@@ -30,12 +30,12 @@ class CustomBuffer:
 
 
 class Dependency:
-    def __init__(self, name, file=None, content=None):
+    def __init__(self, name, file=None, remote_path=None, content=None):
         self.name = name
         self.file = file
         self.path = False
         self.remote_share = "C$"
-        self.remote_path = "\\Windows\\Temp\\"
+        self.remote_path = remote_path if remote_path is not None else "\\Windows\\Temp\\"
         self.uploaded = False
         self.content = content
         self.share_mode = False
@@ -44,25 +44,32 @@ class Dependency:
         return self.remote_path + self.file
 
     def init(self, options):
+        
+        prefix = f"{self.name}_"
+        for key, value in options.items():
+            if key.startswith(prefix):
+                attr_name = key[len(prefix):]
+                if hasattr(self, attr_name):
+                    setattr(self, attr_name, value)
+
         if self.content is not None:
             return True
-
-        self.path = options.get(f"{self.name}_path", self.path)
-
+        
         if not self.path:
             lsassy_logger.error(f"Missing {self.name}_path")
             return None
-
+        
         if self.path.startswith("\\\\"):
             # Share provided
             self.remote_path = self.path
             self.file = ""
             self.share_mode = True
             return True
+        
         if not os.path.exists(self.path):
             lsassy_logger.error(f"{self.path} does not exist.")
             return None
-
+        
         return True
 
     def upload(self, session):
@@ -78,7 +85,6 @@ class Dependency:
                     session.smb_session.putFile(
                         self.remote_share, self.remote_path + self.file, p.read
                     )
-                    print(f"{self.name} uploaded")
                     self.uploaded = True
                     return True
                 except Exception:

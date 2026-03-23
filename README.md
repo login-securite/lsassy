@@ -1,5 +1,5 @@
 # lsassy
-[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=v3.1.15&x2=0)](https://pypi.org/project/lsassy)
+[![PyPI version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=py&type=6&v=v3.1.16&x2=0)](https://pypi.org/project/lsassy)
 [![PyPI Statistics](https://img.shields.io/pypi/dm/lsassy.svg)](https://pypistats.org/packages/lsassy)
 [![Tests](https://github.com/hackndo/lsassy/actions/workflows/lsassy.yml/badge.svg)](https://github.com/hackndo/lsassy/actions?workflow=lsassy)
 [![Twitter](https://img.shields.io/twitter/follow/hackanddo?label=HackAndDo&style=social)](https://twitter.com/intent/follow?screen_name=hackanddo)
@@ -142,6 +142,7 @@ Dumping methods (`-m` or `--method`)
 * procdump_embedded
 * dumpert
 * dumpertdll
+* nativedump
 * ppldump
 * ppldump_embedded
 * mirrordump
@@ -164,6 +165,10 @@ This method uploads **procdump.exe** from SysInternals to dump **lsass** process
 #### Dumpert method
 
 This method uploads **dumpert.exe** or **dumpert.dll** from [outflanknl](https://github.com/outflanknl/Dumpert) to dump **lsass** process using syscalls.
+
+#### Native Dump
+
+This methods uploads **NativeDump.exe** from [ricardojoserf](https://github.com/ricardojoserf/NativeDump) to dump **lsass** process using only NTAPIs.
 
 #### Ppldump
 
