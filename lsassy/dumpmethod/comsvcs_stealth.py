@@ -87,7 +87,7 @@ class DumpMethod(IDumpMethod):
 
     def clean(self):
         if self.comsvcs_copied:
-            ImpacketFile.delete(
+            self._session.correct_file_handler().delete(
                 self._session,
                 self.comsvcs_copy_path + self.comsvcs_copy_name,
                 timeout=self._timeout,

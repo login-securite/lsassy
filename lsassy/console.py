@@ -40,7 +40,7 @@ def main():
         "-e",
         "--exec",
         action="store",
-        help="List of execution methods, comma separated (From {})".format(
+        help="List of execution methods, comma separated (From {}). winrm and all other methods are mutually exclusive!".format(
             ", ".join(Dumper.list_exec_methods())
         ),
     )
