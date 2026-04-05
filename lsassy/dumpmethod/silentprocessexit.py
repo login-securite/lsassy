@@ -4,8 +4,8 @@ from lsassy.dumpmethod import Dependency, IDumpMethod
 class DumpMethod(IDumpMethod):
     # need_debug_privilege = True
 
-    def __init__(self, session, timeout, time_between_commands):
-        super().__init__(session, timeout, time_between_commands)
+    def __init__(self, exec_session, file_session, timeout, time_between_commands):
+        super().__init__(exec_session, file_session, timeout, time_between_commands)
         self.silentprocessexit = Dependency(
             "silentprocessexit", "silentprocessexit.exe"
         )
