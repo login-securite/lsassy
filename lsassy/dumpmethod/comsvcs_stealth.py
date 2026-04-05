@@ -9,8 +9,8 @@ from lsassy.logger import lsassy_logger
 class DumpMethod(IDumpMethod):
     need_debug_privilege = True
 
-    def __init__(self, session, timeout, time_between_commands):
-        super().__init__(session, timeout, time_between_commands)
+    def __init__(self, exec_session, file_session, timeout, time_between_commands):
+        super().__init__(exec_session, file_session, timeout, time_between_commands)
 
         # If default, set to 7. Otherwise, keep custom time
         if self._time_between_commands == 1:

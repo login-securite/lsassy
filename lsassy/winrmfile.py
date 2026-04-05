@@ -72,7 +72,7 @@ class WinrmFile:
                 full_remote_path = session.copy(full_tmp_path, full_remote_path)
         finally:
             if full_remote_path is not None and WinrmFile.exists(session, full_remote_path):
-                lsassy_logger.debug(f"File {full_remote_path} created!")
+                lsassy_logger.debug(f"({session.__class__.__name__})File {full_remote_path} created!")
                 return True
         return None
 
@@ -92,16 +92,16 @@ class WinrmFile:
             result = session.smb_session.execute_ps(f"del {file_path}")[0]
             file_exists_after = exists(file_path)
             if file_exists_before and not file_exists_after:
-                lsassy_logger.debug(f"File {file_path} deleted")
+                lsassy_logger.debug(f"({session.__class__.__name__})File {file_path} deleted")
                 return True
             if not file_exists_before and not file_exists_after: # whoops
-                lsassy_logger.debug(f"File {file_path} has disappeared before deletion")
+                lsassy_logger.debug(f"({session.__class__.__name__})File {file_path} has disappeared before deletion")
                 return True
             if file_exists_before and file_exists_after:
-                lsassy_logger.warning(f"File wasn't removed `{file_path}`", exc_info=True)
+                lsassy_logger.warning(f"({session.__class__.__name__})File wasn't removed `{file_path}`", exc_info=True)
 
             if time.time() - t > timeout:
-                lsassy_logger.warning("File wasn't removed `{file_path}`", exc_info=True)
+                lsassy_logger.warning("({session.__class__.__name__})File wasn't removed `{file_path}`", exc_info=True)
 
             lsassy_logger.debug("Unable to delete file `{}`. Retrying...".format(file_path))
             time.sleep(0.5)
@@ -136,11 +136,11 @@ class WinrmFile:
                 lsassy_logger.debug("Unable to open file `{}`. Retrying...".format(full_remote_path))
             finally:
                 if os.path.exists(self.get_local_path()) and WinrmFile.exists(self._session, full_remote_path):
-                    lsassy_logger.debug(f"File {full_remote_path} created!")
+                    lsassy_logger.debug(f"({self.__class__.__name__})File {full_remote_path} created!")
                     self._opened = True
                     return self
             if time.time() - t > timeout:
-                lsassy_logger.warning(f"File wasn't opened `{full_remote_path}`", exc_info=True)
+                lsassy_logger.warning(f"({self.__class__.__name__})File wasn't opened `{full_remote_path}`", exc_info=True)
                 return None
 
             time.sleep(0.5)

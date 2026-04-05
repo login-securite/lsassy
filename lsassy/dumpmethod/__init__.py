@@ -157,9 +157,10 @@ class IDumpMethod:
         "vmrs",
     ]
 
-    def __init__(self, session, timeout, time_between_commands, *args, **kwargs):
-        self._session = session
-        self._file = session.correct_file_handler()(self._session)
+    def __init__(self, exec_session, file_session, timeout, time_between_commands, *args, **kwargs):
+        self._session = file_session
+        self._exec_session = exec_session
+        self._file = file_session.correct_file_handler()(self._session)
         self._file_handle = None
         self._executor_name = ""
         self._executor_path = ""
@@ -171,7 +172,7 @@ class IDumpMethod:
         try:
             exec_method = importlib.import_module(
                 f"lsassy.exec.{exec_method.lower()}", "Exec"
-            ).Exec(self._session)
+            ).Exec(self._exec_session)
         except ModuleNotFoundError:
             lsassy_logger.error(
                 f"Exec module '{exec_method.lower()}' doesn't exist",
@@ -394,6 +395,7 @@ class IDumpMethod:
             )
             return None
 
+        # why is this whole block unreachable??
         for e, exec_method in valid_exec_methods.items():
             lsassy_logger.info(f"Trying {e} method")
             exec_commands = self.build_exec_command(
