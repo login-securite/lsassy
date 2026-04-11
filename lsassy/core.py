@@ -114,7 +114,7 @@ class Lsassy:
             else:
                 lmhash, nthash = "aad3b435b51404eeaad3b435b51404ee", self.args.hashes
 
-        file_lmhash, file_nthash = "", ""
+        file_lmhash, file_nthash = lmhash, nthash
         if not file_password and self.args.file_hashes:
             if ":" in self.args.file_hashes:
                 file_lmhash, file_nthash = self.args.file_hashes.split(":")
