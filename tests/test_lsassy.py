@@ -11,7 +11,7 @@ USERNAME = "pixis"
 PASSWORD = "P4ssw0rd"
 HOSTNAME = "127.0.0.1"
 
-
+# TODO: refactor these to work with the new Dumper constructor
 class TestCLI(unittest.TestCase):
     def test_threads(self):
         MAX_THREADS = 1337
@@ -87,12 +87,12 @@ class TestDumper(unittest.TestCase):
         )
 
     def test_load(self):
-        dumper = Dumper(None, 0, 0)
+        dumper = Dumper(None, None, 0, 0)
         for dump_method in Dumper.list_dump_methods():
             self.assertIsNotNone(dumper.load(dump_method))
 
     def test_dump_method_get_commands(self):
-        dumper = Dumper(None, 0, 0)
+        dumper = Dumper(None, None,0, 0)
         for dump_method in Dumper.list_dump_methods():
             try:
                 dumper.load(dump_method).get_commands()
@@ -114,7 +114,7 @@ class TestWorkflow(unittest.TestCase):
         )
         self.assertIsNotNone(session.smb_session)
 
-        dumper = Dumper(session, 5, 1).load("comsvcs")
+        dumper = Dumper(session, session, 5, 1).load("comsvcs")
         self.assertIsNotNone(dumper)
 
         file = dumper.dump(exec_methods=["smb"])
@@ -141,7 +141,7 @@ class TestExecMethods(unittest.TestCase):
         )
 
     def dump_lsass(self, exec):
-        dumper = Dumper(self.session, 5, 1).load("comsvcs")
+        dumper = Dumper(self.session, self.session, 5, 1).load("comsvcs")
         file = dumper.dump(exec_methods=[exec])
         self.assertIsNotNone(file)
         file.close()
@@ -178,7 +178,7 @@ class TestDumpMethods(unittest.TestCase):
         )
 
     def dump_lsass(self, method):
-        dumper = Dumper(self.session, 5, 1).load(method)
+        dumper = Dumper(self.session, self.session, 5, 1).load(method)
         file = dumper.dump(exec_methods=["smb"])
         self.assertIsNotNone(file)
         file.close()
@@ -229,7 +229,7 @@ class TestWriter(unittest.TestCase):
         )
         self.assertIsNotNone(session.smb_session)
 
-        dumper = Dumper(session, 5, 1).load("comsvcs")
+        dumper = Dumper(session, session, 5, 1).load("comsvcs")
         self.assertIsNotNone(dumper)
 
         file = dumper.dump(exec_methods=["smb"])

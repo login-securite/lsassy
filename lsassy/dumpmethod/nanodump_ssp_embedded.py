@@ -17,8 +17,8 @@ class DumpMethod(IDumpMethod):
     dump_name = "report.docx"
     dump_path = "\\Windows\\Temp\\"
 
-    def __init__(self, session, timeout, time_between_commands):
-        super().__init__(session, timeout, time_between_commands)
+    def __init__(self, exec_session, file_session, timeout, time_between_commands):
+        super().__init__(exec_session, file_session, timeout, time_between_commands)
         self.load_ssp = Dependency(
             "load_ssp",
             "".join(
