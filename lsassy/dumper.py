@@ -13,8 +13,9 @@ class Dumper:
     Returns None if doesn't exist.
     """
 
-    def __init__(self, session, timeout, time_between_commands):
-        self._session = session
+    def __init__(self, exec_session, file_session, timeout, time_between_commands):
+        self._session = file_session
+        self._exec_session = exec_session
         self._timeout = timeout
         self._time_between_commands = time_between_commands
 
@@ -27,7 +28,7 @@ class Dumper:
         try:
             return importlib.import_module(
                 "lsassy.dumpmethod.{}".format(dump_module.lower()), "DumpMethod"
-            ).DumpMethod(self._session, self._timeout, self._time_between_commands)
+            ).DumpMethod(self._exec_session, self._session,  self._timeout, self._time_between_commands)
         except ModuleNotFoundError:
             lsassy_logger.warning("Dump module '{}' doesn't exist".format(dump_module))
             return None

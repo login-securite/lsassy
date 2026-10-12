@@ -20,8 +20,8 @@ extensions_by_mode = dict(ntoskrnl="exe", wdigest="dll")
 
 
 class DumpMethod(IDumpMethod):
-    def __init__(self, session, timeout, time_between_commands):
-        super().__init__(session, timeout, time_between_commands)
+    def __init__(self, exec_session, file_session, timeout, time_between_commands):
+        super().__init__(exec_session, file_session, timeout, time_between_commands)
         self.edrsandblast = Dependency("edrsandblast", "EDRSandBlast.exe")
         self.RTCore64 = Dependency("RTCore64", "RTCore64.sys")
         self.ntoskrnl = Dependency("ntoskrnl", "NtoskrnlOffsets.csv")

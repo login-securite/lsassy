@@ -40,10 +40,12 @@ def main():
         "-e",
         "--exec",
         action="store",
-        help="List of execution methods, comma separated (From {})".format(
+        help="List of execution methods, comma separated (From {}). winrm and all other methods are mutually exclusive!".format(
             ", ".join(Dumper.list_exec_methods())
         ),
     )
+    group_dump.add_argument("--file-interaction", action="store", help="Methods for file interaction, default is smb", choices=["smb", "winrm"], default="smb")
+
     group_dump.add_argument(
         "--no-powershell", action="store_true", help="Disable PowerShell"
     )
@@ -84,16 +86,25 @@ def main():
         help="Do not delete lsass dump on remote host",
     )
 
+# There might be cases for boxes where the user may have access to smb but not winrm or vise versa
     group_auth = parser.add_argument_group("authentication")
     group_auth.add_argument("-u", "--username", action="store", help="Username")
+    group_auth.add_argument("-fu", "--file-username", action="store", help="Username for file interaction (if file interaction and exec differ!)")
+
     group_auth.add_argument(
         "-p", "--password", action="store", help="Plaintext password"
+    )
+    group_auth.add_argument(
+        "-fp", "--file-password", action="store", help="Plaintext password for file interaction (if file interaction and exec differ!)"
     )
     group_auth.add_argument(
         "-d", "--domain", default="", action="store", help="Domain name"
     )
     group_auth.add_argument(
-        "--port", default=445, type=int, action="store", help="Port (Default: 445)"
+        "--port", default=0, type=int, action="store", help="Port (Default: 445)"
+    )
+    group_auth.add_argument(
+        "--file-port", default=0, type=int, action="store", help="Port for file interaction (if file interaction and exec differ!)"
     )
     group_auth.add_argument(
         "--no-pass",
@@ -101,6 +112,8 @@ def main():
         help="Do not provide password (Default: False)",
     )
     group_auth.add_argument("-H", "--hashes", action="store", help="[LM:]NT hash")
+    group_auth.add_argument("-FH", "--file-hashes", action="store", help="[LM:]NT hash for file interaction (if file interaction and exec differ!)")
+
     group_auth.add_argument(
         "-k",
         "--kerberos",
